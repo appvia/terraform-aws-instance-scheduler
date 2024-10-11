@@ -1,0 +1,607 @@
+---
+Description: "(SO0030S) instance-scheduler-on-aws remote v3.0.5"
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      InstanceSchedulerAccount:
+        default: Hub Account ID
+      UsingAWSOrganizations:
+        default: Use AWS Organizations
+      Namespace:
+        default: Namespace
+      KmsKeyArns:
+        default: Kms Key Arns for EC2
+    ParameterGroups:
+    - Label:
+        default: Account structure
+      Parameters:
+      - InstanceSchedulerAccount
+      - UsingAWSOrganizations
+      - Namespace
+    - Label:
+        default: Service-specific
+      Parameters:
+      - KmsKeyArns
+Parameters:
+  InstanceSchedulerAccount:
+    Type: String
+    AllowedPattern: "^\\d{12}$"
+    ConstraintDescription: Account number is a 12 digit number
+    Description: Account ID of the Instance Scheduler Hub stack that should be allowed
+      to schedule resources in this account.
+  UsingAWSOrganizations:
+    Type: String
+    Default: 'No'
+    AllowedValues:
+    - 'Yes'
+    - 'No'
+    Description: Use AWS Organizations to automate spoke account registration. Must
+      be set to the same value as the Hub stack
+  Namespace:
+    Type: String
+    Default: default
+    Description: Unique identifier used to differentiate between multiple solution
+      deployments. Must be set to the same value as the Hub stack. Must be non-empty
+      for Organizations deployments.
+  KmsKeyArns:
+    Type: CommaDelimitedList
+    Default: ''
+    Description: comma-separated list of kms arns to grant Instance Scheduler kms:CreateGrant
+      permissions to provide the EC2  service with Decrypt permissions for encrypted
+      EBS volumes. This allows the scheduler to start EC2 instances with attached
+      encrypted EBS volumes. provide just (*) to give limited access to all kms keys,
+      leave blank to disable. For details on the exact policy created, refer to security
+      section of the implementation guide (https://aws.amazon.com/solutions/implementations/instance-scheduler-on-aws/)
+Mappings:
+  AppRegistryForInstanceSchedulerSolution25A90F05:
+    Data:
+      ID: SO0030
+      Version: v3.0.5
+      AppRegistryApplicationName: instance-scheduler-on-aws
+      SolutionName: instance-scheduler-on-aws
+      ApplicationType: AWS-Solutions
+Resources:
+  AppRegistry968496A3:
+    Type: AWS::ServiceCatalogAppRegistry::Application
+    Properties:
+      Description:
+        Fn::Join:
+        - ''
+        - - 'Service Catalog application to track and manage all your resources for
+            the solution '
+          - Fn::FindInMap:
+            - AppRegistryForInstanceSchedulerSolution25A90F05
+            - Data
+            - SolutionName
+      Name:
+        Fn::Join:
+        - "-"
+        - - Fn::FindInMap:
+            - AppRegistryForInstanceSchedulerSolution25A90F05
+            - Data
+            - AppRegistryApplicationName
+          - Ref: AWS::Region
+          - Ref: AWS::AccountId
+          - Ref: AWS::StackName
+      Tags:
+%{ for tag, value in tags ~}
+        ${tag}: ${value}
+%{ endfor ~}
+        Solutions:ApplicationType:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - ApplicationType
+        Solutions:SolutionID:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - ID
+        Solutions:SolutionName:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - SolutionName
+        Solutions:SolutionVersion:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - Version
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/AppRegistry/Resource
+  AppRegistryDefaultApplicationAttributes15279635:
+    Type: AWS::ServiceCatalogAppRegistry::AttributeGroup
+    Properties:
+      Attributes:
+        applicationType:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - ApplicationType
+        version:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - Version
+        solutionID:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - ID
+        solutionName:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - SolutionName
+      Description: Attribute group for solution information
+      Name:
+        Fn::Join:
+        - ''
+        - - attgroup-
+          - Fn::Join:
+            - "-"
+            - - Ref: AWS::Region
+              - Ref: AWS::StackName
+      Tags:
+%{ for tag, value in tags ~}
+        ${tag}: ${value}
+%{ endfor ~}
+        Solutions:ApplicationType:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - ApplicationType
+        Solutions:SolutionID:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - ID
+        Solutions:SolutionName:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - SolutionName
+        Solutions:SolutionVersion:
+          Fn::FindInMap:
+          - AppRegistryForInstanceSchedulerSolution25A90F05
+          - Data
+          - Version
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/AppRegistry/DefaultApplicationAttributes/Resource
+  AppRegistryAttributeGroupAssociation53fd40dfa02c3C9A0EFF:
+    Type: AWS::ServiceCatalogAppRegistry::AttributeGroupAssociation
+    Properties:
+      Application:
+        Fn::GetAtt:
+        - AppRegistry968496A3
+        - Id
+      AttributeGroup:
+        Fn::GetAtt:
+        - AppRegistryDefaultApplicationAttributes15279635
+        - Id
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/AppRegistry/AttributeGroupAssociation53fd40dfa02c
+  AppRegistryAssociation:
+    Type: AWS::ServiceCatalogAppRegistry::ResourceAssociation
+    Properties:
+      Application:
+        Fn::GetAtt:
+        - AppRegistry968496A3
+        - Id
+      Resource:
+        Ref: AWS::StackId
+      ResourceType: CFN_STACK
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/AppRegistryAssociation
+  EC2SchedulerCrossAccountRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::Join:
+              - ''
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ":iam::"
+                - Ref: InstanceSchedulerAccount
+                - ":role/"
+                - Ref: Namespace
+                - "-SchedulingRequestHandler-Role"
+        Version: '2012-10-17'
+      RoleName:
+        Fn::Join:
+        - ''
+        - - Ref: Namespace
+          - "-Scheduler-Role"
+      Tags:
+%{ for tag, value in tags ~}
+        ${tag}: ${value}
+%{ endfor ~}
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W28
+          reason: The role name is defined to allow cross account access from the
+            hub account.
+  EC2SchedulerCrossAccountRoleSchedulingPermissions3E73CF8A:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action: ec2:DescribeInstances
+          Effect: Allow
+          Resource: "*"
+        - Action:
+          - ec2:StartInstances
+          - ec2:StopInstances
+          - ec2:CreateTags
+          - ec2:DeleteTags
+          - ec2:ModifyInstanceAttribute
+          Effect: Allow
+          Resource:
+            Fn::Sub: arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:instance/*
+        - Action: ssm:DescribeMaintenanceWindows
+          Effect: Allow
+          Resource: "*"
+        - Action:
+          - rds:DescribeDBClusters
+          - rds:DescribeDBInstances
+          - tag:GetResources
+          Effect: Allow
+          Resource: "*"
+        - Action:
+          - rds:DeleteDBSnapshot
+          - rds:DescribeDBSnapshots
+          - rds:StopDBInstance
+          - rds:CreateDBSnapshot
+          - rds:AddTagsToResource
+          Effect: Allow
+          Resource:
+            Fn::Sub: arn:${AWS::Partition}:rds:*:${AWS::AccountId}:snapshot:*
+        - Action:
+          - rds:AddTagsToResource
+          - rds:RemoveTagsFromResource
+          - rds:StartDBInstance
+          - rds:StopDBInstance
+          - rds:CreateDBSnapshot
+          Effect: Allow
+          Resource:
+            Fn::Sub: arn:${AWS::Partition}:rds:*:${AWS::AccountId}:db:*
+        - Action:
+          - rds:AddTagsToResource
+          - rds:RemoveTagsFromResource
+          - rds:StartDBCluster
+          - rds:StopDBCluster
+          - rds:CreateDBClusterSnapshot
+          Effect: Allow
+          Resource:
+            Fn::Sub: arn:${AWS::Partition}:rds:*:${AWS::AccountId}:cluster:*
+        Version: '2012-10-17'
+      PolicyName: EC2SchedulerCrossAccountRoleSchedulingPermissions3E73CF8A
+      Roles:
+      - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W12
+          reason: required scheduling permissions
+      cdk_nag:
+        rules_to_suppress:
+        - reason: required scheduling permissions
+          id: AwsSolutions-IAM5
+          applies_to:
+          - Resource::arn:<AWS::Partition>:rds:*:<AWS::AccountId>:db:*
+          - Resource::arn:<AWS::Partition>:rds:*:<AWS::AccountId>:cluster:*
+          - Resource::arn:<AWS::Partition>:ec2:*:<AWS::AccountId>:instance/*
+          - Resource::arn:<AWS::Partition>:rds:*:<AWS::AccountId>:snapshot:*
+          - Resource::*
+  EC2SchedulerCrossAccountRoleKmsPermissions93DB5FB5:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action: kms:CreateGrant
+          Condition:
+            Bool:
+              kms:GrantIsForAWSResource: true
+            StringLike:
+              kms:ViaService: ec2.*.amazonaws.com
+            ForAllValues:StringEquals:
+              kms:GrantOperations:
+              - Decrypt
+              kms:EncryptionContextKeys:
+              - aws:ebs:id
+            'Null':
+              kms:EncryptionContextKeys: false
+              kms:GrantOperations: false
+          Effect: Allow
+          Resource:
+            Ref: KmsKeyArns
+        Version: '2012-10-17'
+      PolicyName: EC2SchedulerCrossAccountRoleKmsPermissions93DB5FB5
+      Roles:
+      - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/KmsPermissions/Resource
+      cdk_nag:
+        rules_to_suppress:
+        - reason: Specific kms keys are unknown until runtime, for security, access
+            is instead restricted to only granting decryption permissions to the ec2
+            service for encrypted EBS volumes
+          id: AwsSolutions-IAM5
+          applies_to:
+          - Resource::*
+    Condition: EC2SchedulerCrossAccountRolekmsAccessCondition6C83D407
+  AsgSchedulingRoleF04B8CC9:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::Join:
+              - ''
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ":iam::"
+                - Ref: InstanceSchedulerAccount
+                - ":role/"
+                - Ref: Namespace
+                - "-AsgRequestHandler-Role"
+        Version: '2012-10-17'
+      RoleName:
+        Fn::Join:
+        - ''
+        - - Ref: Namespace
+          - "-ASG-Scheduling-Role"
+      Tags:
+%{ for tag, value in tags ~}
+        ${tag}: ${value}
+%{ endfor ~}
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W28
+          reason: The role name is defined to allow cross account access from the
+            hub account.
+  AsgSchedulingRoleASGSchedulingPermissions6DEABC8F:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - autoscaling:BatchPutScheduledUpdateGroupAction
+          - autoscaling:BatchDeleteScheduledAction
+          - autoscaling:CreateOrUpdateTags
+          Effect: Allow
+          Resource:
+            Fn::Join:
+            - ''
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - ":autoscaling:*:"
+              - Ref: AWS::AccountId
+              - ":autoScalingGroup:*:autoScalingGroupName/*"
+        - Action:
+          - autoscaling:DescribeAutoScalingGroups
+          - autoscaling:DescribeScheduledActions
+          Effect: Allow
+          Resource: "*"
+        Version: '2012-10-17'
+      PolicyName: AsgSchedulingRoleASGSchedulingPermissions6DEABC8F
+      Roles:
+      - Ref: AsgSchedulingRoleF04B8CC9
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W12
+          reason: DescribeAutoScalingGroups and autoscaling:DescribeScheduledActions
+            actions require wildcard permissions
+      cdk_nag:
+        rules_to_suppress:
+        - reason: Required permissions to describe AutoScaling Groups
+          id: AwsSolutions-IAM5
+          applies_to:
+          - Resource::*
+        - reason: Required permissions to modify scheduled scaling actions on AutoScaling
+            Groups
+          id: AwsSolutions-IAM5
+          applies_to:
+          - Resource::arn:<AWS::Partition>:autoscaling:*:<AWS::AccountId>:autoScalingGroup:*:autoScalingGroupName/*
+  RegisterSpokeAccountCustomResourceLambdaRoleDD724340:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      Tags:
+%{ for tag, value in tags ~}
+        ${tag}: ${value}
+%{ endfor ~}
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegisterSpokeAccountCustomResourceLambdaRole/Resource
+    Condition: UsingAWSOrganizationsCondition
+  RegisterSpokeAccountCustomResourceLambdaRoleDefaultPolicy3599775F:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+          Effect: Allow
+          Resource: "*"
+        Version: '2012-10-17'
+      PolicyName: RegisterSpokeAccountCustomResourceLambdaRoleDefaultPolicy3599775F
+      Roles:
+      - Ref: RegisterSpokeAccountCustomResourceLambdaRoleDD724340
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W12
+          reason: Wildcard required for xray
+      cdk_nag:
+        rules_to_suppress:
+        - reason: required for xray
+          id: AwsSolutions-IAM5
+          applies_to:
+          - Resource::*
+    Condition: UsingAWSOrganizationsCondition
+  RegisterSpokeAccountCustomResourceLambda8BF25EDC:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.0.5/c479ea3c8d6a3d9b973490b598719840fc868b3cf361f53e4414583eefcb07b0.zip
+      Description: Custom Resource Provider used for spoke account self registration
+        via aws organization
+      Environment:
+        Variables:
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.5
+          HUB_REGISTRATION_LAMBDA_ARN:
+            Fn::Join:
+            - ''
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - ":lambda:"
+              - Ref: AWS::Region
+              - ":"
+              - Ref: InstanceSchedulerAccount
+              - ":function:InstanceScheduler-"
+              - Ref: Namespace
+              - "-SpokeRegistration"
+      Handler: instance_scheduler.handler.remote_registration_custom_resource.handle_remote_registration_request
+      MemorySize: 128
+      Role:
+        Fn::GetAtt:
+        - RegisterSpokeAccountCustomResourceLambdaRoleDD724340
+        - Arn
+      Runtime: python3.11
+      Timeout: 60
+      TracingConfig:
+        Mode: Active
+      Tags:
+%{ for tag, value in tags ~}
+        ${tag}: ${value}
+%{ endfor ~}
+    DependsOn:
+    - RegisterSpokeAccountCustomResourceLambdaRoleDefaultPolicy3599775F
+    - RegisterSpokeAccountCustomResourceLambdaRoleDD724340
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W89
+          reason: This Lambda function does not need to access any resource provisioned
+            within a VPC.
+        - id: W58
+          reason: This Lambda function has permission provided to write to CloudWatch
+            logs using the iam roles.
+        - id: W92
+          reason: Lambda function is a custom resource. Concurrent calls are very
+            limited.
+      cdk_nag:
+        rules_to_suppress:
+        - reason: Python 3.11 is the newest available runtime. This finding is a false
+            positive.
+          id: AwsSolutions-L1
+    Condition: UsingAWSOrganizationsCondition
+  RegisterSpokeAccountCustomResourceLambdaPolicyAE6C7E85:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action: lambda:InvokeFunction
+          Effect: Allow
+          Resource:
+            Fn::Join:
+            - ''
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - ":lambda:"
+              - Ref: AWS::Region
+              - ":"
+              - Ref: InstanceSchedulerAccount
+              - ":function:InstanceScheduler-"
+              - Ref: Namespace
+              - "-SpokeRegistration"
+        - Action:
+          - logs:CreateLogStream
+          - logs:PutLogEvents
+          Effect: Allow
+          Resource:
+            Fn::GetAtt:
+            - SpokeRegistrationLogGroup7EBCC472
+            - Arn
+        Version: '2012-10-17'
+      PolicyName: RegisterSpokeAccountCustomResourceLambdaPolicyAE6C7E85
+      Roles:
+      - Ref: RegisterSpokeAccountCustomResourceLambdaRoleDD724340
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegisterSpokeAccountCustomResourceLambdaPolicy/Resource
+    Condition: UsingAWSOrganizationsCondition
+  SpokeRegistrationLogGroup7EBCC472:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Join:
+        - ''
+        - - "/aws/lambda/"
+          - Ref: RegisterSpokeAccountCustomResourceLambda8BF25EDC
+      RetentionInDays: 365
+      Tags:
+%{ for tag, value in tags ~}
+        ${tag}: ${value}
+%{ endfor ~}
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: This template has to be supported in gov cloud which doesn't yet
+            have the feature to provide kms key id to cloudwatch log group
+    Condition: UsingAWSOrganizationsCondition
+  RemoteRegistrationCustomResource:
+    Type: Custom::RegisterSpokeAccount
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+        - RegisterSpokeAccountCustomResourceLambda8BF25EDC
+        - Arn
+    DependsOn:
+    - RegisterSpokeAccountCustomResourceLambdaPolicyWaiter
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RemoteRegistrationCustomResource/Default
+    Condition: UsingAWSOrganizationsCondition
+  RegisterSpokeAccountCustomResourceLambdaPolicyWaiter:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+    - RegisterSpokeAccountCustomResourceLambdaPolicyAE6C7E85
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegisterSpokeAccountCustomResourceLambdaPolicyWaiter
+    Condition: UsingAWSOrganizationsCondition
+Conditions:
+  EC2SchedulerCrossAccountRolekmsAccessCondition6C83D407:
+    Fn::Not:
+    - Fn::Equals:
+      - Fn::Select:
+        - 0
+        - Ref: KmsKeyArns
+      - ''
+  UsingAWSOrganizationsCondition:
+    Fn::Equals:
+    - Ref: UsingAWSOrganizations
+    - 'Yes'
