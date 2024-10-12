@@ -7,7 +7,7 @@ locals {
   region = var.region != null ? var.region : data.aws_region.current.name
 
   ## A list of account ids that should be permitted to register with the scheduler
-  principals = sort(concat(var.instance_scheduler_account_ids, var.instance_scheduler_organizational_units))
+  principals = sort(concat([], var.instance_scheduler_organizational_units))
 
   ## Parameters for the cloudformation stack in the hub account 
   cloudformation_hub_stack_parameters = {
