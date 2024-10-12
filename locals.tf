@@ -3,6 +3,12 @@ locals {
   ## Is the current account id 
   account_id = data.aws_caller_identity.current.account_id
 
+  ## Is the current region 
+  region = var.region != null ? var.region : data.aws_region.current.name
+
+  ## A list of account ids that should be permitted to register with the scheduler
+  principals = sort(concat(var.instance_scheduler_account_ids, var.instance_scheduler_organizational_units))
+
   ## Parameters for the cloudformation stack in the hub account 
   cloudformation_hub_stack_parameters = {
     AsgRulePrefix               = var.instance_scheduler_asg_rule_prefix
@@ -14,7 +20,7 @@ locals {
     KmsKeyArns                  = join(",", var.kms_key_arns)
     LogRetentionDays            = var.instance_scheduler_log_group_retention
     OpsMonitoring               = var.enable_cloudwatch_dashboard ? "yes" : "no"
-    Principals                  = join(",", var.instance_scheduler_principals)
+    Principals                  = join(",", local.principals)
     Regions                     = join(",", var.instance_scheduler_regions)
     ScheduleASGs                = var.enable_asg_scheduler ? "yes" : "no"
     ScheduleDocDb               = var.enable_docdb_scheduler ? "yes" : "no"
@@ -29,5 +35,12 @@ locals {
     TagName                     = var.instance_scheduler_tag_name
     Trace                       = var.enable_cloudwatch_debug_logging ? "yes" : "no"
     UsingAWSOrganizations       = var.enable_organizations
+  }
+
+  ## Parameters for the cloudformation stack in the spoke accounts 
+  cloudformation_spoke_stack_parameters = {
+    InstanceSchedulerAccount : "",
+    UsingAWSOrganizations : var.enable_organizations ? "yes" : "no"
+    KmsKeyArns : join(",", var.kms_key_arns)
   }
 }

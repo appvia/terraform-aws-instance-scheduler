@@ -5,6 +5,12 @@ variable "cloudformation_hub_stack_name" {
   default     = "lza-instance-scheduler-hub"
 }
 
+variable "cloudformation_spoke_stack_name" {
+  description = "The name of the cloudformation stack in the spoke accounts"
+  type        = string
+  default     = "lza-instance-scheduler-spoke"
+}
+
 variable "cloudformation_hub_stack_capabilities" {
   description = "The capabilities required for the cloudformation stack in the hub account"
   type        = list(string)
@@ -131,8 +137,8 @@ variable "instance_scheduler_asg_rule_prefix" {
   default     = "is-"
 }
 
-variable "instance_scheduler_principals" {
-  description = "A list of organizations units or accounts that should be scheduled"
+variable "instance_scheduler_organizational_units" {
+  description = "A list of organizations units where the scheduler should permit registration"
   type        = list(string)
   default     = []
 }
@@ -153,6 +159,12 @@ variable "kms_key_arns" {
   description = "The KMS key ARNs used to encrypt the instance scheduler data"
   type        = list(string)
   default     = []
+}
+
+variable "region" {
+  description = "The region in which the resources should be created"
+  type        = string
+  default     = null
 }
 
 variable "tags" {
