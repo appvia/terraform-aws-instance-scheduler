@@ -19,7 +19,12 @@ module "hub" {
   enable_rds_scheduler            = true
   enable_rds_snapshot             = false
   enable_scheduler                = true
+  enable_spoke_accounts           = false
   region                          = "eu-west-2"
+
+  instance_scheduler_organizational_units = {
+    "sandbox" = "ou-1tbg-i772jxv5"
+  }
 
   tags = {
     "Environment" = "Development"

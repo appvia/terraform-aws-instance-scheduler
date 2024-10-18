@@ -17,6 +17,12 @@ variable "cloudformation_hub_stack_capabilities" {
   default     = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
 }
 
+variable "enable_spoke_accounts" {
+  description = "Whether the instance scheduler should be deployed to spoke accounts"
+  type        = bool
+  default     = true
+}
+
 variable "enable_organizations" {
   description = "Whether the instance scheduler should integrate with AWS Organizations"
   type        = bool
@@ -139,8 +145,8 @@ variable "instance_scheduler_asg_rule_prefix" {
 
 variable "instance_scheduler_organizational_units" {
   description = "A list of organizations units where the scheduler should permit registration"
-  type        = list(string)
-  default     = []
+  type        = map(string)
+  default     = {}
 }
 
 variable "instance_scheduler_regions" {
@@ -170,5 +176,3 @@ variable "tags" {
   description = "The tags to apply to the resources"
   type        = map(string)
 }
-
-

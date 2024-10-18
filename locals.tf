@@ -1,13 +1,10 @@
 
 locals {
-  ## Is the current account id 
-  account_id = data.aws_caller_identity.current.account_id
-
   ## Is the current region 
   region = var.region
 
   ## A list of account ids that should be permitted to register with the scheduler
-  principals = sort(concat([], var.instance_scheduler_organizational_units))
+  principals = sort(concat([], values(var.instance_scheduler_organizational_units)))
 
   ## Parameters for the cloudformation stack in the hub account 
   cloudformation_hub_stack_parameters = {

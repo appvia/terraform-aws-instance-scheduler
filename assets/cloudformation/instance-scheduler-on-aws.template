@@ -931,7 +931,8 @@ Resources:
           - Ref: AWS::StackName
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
         Solutions:ApplicationType:
           Fn::FindInMap:
@@ -990,7 +991,8 @@ Resources:
               - Ref: AWS::StackName
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
         Solutions:ApplicationType:
           Fn::FindInMap:
@@ -1103,7 +1105,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - MetricsGeneratorRoleDefaultPolicy19F5F29A
@@ -1132,7 +1135,8 @@ Resources:
         Ref: LogRetentionDays
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
@@ -1219,7 +1223,8 @@ Resources:
         Version: '2012-10-17'
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy:
       Fn::If:
@@ -1248,7 +1253,8 @@ Resources:
         - Arn
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerEncryptionKeyAlias/Resource
@@ -1261,7 +1267,8 @@ Resources:
         - Arn
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerSnsTopic/Resource
@@ -1277,7 +1284,8 @@ Resources:
         Ref: LogRetentionDays
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
@@ -1318,7 +1326,8 @@ Resources:
         SSEType: KMS
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy:
       Fn::If:
@@ -1364,7 +1373,8 @@ Resources:
         StreamViewType: KEYS_ONLY
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy:
       Fn::If:
@@ -1408,7 +1418,8 @@ Resources:
         SSEType: KMS
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy:
       Fn::If:
@@ -1434,7 +1445,8 @@ Resources:
         Version: '2012-10-17'
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationRole/Resource
@@ -1503,7 +1515,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - SpokeRegistrationRoleDefaultPolicy7A7A6954
@@ -1652,7 +1665,8 @@ Resources:
       Description: Role assumed by SSM Automation to call the spoke registration lambda
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SpokeDeregistrationRunbookRole/Resource
@@ -1719,7 +1733,8 @@ Resources:
       DocumentType: Automation
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
       - Key: CdkGenerated
         Value: 'true'
@@ -1751,8 +1766,8 @@ Resources:
           - kms:Decrypt
           - kms:DescribeKey
           - kms:Encrypt
-          - kms:ReEncrypt*
-          - kms:GenerateDataKey*
+          - "kms:ReEncrypt*"
+          - "kms:GenerateDataKey*"
           Effect: Allow
           Resource:
             Fn::GetAtt:
@@ -1908,7 +1923,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - MainLambdaRoleDefaultPolicy5347C905
@@ -2097,7 +2113,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - schedulingRequestHandlerRoleDefaultPolicy938ADC4A
@@ -2126,7 +2143,8 @@ Resources:
         Ref: LogRetentionDays
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
@@ -2292,7 +2310,8 @@ Resources:
         Version: '2012-10-17'
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestratorRole/Resource
@@ -2454,7 +2473,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - SchedulingOrchestratorRoleDefaultPolicy29DE8B0D
@@ -2483,7 +2503,8 @@ Resources:
         Ref: LogRetentionDays
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
@@ -2600,7 +2621,8 @@ Resources:
         Version: '2012-10-17'
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
       RoleName:
         Fn::Join:
@@ -2699,7 +2721,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - ASGRoleDefaultPolicy0DBFE29F
@@ -2728,7 +2751,8 @@ Resources:
         Ref: LogRetentionDays
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
@@ -2831,7 +2855,8 @@ Resources:
         Version: '2012-10-17'
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ASGOrchRole/Resource
@@ -2939,7 +2964,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - ASGSchedulerASGOrchRoleDefaultPolicy55DE89B0
@@ -2969,7 +2995,8 @@ Resources:
         Ref: LogRetentionDays
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
@@ -3056,7 +3083,8 @@ Resources:
         Version: '2012-10-17'
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ScheduleUpdateHandlerRole/Resource
@@ -3183,7 +3211,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - ASGSchedulerScheduleUpdateHandlerRoleDefaultPolicy073EAF80
@@ -3219,7 +3248,8 @@ Resources:
       StartingPosition: LATEST
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ScheduleUpdateHandler/DynamoDBEventSource:instancescheduleronawsConfigTableF5DC8AC4/Resource
@@ -3236,7 +3266,8 @@ Resources:
         Ref: LogRetentionDays
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
@@ -3329,7 +3360,8 @@ Resources:
           MaximumRetryAttempts: 5
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ASGOrchRule/Resource
@@ -3370,7 +3402,8 @@ Resources:
           - "-ASG-Scheduling-Role"
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       cfn_nag:
@@ -3450,7 +3483,8 @@ Resources:
           MaximumRetryAttempts: 5
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SchedulerEventRule/Resource
@@ -3489,7 +3523,8 @@ Resources:
           - "-Scheduler-Role"
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       cfn_nag:
@@ -3881,7 +3916,8 @@ Resources:
           - "-Operational-Insights-Dashboard"
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/OperationalInsightsDashboard/Resource

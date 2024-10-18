@@ -6,13 +6,13 @@ resource "aws_cloudformation_stack" "hub" {
   parameters   = local.cloudformation_hub_stack_parameters
 
   template_body = templatefile("${path.module}/assets/cloudformation/instance-scheduler-on-aws.template", {
-    account_id = local.account_id,
-    tags       = var.tags
+    tags = var.tags
   })
 }
 
 ## Provision the cloudformation stack within the spoke accounts 
 module "spokes" {
+  count   = var.enable_spoke_accounts ? 1 : 0
   source  = "appvia/stackset/aws"
   version = "0.1.2"
 
@@ -21,11 +21,10 @@ module "spokes" {
   parameters           = local.cloudformation_spoke_stack_parameters
   region               = local.region
   tags                 = var.tags
-  organizational_units = var.instance_scheduler_organizational_units
+  organizational_units = values(var.instance_scheduler_organizational_units)
 
   template = templatefile("${path.module}/assets/cloudformation/instance-scheduler-on-aws-remote.template", {
-    account_id = local.account_id,
-    tags       = var.tags
+    tags = var.tags
   })
 
   providers = {
