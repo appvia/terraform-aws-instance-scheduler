@@ -164,7 +164,6 @@ variable "kms_key_arns" {
 variable "region" {
   description = "The region in which the resources should be created"
   type        = string
-  default     = null
 }
 
 variable "tags" {

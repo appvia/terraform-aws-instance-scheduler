@@ -69,7 +69,9 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 ## Modules
 
-No modules.
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_spokes"></a> [spokes](#module\_spokes) | appvia/stackset/aws | 0.1.2 |
 
 ## Resources
 
@@ -82,9 +84,11 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_region"></a> [region](#input\_region) | The region in which the resources should be created | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
 | <a name="input_cloudformation_hub_stack_capabilities"></a> [cloudformation\_hub\_stack\_capabilities](#input\_cloudformation\_hub\_stack\_capabilities) | The capabilities required for the cloudformation stack in the hub account | `list(string)` | <pre>[<br/>  "CAPABILITY_NAMED_IAM",<br/>  "CAPABILITY_AUTO_EXPAND",<br/>  "CAPABILITY_IAM"<br/>]</pre> | no |
 | <a name="input_cloudformation_hub_stack_name"></a> [cloudformation\_hub\_stack\_name](#input\_cloudformation\_hub\_stack\_name) | The name of the cloudformation stack in the hub account | `string` | `"lza-instance-scheduler-hub"` | no |
+| <a name="input_cloudformation_spoke_stack_name"></a> [cloudformation\_spoke\_stack\_name](#input\_cloudformation\_spoke\_stack\_name) | The name of the cloudformation stack in the spoke accounts | `string` | `"lza-instance-scheduler-spoke"` | no |
 | <a name="input_enable_asg_scheduler"></a> [enable\_asg\_scheduler](#input\_enable\_asg\_scheduler) | Whether AutoScaling Groups should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_cloudwatch_dashboard"></a> [enable\_cloudwatch\_dashboard](#input\_enable\_cloudwatch\_dashboard) | Whether a CloudWatch dashboard used to monitor the scheduler should be created | `bool` | `false` | no |
 | <a name="input_enable_cloudwatch_debug_logging"></a> [enable\_cloudwatch\_debug\_logging](#input\_enable\_cloudwatch\_debug\_logging) | Whether debug logging should be enabled for the instance scheduler | `bool` | `false` | no |
@@ -102,7 +106,7 @@ No modules.
 | <a name="input_instance_scheduler_asg_tag_key"></a> [instance\_scheduler\_asg\_tag\_key](#input\_instance\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
 | <a name="input_instance_scheduler_frequency"></a> [instance\_scheduler\_frequency](#input\_instance\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |
 | <a name="input_instance_scheduler_log_group_retention"></a> [instance\_scheduler\_log\_group\_retention](#input\_instance\_scheduler\_log\_group\_retention) | The retention period for the instance scheduler log group | `string` | `"7"` | no |
-| <a name="input_instance_scheduler_principals"></a> [instance\_scheduler\_principals](#input\_instance\_scheduler\_principals) | A list of organizations units or accounts that should be scheduled | `list(string)` | `[]` | no |
+| <a name="input_instance_scheduler_organizational_units"></a> [instance\_scheduler\_organizational\_units](#input\_instance\_scheduler\_organizational\_units) | A list of organizations units where the scheduler should permit registration | `list(string)` | `[]` | no |
 | <a name="input_instance_scheduler_regions"></a> [instance\_scheduler\_regions](#input\_instance\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
 | <a name="input_instance_scheduler_start_tags"></a> [instance\_scheduler\_start\_tags](#input\_instance\_scheduler\_start\_tags) | The tags used to identify the resources that should be started | `string` | `"InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
 | <a name="input_instance_scheduler_stop_tags"></a> [instance\_scheduler\_stop\_tags](#input\_instance\_scheduler\_stop\_tags) | The tags used to identify the resources that should be stopped | `string` | `"InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |

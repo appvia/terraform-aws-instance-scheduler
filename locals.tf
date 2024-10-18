@@ -4,7 +4,7 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
 
   ## Is the current region 
-  region = var.region != null ? var.region : data.aws_region.current.name
+  region = var.region
 
   ## A list of account ids that should be permitted to register with the scheduler
   principals = sort(concat([], var.instance_scheduler_organizational_units))

@@ -29,6 +29,6 @@ module "spokes" {
   })
 
   providers = {
-    aws = aws.stackset
+    aws = aws.stacks
   }
 }

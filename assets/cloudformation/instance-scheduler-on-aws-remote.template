@@ -470,7 +470,7 @@ Resources:
     Properties:
       Code:
         S3Bucket:
-          Fn::Sub: solutions-${AWS::Region}
+          Fn::Sub: solutions-$${AWS::Region}
         S3Key: instance-scheduler-on-aws/v3.0.5/c479ea3c8d6a3d9b973490b598719840fc868b3cf361f53e4414583eefcb07b0.zip
       Description: Custom Resource Provider used for spoke account self registration
         via aws organization

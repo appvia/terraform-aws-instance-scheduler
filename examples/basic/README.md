@@ -12,7 +12,9 @@ No providers.
 
 ## Modules
 
-No modules.
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_hub"></a> [hub](#module\_hub) | ../.. | n/a |
 
 ## Resources
 
