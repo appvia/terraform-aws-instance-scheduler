@@ -10,29 +10,17 @@ You can find more information about the solution in the [AWS Solutions Implement
 
 ## Features
 
-- Cross-account instance scheduling
+- **Cross-account instance scheduling** : This solution includes a template that creates the AWS Identity and Access Management (IAM) roles necessary to start and stop instances in secondary accounts. For more information, refer to the Cross-account instance scheduling section.
 
-This solution includes a template that creates the AWS Identity and Access Management (IAM) roles necessary to start and stop instances in secondary accounts. For more information, refer to the Cross-account instance scheduling section.
+- **Automated Tagging**: Instance Scheduler on AWS can automatically add tags to all instances that it starts or stops. The solution also includes macros that allow you to add variable information to the tags.
 
-- Automated Tagging
+- **Configure schedules or periods using Scheduler CLI**: This solution includes a command line interface (CLI) that provides commands for configuring schedules and periods. The CLI allows customers to estimate cost savings for a given schedule. For more information, refer to the Scheduler CLI.
 
-Instance Scheduler on AWS can automatically add tags to all instances that it starts or stops. The solution also includes macros that allow you to add variable information to the tags.
+- **Manage schedules using Infrastructure as Code (IaC)**: This solution provides an AWS CloudFormation Custom Resource that you can use to manage schedules using Infrastructure as Code (IaC). For more information, refer to Manage Schedules Using Infrastructure as Code.
 
-- Configure schedules or periods using Scheduler CLI
+- **Integration with Systems Manager Maintenance Windows**: For Amazon EC2 instances, Instance Scheduler on AWS can integrate with AWS Systems Manager maintenance windows, defined in the same Region as those instances, to start and stop them in accordance with the maintenance window.
 
-This solution includes a command line interface (CLI) that provides commands for configuring schedules and periods. The CLI allows customers to estimate cost savings for a given schedule. For more information, refer to the Scheduler CLI.
-
-- Manage schedules using Infrastructure as Code (IaC)
-
-This solution provides an AWS CloudFormation Custom Resource that you can use to manage schedules using Infrastructure as Code (IaC). For more information, refer to Manage Schedules Using Infrastructure as Code.
-
-- Integration with Systems Manager Maintenance Windows
-
-For Amazon EC2 instances, Instance Scheduler on AWS can integrate with AWS Systems Manager maintenance windows, defined in the same Region as those instances, to start and stop them in accordance with the maintenance window.
-
-- Integration with Service Catalog AppRegistry and Application Manager, a capability of AWS Systems Manager
-
-This solution includes a Service Catalog AppRegistry resource to register the solution's CloudFormation template and its underlying resources as an application in both Service Catalog AppRegistry and Application Manager. With this integration, you can centrally manage the solution's resources.
+- **Integration with Service Catalog AppRegistry and Application Manager, a capability of AWS Systems Manager**: This solution includes a Service Catalog AppRegistry resource to register the solution's CloudFormation template and its underlying resources as an application in both Service Catalog AppRegistry and Application Manager. With this integration, you can centrally manage the solution's resources.
 
 ## Usage
 
