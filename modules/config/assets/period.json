@@ -3,12 +3,12 @@
     "S": "period"
   },
   %{ if start_time != null ~}
-  "start_time": {
+  "begintime": {
     "S": "${ start_time }"
   },
   %{ endif ~}
   %{ if end_time != null ~}
-  "end_time": {
+  "endtime": {
     "S": "${ end_time }"
   },
   %{ endif ~}

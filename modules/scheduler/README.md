@@ -118,5 +118,10 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_account_id"></a> [account\_id](#output\_account\_id) | The account id of the scheduler |
+| <a name="output_scheduler_dynamodb_table"></a> [scheduler\_dynamodb\_table](#output\_scheduler\_dynamodb\_table) | The DynamoDB table to use for the scheduler |
+| <a name="output_scheduler_role_arn"></a> [scheduler\_role\_arn](#output\_scheduler\_role\_arn) | The role arn of the scheduler |
+| <a name="output_scheduler_sns_issue_topic_arn"></a> [scheduler\_sns\_issue\_topic\_arn](#output\_scheduler\_sns\_issue\_topic\_arn) | The SNS topic to use for the scheduler |
 <!-- END_TF_DOCS -->

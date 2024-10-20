@@ -84,8 +84,8 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_dyanmodb_table_name"></a> [dyanmodb\_table\_name](#input\_dyanmodb\_table\_name) | The name of the DynamoDB table to use for the scheduler | `string` | n/a | yes |
-| <a name="input_periods"></a> [periods](#input\_periods) | A period to create with the instance scheduler | <pre>map(object({<br/>    description = string<br/>    end_time    = optional(string, null)<br/>    months      = optional(list(string), null)<br/>    name        = string<br/>    start_time  = optional(string, null)<br/>    weekdays    = optional(list(string), null)<br/>  }))</pre> | `{}` | no |
-| <a name="input_schedules"></a> [schedules](#input\_schedules) | The schedule to create within the scheduler | <pre>map(object({<br/>    description     = string<br/>    name            = string<br/>    override_status = optional(string, null)<br/>    periods         = list(string)<br/>    timezone        = optional(string, "UTC")<br/>  }))</pre> | `{}` | no |
+| <a name="input_periods"></a> [periods](#input\_periods) | A period to create with the instance scheduler | <pre>map(object({<br/>    description = string<br/>    end_time    = optional(string, null)<br/>    months      = optional(list(string), null)<br/>    start_time  = optional(string, null)<br/>    weekdays    = optional(list(string), null)<br/>  }))</pre> | `{}` | no |
+| <a name="input_schedules"></a> [schedules](#input\_schedules) | The schedule to create within the scheduler | <pre>map(object({<br/>    description     = string<br/>    override_status = optional(string, null)<br/>    periods         = list(string)<br/>    timezone        = optional(string, "UTC")<br/>  }))</pre> | `{}` | no |
 
 ## Outputs
 

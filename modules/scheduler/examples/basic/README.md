@@ -14,6 +14,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_config"></a> [config](#module\_config) | ../../../config | n/a |
 | <a name="module_scheduler"></a> [scheduler](#module\_scheduler) | ../.. | n/a |
 
 ## Resources

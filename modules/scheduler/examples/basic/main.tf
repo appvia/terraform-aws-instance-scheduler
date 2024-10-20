@@ -33,3 +33,23 @@ module "scheduler" {
     "GitRepo"     = "https://github.com/appvia/terraform-aws-instance-scheduler"
   }
 }
+
+module "config" {
+  source = "../../../config"
+
+  dyanmodb_table_name = module.scheduler.scheduler_dynamodb_table
+
+  periods = {
+    "uk_working_hours" = {
+      description = "Covering UK working hours"
+      name        = "uk_working_hours"
+      start_time  = "07:00"
+      end_time    = "18:30"
+      weekdays    = ["mon-fri"]
+    }
+  }
+
+  depends_on = [
+    module.scheduler
+  ]
+}
