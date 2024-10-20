@@ -11,6 +11,18 @@ variable "cloudformation_hub_stack_capabilities" {
   default     = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
 }
 
+variable "cloudformation_bucket_name" {
+  description = "The name of the S3 bucket used to store the cloudformation templates"
+  type        = string
+  default     = "lza-instance-scheduler-templates"
+}
+
+variable "organizational_id" {
+  description = "The organizational id of the aws estate, used to permit member accounts retrieving the cloudformation templates"
+  type        = string
+  default     = null
+}
+
 variable "enable_organizations" {
   description = "Whether the instance scheduler should integrate with AWS Organizations"
   type        = bool

@@ -4,16 +4,16 @@
 # to build your own root module that invokes this module
 #####################################################################################
 
-module "spoke" {
+module "scheduler" {
   source = "../.."
 
   enable_asg_scheduler            = true
   enable_cloudwatch_dashboard     = false
-  enable_cloudwatch_debug_logging = true
+  enable_cloudwatch_debug_logging = false
   enable_docdb_scheduler          = true
   enable_ec2_scheduler            = true
   enable_hub_account_scheduler    = false
-  enable_neptune_scheduler        = true
+  enable_neptune_scheduler        = false
   enable_organizations            = true
   enable_rds_cluster_scheduler    = true
   enable_rds_scheduler            = true
@@ -22,7 +22,7 @@ module "spoke" {
 
   ## The organizational units that are permitted to use the scheduler 
   instance_scheduler_organizational_units = {
-    "sandbox" = "ou-1tbg-i772jxv5"
+    "sandbox" = "o-7enwqk0f2c"
   }
 
   tags = {

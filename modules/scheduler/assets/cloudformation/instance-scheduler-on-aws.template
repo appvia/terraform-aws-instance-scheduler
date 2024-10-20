@@ -931,8 +931,7 @@ Resources:
           - Ref: AWS::StackName
       Tags:
 %{ for tag, value in tags ~}
-      - Key: ${tag}
-        Value: ${value}
+        ${tag}: ${value}
 %{ endfor ~}
         Solutions:ApplicationType:
           Fn::FindInMap:
@@ -991,8 +990,7 @@ Resources:
               - Ref: AWS::StackName
       Tags:
 %{ for tag, value in tags ~}
-      - Key: ${tag}
-        Value: ${value}
+        ${tag}: ${value}
 %{ endfor ~}
         Solutions:ApplicationType:
           Fn::FindInMap:
@@ -1251,11 +1249,6 @@ Resources:
         Fn::GetAtt:
         - InstanceSchedulerEncryptionKey
         - Arn
-      Tags:
-%{ for tag, value in tags ~}
-      - Key: ${tag}
-        Value: ${value}
-%{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerEncryptionKeyAlias/Resource
   InstanceSchedulerSnsTopic:
@@ -3358,11 +3351,6 @@ Resources:
         Input: "{}"
         RetryPolicy:
           MaximumRetryAttempts: 5
-      Tags:
-%{ for tag, value in tags ~}
-      - Key: ${tag}
-        Value: ${value}
-%{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ASGOrchRule/Resource
     Condition: ScheduleASGsCondition
@@ -3481,11 +3469,6 @@ Resources:
         Input: '{"scheduled_action":"run_orchestrator"}'
         RetryPolicy:
           MaximumRetryAttempts: 5
-      Tags:
-%{ for tag, value in tags ~}
-      - Key: ${tag}
-        Value: ${value}
-%{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SchedulerEventRule/Resource
   SchedulerEventRuleAllowEventRuleinstancescheduleronawsSchedulingOrchestratorCD54E6718835D1AC:
