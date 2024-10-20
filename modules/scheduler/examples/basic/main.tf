@@ -20,10 +20,12 @@ module "scheduler" {
   enable_rds_snapshot             = false
   enable_scheduler                = true
 
-  ## The organizational units that are permitted to use the scheduler 
-  instance_scheduler_organizational_units = {
-    "sandbox" = "o-7enwqk0f2c"
-  }
+  ## The tag placed on the resources that the scheduler will manage 
+  ## the lifecycle for based on the schedules and periods defined 
+  scheduler_tag_name = "Schedule"
+  ## The organizations id that are permitted to use the scheduler - you can 
+  ## this detail in the AWS Organizations console 
+  scheduler_organizations_ids = ["o-7enwqk0f2c"]
 
   tags = {
     "Environment" = "Development"
@@ -41,10 +43,9 @@ module "config" {
 
   periods = {
     "uk_working_hours" = {
-      description = "Covering UK working hours"
-      name        = "uk_working_hours"
-      start_time  = "07:00"
-      end_time    = "18:30"
+      description = "Resources will run during the UK working hours, anything outside of this will be stopped"
+      start_time  = "06:00"
+      end_time    = "19:30"
       weekdays    = ["mon-fri"]
     }
   }

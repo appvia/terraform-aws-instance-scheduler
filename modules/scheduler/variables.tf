@@ -101,61 +101,60 @@ variable "enable_asg_scheduler" {
   default     = true
 }
 
-variable "instance_scheduler_start_tags" {
+variable "scheduler_start_tags" {
   description = "The tags used to identify the resources that should be started"
   type        = string
   default     = "InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"
 }
 
-variable "instance_scheduler_stop_tags" {
+variable "scheduler_stop_tags" {
   description = "The tags used to identify the resources that should be stopped"
   type        = string
   default     = "InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"
 }
 
-variable "instance_scheduler_tag_name" {
+variable "scheduler_tag_name" {
   description = "The tag name used to identify the resources that should be scheduled"
   type        = string
-  default     = "Schedule"
 }
 
-variable "instance_scheduler_frequency" {
+variable "scheduler_frequency" {
   description = "The frequency at which the instance scheduler should run in minutes"
   type        = number
   default     = 60
 }
 
-variable "instance_scheduler_timezone" {
+variable "scheduler_timezone" {
   description = "The default timezone for the instance scheduler"
   type        = string
   default     = "UTC"
 }
 
-variable "instance_scheduler_asg_tag_key" {
+variable "scheduler_asg_tag_key" {
   description = "The tag key used to identify AutoScaling Groups that should be scheduled"
   type        = string
   default     = "scheduled"
 }
 
-variable "instance_scheduler_asg_rule_prefix" {
+variable "scheduler_asg_rule_prefix" {
   description = "The prefix used to identify the AutoScaling Group scheduled actions"
   type        = string
   default     = "is-"
 }
 
-variable "instance_scheduler_organizational_units" {
-  description = "A list of organizations units where the scheduler should permit registration"
-  type        = map(string)
-  default     = {}
+variable "scheduler_organizations_ids" {
+  description = "A list of organizations ids that are permitted to use the scheduler"
+  type        = list(string)
+  default     = []
 }
 
-variable "instance_scheduler_regions" {
+variable "scheduler_regions" {
   description = "The regions in which the instance scheduler should operate"
   type        = list(string)
   default     = []
 }
 
-variable "instance_scheduler_log_group_retention" {
+variable "scheduler_log_group_retention" {
   description = "The retention period for the instance scheduler log group"
   type        = string
   default     = "7"
