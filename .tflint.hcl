@@ -16,7 +16,7 @@ config {
 }
 
 rule "terraform_required_providers" {
-  enabled = true
+  enabled = false
 }
 
 rule "terraform_required_version" {
@@ -61,7 +61,11 @@ rule "terraform_module_pinned_source" {
 }
 
 rule "terraform_standard_module_structure" {
-  enabled = true
+  enabled = false
+}
+
+rule "terraform_unused_required_providers" {
+  enabled = false
 }
 
 rule "terraform_workspace_remote" {

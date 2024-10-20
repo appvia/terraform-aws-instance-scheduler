@@ -14,7 +14,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_hub"></a> [hub](#module\_hub) | ../.. | n/a |
+| <a name="module_spoke"></a> [spoke](#module\_spoke) | ../.. | n/a |
 
 ## Resources
 

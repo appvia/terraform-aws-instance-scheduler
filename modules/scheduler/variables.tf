@@ -5,22 +5,10 @@ variable "cloudformation_hub_stack_name" {
   default     = "lza-instance-scheduler-hub"
 }
 
-variable "cloudformation_spoke_stack_name" {
-  description = "The name of the cloudformation stack in the spoke accounts"
-  type        = string
-  default     = "lza-instance-scheduler-spoke"
-}
-
 variable "cloudformation_hub_stack_capabilities" {
   description = "The capabilities required for the cloudformation stack in the hub account"
   type        = list(string)
   default     = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
-}
-
-variable "enable_spoke_accounts" {
-  description = "Whether the instance scheduler should be deployed to spoke accounts"
-  type        = bool
-  default     = true
 }
 
 variable "enable_organizations" {
@@ -165,11 +153,6 @@ variable "kms_key_arns" {
   description = "The KMS key ARNs used to encrypt the instance scheduler data"
   type        = list(string)
   default     = []
-}
-
-variable "region" {
-  description = "The region in which the resources should be created"
-  type        = string
 }
 
 variable "tags" {

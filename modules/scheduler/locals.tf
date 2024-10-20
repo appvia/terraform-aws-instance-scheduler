@@ -1,8 +1,5 @@
 
 locals {
-  ## Is the current region 
-  region = var.region
-
   ## A list of account ids that should be permitted to register with the scheduler
   principals = sort(concat([], values(var.instance_scheduler_organizational_units)))
 
@@ -32,12 +29,5 @@ locals {
     TagName                     = var.instance_scheduler_tag_name
     Trace                       = var.enable_cloudwatch_debug_logging ? "yes" : "no"
     UsingAWSOrganizations       = var.enable_organizations
-  }
-
-  ## Parameters for the cloudformation stack in the spoke accounts 
-  cloudformation_spoke_stack_parameters = {
-    InstanceSchedulerAccount : "",
-    UsingAWSOrganizations : var.enable_organizations ? "yes" : "no"
-    KmsKeyArns : join(",", var.kms_key_arns)
   }
 }

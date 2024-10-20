@@ -1,0 +1,115 @@
+![Github Actions](../../actions/workflows/terraform.yml/badge.svg)
+
+# Terraform AWS Instance Scheduler
+
+## Description
+
+The Instance Scheduler on AWS solution is an automated solution that schedules Amazon Elastic Compute Cloud (Amazon EC2) and Amazon Relational Database Service (Amazon RDS) instances. The solution enables customers to easily configure custom start and stop schedules for their instances, helping to reduce costs and ensure instances are running only when needed. Deployed centrally within an account, the orchestrator
+
+## Features
+
+- Cross-account instance scheduling
+
+This solution includes a template that creates the AWS Identity and Access Management (IAM) roles necessary to start and stop instances in secondary accounts. For more information, refer to the Cross-account instance scheduling section.
+
+- Automated Tagging
+
+Instance Scheduler on AWS can automatically add tags to all instances that it starts or stops. The solution also includes macros that allow you to add variable information to the tags.
+
+- Configure schedules or periods using Scheduler CLI
+
+This solution includes a command line interface (CLI) that provides commands for configuring schedules and periods. The CLI allows customers to estimate cost savings for a given schedule. For more information, refer to the Scheduler CLI.
+
+- Manage schedules using Infrastructure as Code (IaC)
+
+This solution provides an AWS CloudFormation Custom Resource that you can use to manage schedules using Infrastructure as Code (IaC). For more information, refer to Manage Schedules Using Infrastructure as Code.
+
+- Integration with Systems Manager Maintenance Windows
+
+For Amazon EC2 instances, Instance Scheduler on AWS can integrate with AWS Systems Manager maintenance windows, defined in the same Region as those instances, to start and stop them in accordance with the maintenance window.
+
+- Integration with Service Catalog AppRegistry and Application Manager, a capability of AWS Systems Manager
+
+This solution includes a Service Catalog AppRegistry resource to register the solution's CloudFormation template and its underlying resources as an application in both Service Catalog AppRegistry and Application Manager. With this integration, you can centrally manage the solution's resources.
+
+## Usage
+
+Add example usage here
+
+```hcl
+module "example" {
+  source  = "appvia/<NAME>/aws"
+  version = "0.0.1"
+
+  # insert variables here
+}
+```
+
+## Update Documentation
+
+The `terraform-docs` utility is used to generate this README. Follow the below steps to update:
+
+1. Make changes to the `.terraform-docs.yml` file
+2. Fetch the `terraform-docs` binary (https://terraform-docs.io/user-guide/installation/)
+3. Run `terraform-docs markdown table --output-file ${PWD}/README.md --output-mode inject .`
+
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.7 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0.0 |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [aws_cloudformation_stack.hub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack) | resource |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
+| <a name="input_cloudformation_hub_stack_capabilities"></a> [cloudformation\_hub\_stack\_capabilities](#input\_cloudformation\_hub\_stack\_capabilities) | The capabilities required for the cloudformation stack in the hub account | `list(string)` | <pre>[<br/>  "CAPABILITY_NAMED_IAM",<br/>  "CAPABILITY_AUTO_EXPAND",<br/>  "CAPABILITY_IAM"<br/>]</pre> | no |
+| <a name="input_cloudformation_hub_stack_name"></a> [cloudformation\_hub\_stack\_name](#input\_cloudformation\_hub\_stack\_name) | The name of the cloudformation stack in the hub account | `string` | `"lza-instance-scheduler-hub"` | no |
+| <a name="input_enable_asg_scheduler"></a> [enable\_asg\_scheduler](#input\_enable\_asg\_scheduler) | Whether AutoScaling Groups should under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_cloudwatch_dashboard"></a> [enable\_cloudwatch\_dashboard](#input\_enable\_cloudwatch\_dashboard) | Whether a CloudWatch dashboard used to monitor the scheduler should be created | `bool` | `false` | no |
+| <a name="input_enable_cloudwatch_debug_logging"></a> [enable\_cloudwatch\_debug\_logging](#input\_enable\_cloudwatch\_debug\_logging) | Whether debug logging should be enabled for the instance scheduler | `bool` | `false` | no |
+| <a name="input_enable_docdb_scheduler"></a> [enable\_docdb\_scheduler](#input\_enable\_docdb\_scheduler) | Whether DocumentDB clusters should under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_ec2_scheduler"></a> [enable\_ec2\_scheduler](#input\_enable\_ec2\_scheduler) | Whether EC2 instances should under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_hub_account_scheduler"></a> [enable\_hub\_account\_scheduler](#input\_enable\_hub\_account\_scheduler) | Whether the hub account should be under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_neptune_scheduler"></a> [enable\_neptune\_scheduler](#input\_enable\_neptune\_scheduler) | Whether Neptune clusters should under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_organizations"></a> [enable\_organizations](#input\_enable\_organizations) | Whether the instance scheduler should integrate with AWS Organizations | `bool` | `true` | no |
+| <a name="input_enable_rds_cluster_scheduler"></a> [enable\_rds\_cluster\_scheduler](#input\_enable\_rds\_cluster\_scheduler) | Whether RDS clusters should under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_rds_scheduler"></a> [enable\_rds\_scheduler](#input\_enable\_rds\_scheduler) | Whether RDS instances should under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_rds_snapshot"></a> [enable\_rds\_snapshot](#input\_enable\_rds\_snapshot) | Whether RDS instances should have snapshots created on stop | `bool` | `false` | no |
+| <a name="input_enable_scheduler"></a> [enable\_scheduler](#input\_enable\_scheduler) | Whether the instance scheduler should be enabled | `bool` | `true` | no |
+| <a name="input_enable_ssm_maintenance_windows"></a> [enable\_ssm\_maintenance\_windows](#input\_enable\_ssm\_maintenance\_windows) | Whether EC2 instances should be managed by SSM Maintenance Windows | `bool` | `false` | no |
+| <a name="input_instance_scheduler_asg_rule_prefix"></a> [instance\_scheduler\_asg\_rule\_prefix](#input\_instance\_scheduler\_asg\_rule\_prefix) | The prefix used to identify the AutoScaling Group scheduled actions | `string` | `"is-"` | no |
+| <a name="input_instance_scheduler_asg_tag_key"></a> [instance\_scheduler\_asg\_tag\_key](#input\_instance\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
+| <a name="input_instance_scheduler_frequency"></a> [instance\_scheduler\_frequency](#input\_instance\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |
+| <a name="input_instance_scheduler_log_group_retention"></a> [instance\_scheduler\_log\_group\_retention](#input\_instance\_scheduler\_log\_group\_retention) | The retention period for the instance scheduler log group | `string` | `"7"` | no |
+| <a name="input_instance_scheduler_organizational_units"></a> [instance\_scheduler\_organizational\_units](#input\_instance\_scheduler\_organizational\_units) | A list of organizations units where the scheduler should permit registration | `map(string)` | `{}` | no |
+| <a name="input_instance_scheduler_regions"></a> [instance\_scheduler\_regions](#input\_instance\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
+| <a name="input_instance_scheduler_start_tags"></a> [instance\_scheduler\_start\_tags](#input\_instance\_scheduler\_start\_tags) | The tags used to identify the resources that should be started | `string` | `"InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
+| <a name="input_instance_scheduler_stop_tags"></a> [instance\_scheduler\_stop\_tags](#input\_instance\_scheduler\_stop\_tags) | The tags used to identify the resources that should be stopped | `string` | `"InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
+| <a name="input_instance_scheduler_tag_name"></a> [instance\_scheduler\_tag\_name](#input\_instance\_scheduler\_tag\_name) | The tag name used to identify the resources that should be scheduled | `string` | `"Schedule"` | no |
+| <a name="input_instance_scheduler_timezone"></a> [instance\_scheduler\_timezone](#input\_instance\_scheduler\_timezone) | The default timezone for the instance scheduler | `string` | `"UTC"` | no |
+| <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
+
+## Outputs
+
+No outputs.
+<!-- END_TF_DOCS -->
