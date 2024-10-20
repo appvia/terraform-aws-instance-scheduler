@@ -1,8 +1,5 @@
 
 locals {
-  ## The account id of the scheduler account 
-  account_id = data.aws_caller_identity.current.account_id
-
   ## A map of the resources which are going to be tagged - we could 
   ## probably reduce this somewhat
   resources_in_scope_all = merge({
