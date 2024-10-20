@@ -1,0 +1,31 @@
+{
+  "type": {
+    "S": "period"
+  },
+  %{ if start_time != null ~}
+  "start_time": {
+    "S": "${ start_time }"
+  },
+  %{ endif ~}
+  %{ if end_time != null ~}
+  "end_time": {
+    "S": "${ end_time }"
+  },
+  %{ endif ~}
+  %{ if weekdays != null ~} 
+  "weekdays": {
+    "SS": ${ jsonencode(weekdays) }
+  },
+  %{ endif ~}
+  %{ if months != null ~}}
+  "months": {
+    "SS": ${ jsonencode(months) }
+  },
+  %{ endif ~}
+  "description": {
+    "S": "${ description }"
+  },
+  "name": {
+    "S": "${ name }"
+  }
+}

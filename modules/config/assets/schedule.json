@@ -1,0 +1,21 @@
+{
+  "type": {
+    "S": "schedule"
+  },
+  %{ if periods != null ~}} 
+  "periods": {
+    "L": ${ jsonencode(periods) }
+  },
+  %{ endif ~}
+  %{ if override_status != null ~}
+  "override_status": {
+    "S": "${ override_status }"
+  },
+  %{ endif ~}
+  "description": {
+    "S": "${ description }"
+  },
+  "name": {
+    "S": "${ name }"
+  }
+}

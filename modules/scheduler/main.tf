@@ -45,7 +45,8 @@ data "aws_iam_policy_document" "bucket" {
 
 ## Provision an s3 bucket to store the cloudformation templates 
 module "s3_bucket" {
-  source = "terraform-aws-modules/s3-bucket/aws"
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "4.2.1"
 
   acl                                      = "private"
   attach_deny_incorrect_encryption_headers = true
@@ -100,10 +101,6 @@ resource "aws_cloudformation_stack" "hub" {
   parameters   = local.cloudformation_hub_stack_parameters
   template_url = format("https://%s.s3.amazonaws.com/%s", module.s3_bucket.s3_bucket_id, aws_s3_object.instance_scheduler_template.key)
   tags         = var.tags
-
-  lifecycle {
-    ignore_changes = [outputs]
-  }
 
   depends_on = [aws_s3_object.instance_scheduler_template]
 }

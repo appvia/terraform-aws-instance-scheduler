@@ -69,19 +69,25 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 ## Modules
 
-No modules.
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_s3_bucket"></a> [s3\_bucket](#module\_s3\_bucket) | terraform-aws-modules/s3-bucket/aws | 4.2.1 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
 | [aws_cloudformation_stack.hub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack) | resource |
+| [aws_s3_object.instance_scheduler_template](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object) | resource |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_iam_policy_document.bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
+| <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates | `string` | `"lza-instance-scheduler-templates"` | no |
 | <a name="input_cloudformation_hub_stack_capabilities"></a> [cloudformation\_hub\_stack\_capabilities](#input\_cloudformation\_hub\_stack\_capabilities) | The capabilities required for the cloudformation stack in the hub account | `list(string)` | <pre>[<br/>  "CAPABILITY_NAMED_IAM",<br/>  "CAPABILITY_AUTO_EXPAND",<br/>  "CAPABILITY_IAM"<br/>]</pre> | no |
 | <a name="input_cloudformation_hub_stack_name"></a> [cloudformation\_hub\_stack\_name](#input\_cloudformation\_hub\_stack\_name) | The name of the cloudformation stack in the hub account | `string` | `"lza-instance-scheduler-hub"` | no |
 | <a name="input_enable_asg_scheduler"></a> [enable\_asg\_scheduler](#input\_enable\_asg\_scheduler) | Whether AutoScaling Groups should under the remit of the scheduler | `bool` | `true` | no |
@@ -108,6 +114,7 @@ No modules.
 | <a name="input_instance_scheduler_tag_name"></a> [instance\_scheduler\_tag\_name](#input\_instance\_scheduler\_tag\_name) | The tag name used to identify the resources that should be scheduled | `string` | `"Schedule"` | no |
 | <a name="input_instance_scheduler_timezone"></a> [instance\_scheduler\_timezone](#input\_instance\_scheduler\_timezone) | The default timezone for the instance scheduler | `string` | `"UTC"` | no |
 | <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
+| <a name="input_organizational_id"></a> [organizational\_id](#input\_organizational\_id) | The organizational id of the aws estate, used to permit member accounts retrieving the cloudformation templates | `string` | `null` | no |
 
 ## Outputs
 
