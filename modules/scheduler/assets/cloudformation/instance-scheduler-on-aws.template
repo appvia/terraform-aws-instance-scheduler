@@ -809,7 +809,7 @@ Parameters:
 Mappings:
   Send:
     AnonymousUsage:
-      Data: 'Yes'
+      Data: 'No'
   AppRegistryForInstanceSchedulerSolution25A90F05:
     Data:
       ID: SO0030

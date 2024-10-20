@@ -49,12 +49,7 @@ variable "kms_key_arns" {
 variable "region" {
   description = "The region in which the resources should be created"
   type        = string
-
-  # Should be a valid region regex
-  validation {
-    condition     = can(regex("^[a-z]{2}-[a-z]+-[0-9]$", var.region))
-    error_message = "The region must be a valid AWS region"
-  }
+  default     = null
 }
 
 variable "tags" {

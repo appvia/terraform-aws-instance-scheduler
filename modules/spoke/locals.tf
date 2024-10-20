@@ -6,7 +6,7 @@ locals {
   ## Parameters for the cloudformation stack in the spoke accounts 
   cloudformation_spoke_stack_parameters = {
     InstanceSchedulerAccount : var.scheduler_account_id
-    UsingAWSOrganizations : var.enable_organizations ? "yes" : "no"
+    UsingAWSOrganizations : var.enable_organizations ? "Yes" : "No"
     KmsKeyArns : join(",", var.kms_key_arns)
   }
 }

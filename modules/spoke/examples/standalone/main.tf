@@ -11,7 +11,7 @@ module "standalone_spoke" {
   enable_standalone    = true
   enable_stackset      = false
   region               = "eu-west-2"
-  scheduler_account_id = "123456789012"
+  scheduler_account_id = "970526142943"
 
   tags = {
     "Environment" = "Development"

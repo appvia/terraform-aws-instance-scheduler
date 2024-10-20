@@ -122,6 +122,11 @@ variable "scheduler_frequency" {
   description = "The frequency at which the instance scheduler should run in minutes"
   type        = number
   default     = 60
+
+  validation {
+    condition     = contains([1, 2, 5, 10, 15, 30, 60], var.scheduler_frequency)
+    error_message = "The scheduler frequency must be 1, 2, 5, 10, 15, 30, or 60"
+  }
 }
 
 variable "scheduler_timezone" {

@@ -227,7 +227,8 @@ Resources:
           - "-Scheduler-Role"
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag} 
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       cfn_nag:
@@ -370,7 +371,8 @@ Resources:
           - "-ASG-Scheduling-Role"
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       cfn_nag:
@@ -434,7 +436,8 @@ Resources:
         Version: '2012-10-17'
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/RegisterSpokeAccountCustomResourceLambdaRole/Resource
@@ -501,7 +504,8 @@ Resources:
         Mode: Active
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     DependsOn:
     - RegisterSpokeAccountCustomResourceLambdaRoleDefaultPolicy3599775F
@@ -569,7 +573,8 @@ Resources:
       RetentionInDays: 365
       Tags:
 %{ for tag, value in tags ~}
-        ${tag}: ${value}
+      - Key: ${tag}
+        Value: ${value}
 %{ endfor ~}
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain

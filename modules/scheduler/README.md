@@ -86,6 +86,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_scheduler_tag_name"></a> [scheduler\_tag\_name](#input\_scheduler\_tag\_name) | The tag name used to identify the resources that should be scheduled | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
 | <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates | `string` | `"lza-instance-scheduler-templates"` | no |
 | <a name="input_cloudformation_hub_stack_capabilities"></a> [cloudformation\_hub\_stack\_capabilities](#input\_cloudformation\_hub\_stack\_capabilities) | The capabilities required for the cloudformation stack in the hub account | `list(string)` | <pre>[<br/>  "CAPABILITY_NAMED_IAM",<br/>  "CAPABILITY_AUTO_EXPAND",<br/>  "CAPABILITY_IAM"<br/>]</pre> | no |
@@ -103,18 +104,17 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_enable_rds_snapshot"></a> [enable\_rds\_snapshot](#input\_enable\_rds\_snapshot) | Whether RDS instances should have snapshots created on stop | `bool` | `false` | no |
 | <a name="input_enable_scheduler"></a> [enable\_scheduler](#input\_enable\_scheduler) | Whether the instance scheduler should be enabled | `bool` | `true` | no |
 | <a name="input_enable_ssm_maintenance_windows"></a> [enable\_ssm\_maintenance\_windows](#input\_enable\_ssm\_maintenance\_windows) | Whether EC2 instances should be managed by SSM Maintenance Windows | `bool` | `false` | no |
-| <a name="input_instance_scheduler_asg_rule_prefix"></a> [instance\_scheduler\_asg\_rule\_prefix](#input\_instance\_scheduler\_asg\_rule\_prefix) | The prefix used to identify the AutoScaling Group scheduled actions | `string` | `"is-"` | no |
-| <a name="input_instance_scheduler_asg_tag_key"></a> [instance\_scheduler\_asg\_tag\_key](#input\_instance\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
-| <a name="input_instance_scheduler_frequency"></a> [instance\_scheduler\_frequency](#input\_instance\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |
-| <a name="input_instance_scheduler_log_group_retention"></a> [instance\_scheduler\_log\_group\_retention](#input\_instance\_scheduler\_log\_group\_retention) | The retention period for the instance scheduler log group | `string` | `"7"` | no |
-| <a name="input_instance_scheduler_organizational_units"></a> [instance\_scheduler\_organizational\_units](#input\_instance\_scheduler\_organizational\_units) | A list of organizations units where the scheduler should permit registration | `map(string)` | `{}` | no |
-| <a name="input_instance_scheduler_regions"></a> [instance\_scheduler\_regions](#input\_instance\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
-| <a name="input_instance_scheduler_start_tags"></a> [instance\_scheduler\_start\_tags](#input\_instance\_scheduler\_start\_tags) | The tags used to identify the resources that should be started | `string` | `"InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
-| <a name="input_instance_scheduler_stop_tags"></a> [instance\_scheduler\_stop\_tags](#input\_instance\_scheduler\_stop\_tags) | The tags used to identify the resources that should be stopped | `string` | `"InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
-| <a name="input_instance_scheduler_tag_name"></a> [instance\_scheduler\_tag\_name](#input\_instance\_scheduler\_tag\_name) | The tag name used to identify the resources that should be scheduled | `string` | `"Schedule"` | no |
-| <a name="input_instance_scheduler_timezone"></a> [instance\_scheduler\_timezone](#input\_instance\_scheduler\_timezone) | The default timezone for the instance scheduler | `string` | `"UTC"` | no |
 | <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
 | <a name="input_organizational_id"></a> [organizational\_id](#input\_organizational\_id) | The organizational id of the aws estate, used to permit member accounts retrieving the cloudformation templates | `string` | `null` | no |
+| <a name="input_scheduler_asg_rule_prefix"></a> [scheduler\_asg\_rule\_prefix](#input\_scheduler\_asg\_rule\_prefix) | The prefix used to identify the AutoScaling Group scheduled actions | `string` | `"is-"` | no |
+| <a name="input_scheduler_asg_tag_key"></a> [scheduler\_asg\_tag\_key](#input\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
+| <a name="input_scheduler_frequency"></a> [scheduler\_frequency](#input\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |
+| <a name="input_scheduler_log_group_retention"></a> [scheduler\_log\_group\_retention](#input\_scheduler\_log\_group\_retention) | The retention period for the instance scheduler log group | `string` | `"7"` | no |
+| <a name="input_scheduler_organizations_ids"></a> [scheduler\_organizations\_ids](#input\_scheduler\_organizations\_ids) | A list of organizations ids that are permitted to use the scheduler | `list(string)` | `[]` | no |
+| <a name="input_scheduler_regions"></a> [scheduler\_regions](#input\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
+| <a name="input_scheduler_start_tags"></a> [scheduler\_start\_tags](#input\_scheduler\_start\_tags) | The tags used to identify the resources that should be started | `string` | `"InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
+| <a name="input_scheduler_stop_tags"></a> [scheduler\_stop\_tags](#input\_scheduler\_stop\_tags) | The tags used to identify the resources that should be stopped | `string` | `"InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
+| <a name="input_scheduler_timezone"></a> [scheduler\_timezone](#input\_scheduler\_timezone) | The default timezone for the instance scheduler | `string` | `"UTC"` | no |
 
 ## Outputs
 
