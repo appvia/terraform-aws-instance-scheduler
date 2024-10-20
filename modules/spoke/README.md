@@ -57,7 +57,6 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_region"></a> [region](#input\_region) | The region in which the resources should be created | `string` | n/a | yes |
 | <a name="input_scheduler_account_id"></a> [scheduler\_account\_id](#input\_scheduler\_account\_id) | The account id of where the orchcastrator is running | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
 | <a name="input_cloudformation_spoke_stack_name"></a> [cloudformation\_spoke\_stack\_name](#input\_cloudformation\_spoke\_stack\_name) | The name of the cloudformation stack in the spoke accounts | `string` | `"lza-instance-scheduler-spoke"` | no |
@@ -66,6 +65,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_enable_standalone"></a> [enable\_standalone](#input\_enable\_standalone) | Whether the stack should be standalone | `bool` | `true` | no |
 | <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
 | <a name="input_organizational_units"></a> [organizational\_units](#input\_organizational\_units) | The organizational units to deploy the stack to (when using a stackset) | `map(string)` | `{}` | no |
+| <a name="input_region"></a> [region](#input\_region) | The region in which the resources should be created | `string` | `null` | no |
 
 ## Outputs
 
