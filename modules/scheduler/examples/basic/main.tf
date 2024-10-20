@@ -20,6 +20,7 @@ module "spoke" {
   enable_rds_snapshot             = false
   enable_scheduler                = true
 
+  ## The organizational units that are permitted to use the scheduler 
   instance_scheduler_organizational_units = {
     "sandbox" = "ou-1tbg-i772jxv5"
   }
