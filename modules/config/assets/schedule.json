@@ -2,14 +2,19 @@
   "type": {
     "S": "schedule"
   },
-  %{ if periods != null ~}} 
+  %{ if periods != null ~}
   "periods": {
-    "L": ${ jsonencode(periods) }
+    "SS": ${ jsonencode(periods) }
   },
   %{ endif ~}
   %{ if override_status != null ~}
   "override_status": {
     "S": "${ override_status }"
+  },
+  %{ endif ~}
+  %{ if timezone != null ~}
+  "timezone": {
+    "S": "${ timezone }"
   },
   %{ endif ~}
   "description": {
