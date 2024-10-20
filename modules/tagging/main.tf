@@ -48,7 +48,7 @@ module "lambda_function" {
   handler        = "lambda_function.lambda_handler"
   memory_size    = var.lambda_memory_size
   runtime        = "python3.9"
-  source_path    = format("%s/assets/function/%s.py", path.module, each.key)
+  source_path    = format("%s/assets/functions/%s.py", path.module, each.key)
   tags           = var.tags
   timeout        = var.lambda_timeout
 

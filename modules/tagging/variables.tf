@@ -12,6 +12,42 @@ variable "eventbridge_rule_name_prefix" {
   default     = "lza-scheduler-tagging"
 }
 
+variable "enable_autoscaling" {
+  description = "Whether autoscaling groups should be tagged"
+  type        = bool
+  default     = false
+}
+
+variable "enable_ec2" {
+  description = "Whether EC2 instances should be tagged"
+  type        = bool
+  default     = false
+}
+
+variable "enable_rds" {
+  description = "Whether RDS instances should be tagged"
+  type        = bool
+  default     = false
+}
+
+variable "enable_documentdb" {
+  description = "Whether DocumentDB clusters should be tagged"
+  type        = bool
+  default     = false
+}
+
+variable "enable_aurora" {
+  description = "Whether Aurora clusters should be tagged"
+  type        = bool
+  default     = false
+}
+
+variable "enable_neptune" {
+  description = "Whether Neptune clusters should be tagged"
+  type        = bool
+  default     = false
+}
+
 variable "schedule" {
   description = "The schedule expression that will trigger the lambda function"
   type        = string
@@ -65,11 +101,9 @@ variable "scheduled_tag_value" {
   type        = string
 }
 
-variable "autoscaling_groups" {
+variable "autoscaling" {
   description = "Configuration for the autoscaling groups to tag"
   type = object({
-    enable = optional(bool, false)
-    # Indicates whether the default tags should be applied to the resources
     excluded_tags = optional(list(string), [])
     # List of tags on resources that should be excluded from the tagging process
     schedule = optional(string, null)
@@ -84,11 +118,9 @@ variable "autoscaling_groups" {
   }
 }
 
-variable "ec2_instances" {
+variable "ec2" {
   description = "Configuration for the EC2 instances to tag"
   type = object({
-    enable = optional(bool, false)
-    # Indicates whether the default tags should be applied to the resources
     excluded_tags = optional(list(string), [])
     # List of tags on resources that should be excluded from the tagging process
     schedule = optional(string, null)
@@ -99,49 +131,51 @@ variable "ec2_instances" {
   }
 }
 
-variable "rds_instances" {
+variable "documentdb" {
+  description = "Configuration for the DocumentDB clusters to tag"
+  type = object({
+    excluded_tags = optional(list(string), [])
+    # List of tags on resources that should be excluded from the tagging process
+    schedule = optional(string, null)
+    # Override the default schedule if provided
+  })
+  default = {
+    enable = false
+  }
+}
+
+variable "aurora" {
+  description = "Configuration for the Aurora clusters to tag"
+  type = object({
+    excluded_tags = optional(list(string), [])
+    # List of tags on resources that should be excluded from the tagging process
+    schedule = optional(string, null)
+    # Override the default schedule if provided
+  })
+  default = {
+  }
+}
+
+variable "rds" {
   description = "Configuration for the RDS instances to tag"
   type = object({
-    enable = optional(bool, false)
-    # Indicates whether the default tags should be applied to the resources
     excluded_tags = optional(list(string), [])
     # List of tags on resources that should be excluded from the tagging process
     schedule = optional(string, null)
     # Override the default schedule if provided
   })
-  default = {
-    enable = false
-  }
+  default = {}
 }
 
-variable "rds_clusters" {
-  description = "Configuration for the RDS clusters to tag"
-  type = object({
-    enable = optional(bool, false)
-    # Indicates whether the default tags should be applied to the resources
-    excluded_tags = optional(list(string), [])
-    # List of tags on resources that should be excluded from the tagging process
-    schedule = optional(string, null)
-    # Override the default schedule if provided
-  })
-  default = {
-    enable = false
-  }
-}
-
-variable "neptune_clusters" {
+variable "neptune" {
   description = "Configuration for the Neptune clusters to tag"
   type = object({
-    enable = optional(bool, false)
-    # Indicates whether the default tags should be applied to the resources
     excluded_tags = optional(list(string), [])
     # List of tags on resources that should be excluded from the tagging process
     schedule = optional(string, null)
     # Override the default schedule if provided
   })
-  default = {
-    enable = false
-  }
+  default = {}
 }
 
 variable "tags" {

@@ -3,13 +3,36 @@ locals {
   ## The account id of the scheduler account 
   account_id = data.aws_caller_identity.current.account_id
 
-  ## A mpa of the resources which are going to be tagged 
+  ## A map of the resources which are going to be tagged - we could 
+  ## probably reduce this somewhat
   resources_in_scope_all = merge({
-    "autoscaling_groups" : var.autoscaling_groups.enable ? {
-      "tag_name" : var.autoscaling_groups.scheduled_tag_name ? var.autoscaling_groups.scheduled_tag_name : var.scheduled_tag_name,
-      "tag_value" : var.autoscaling_groups.scheduled_tag_value ? var.autoscaling_groups.scheduled_tag_value : var.scheduled_tag_value,
-      "schedule" : var.autoscaling_groups.schedule ? var.autoscaling_groups.schedule : var.schedule
-      "excluded_tags" : var.autoscaling_groups.excluded_tags
+    "aurora" : var.enable_aurora ? {
+      "tag_name" : var.scheduled_tag_name,
+      "tag_value" : var.scheduled_tag_value,
+      "schedule" : var.aurora.schedule ? var.aurora.schedule : var.schedule,
+      "excluded_tags" : var.aurora.excluded_tags
+      "execution_policy" : jsonencode({
+        "Version" : "2012-10-17",
+        "Statement" : [
+          {
+            "Sid" : "AuroraClusterTagging",
+            "Effect" : "Allow",
+            "Action" : [
+              "rds:DescribeDBClusters",
+              "rds:ListTagsForResource",
+              "rds:AddTagsToResource"
+            ],
+            "Resource" : "*"
+          }
+        ]
+      })
+    } : null,
+
+    "autoscaling" : var.enable_autoscaling ? {
+      "tag_name" : var.autoscaling.scheduled_tag_name ? var.autoscaling.scheduled_tag_name : var.scheduled_tag_name,
+      "tag_value" : var.autoscaling.scheduled_tag_value ? var.autoscaling.scheduled_tag_value : var.scheduled_tag_value,
+      "schedule" : var.autoscaling.schedule ? var.autoscaling.schedule : var.schedule
+      "excluded_tags" : var.autoscaling.excluded_tags
       "execution_policy" : jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
@@ -27,11 +50,11 @@ locals {
       })
     } : null,
 
-    "ec2" : var.ec2_instances.enable ? {
+    "ec2" : var.enable_ec2 ? {
       "tag_name" : var.scheduled_tag_name,
       "tag_value" : var.scheduled_tag_value
-      "schedule" : var.ec2_instances.schedule ? var.ec2_instances.schedule : var.schedule,
-      "excluded_tags" : var.ec2_instances.excluded_tags
+      "schedule" : var.ec2.schedule ? var.ec2.schedule : var.schedule,
+      "excluded_tags" : var.ec2.excluded_tags
       "execution_policy" : jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
@@ -48,7 +71,7 @@ locals {
       })
     } : null,
 
-    "rds" : var.rds.enable ? {
+    "rds" : var.enable_rds ? {
       "tag_name" : var.scheduled_tag_name,
       "tag_value" : var.scheduled_tag_value,
       "schedule" : var.rds.schedule ? var.rds.schedule : var.schedule,
@@ -70,21 +93,21 @@ locals {
       })
     } : null,
 
-    "rds_clusters" : var.rds_clusters.enable ? {
+    "documentdb" : var.enable_documentdb ? {
       "tag_name" : var.scheduled_tag_name,
       "tag_value" : var.scheduled_tag_value,
-      "schedule" : var.rds_clusters.schedule ? var.rds_clusters.schedule : var.schedule,
-      "excluded_tags" : var.rds_clusters.excluded_tags
+      "schedule" : var.documentdb.schedule ? var.documentdb.schedule : var.schedule,
+      "excluded_tags" : var.documentdb.excluded_tags
       "execution_policy" : jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
           {
-            "Sid" : "RDSClusterTagging",
+            "Sid" : "DocumentDBClusterTagging",
             "Effect" : "Allow",
             "Action" : [
-              "rds:DescribeDBClusters",
-              "rds:ListTagsForResource",
-              "rds:AddTagsToResource"
+              "documentdb:DescribeDBClusters",
+              "documentdb:ListTagsForResource",
+              "documentdb:AddTagsToResource"
             ],
             "Resource" : "*"
           }
@@ -92,7 +115,7 @@ locals {
       })
     } : null,
 
-    "neptune" : var.neptune.enable ? {
+    "neptune" : var.enable_neptune ? {
       "tag_name" : var.scheduled_tag_name,
       "tag_value" : var.scheduled_tag_value,
       "schedule" : var.neptune.schedule ? var.neptune.schedule : var.schedule,
