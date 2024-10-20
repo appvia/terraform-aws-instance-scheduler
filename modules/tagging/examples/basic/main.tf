@@ -22,4 +22,11 @@ module "tagging_enforcement" {
   autoscaling = {
     schedule = "cron(0 8 * * ? *)"
   }
+
+  tags = {
+    Environment = "Production"
+    Owner       = "Solutions"
+    Product     = "LandingZone"
+    GitRepo     = "https://github.com/appvia/terraform-aws-instance-scheduler"
+  }
 }

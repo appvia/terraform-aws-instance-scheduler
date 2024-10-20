@@ -1,5 +1,4 @@
 
-
 variable "lambda_function_name_prefix" {
   description = "The name of the lambda function that will be created"
   type        = string

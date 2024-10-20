@@ -17,12 +17,6 @@ variable "cloudformation_bucket_name" {
   default     = "lza-instance-scheduler-templates"
 }
 
-variable "organizational_id" {
-  description = "The organizational id of the aws estate, used to permit member accounts retrieving the cloudformation templates"
-  type        = string
-  default     = null
-}
-
 variable "enable_organizations" {
   description = "Whether the instance scheduler should integrate with AWS Organizations"
   type        = bool

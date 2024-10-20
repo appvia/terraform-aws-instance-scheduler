@@ -20,27 +20,6 @@ data "aws_iam_policy_document" "bucket" {
       identifiers = [format("arn:aws:iam::%s:root", local.account_id)]
     }
   }
-
-  ## If provided allow the aws organization access to retrieve the 
-  ## cloudformation templates 
-  dynamic "statement" {
-    for_each = var.organizational_id != null ? [1] : []
-    content {
-      actions   = ["s3:GetObject", "s3:ListBucket"]
-      resources = [local.bucket_arn, "${local.bucket_arn}/*"]
-
-      principals {
-        type        = "*"
-        identifiers = ["*"]
-      }
-
-      condition {
-        test     = "StringEquals"
-        variable = "aws:PrincipalOrgID"
-        values   = [var.organizational_id]
-      }
-    }
-  }
 }
 
 ## Provision an s3 bucket to store the cloudformation templates 

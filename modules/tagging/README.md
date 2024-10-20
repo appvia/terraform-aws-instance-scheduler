@@ -71,57 +71,49 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_s3_bucket"></a> [s3\_bucket](#module\_s3\_bucket) | terraform-aws-modules/s3-bucket/aws | 4.2.1 |
+| <a name="module_lambda_function"></a> [lambda\_function](#module\_lambda\_function) | terraform-aws-modules/lambda/aws | 7.14.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [aws_cloudformation_stack.hub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack) | resource |
-| [aws_s3_object.instance_scheduler_template](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_object) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
-| [aws_iam_policy_document.bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_cloudwatch_event_rule.invoke_lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
+| [aws_cloudwatch_event_target.lambda_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
+| [aws_iam_policy.lambda_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_role.lambda_execution_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy_attachment.lambda_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_lambda_permission.allow_eventbridge_invoke](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_scheduler_tag_name"></a> [scheduler\_tag\_name](#input\_scheduler\_tag\_name) | The tag name used to identify the resources that should be scheduled | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
-| <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates | `string` | `"lza-instance-scheduler-templates"` | no |
-| <a name="input_cloudformation_hub_stack_capabilities"></a> [cloudformation\_hub\_stack\_capabilities](#input\_cloudformation\_hub\_stack\_capabilities) | The capabilities required for the cloudformation stack in the hub account | `list(string)` | <pre>[<br/>  "CAPABILITY_NAMED_IAM",<br/>  "CAPABILITY_AUTO_EXPAND",<br/>  "CAPABILITY_IAM"<br/>]</pre> | no |
-| <a name="input_cloudformation_hub_stack_name"></a> [cloudformation\_hub\_stack\_name](#input\_cloudformation\_hub\_stack\_name) | The name of the cloudformation stack in the hub account | `string` | `"lza-instance-scheduler-hub"` | no |
-| <a name="input_enable_asg_scheduler"></a> [enable\_asg\_scheduler](#input\_enable\_asg\_scheduler) | Whether AutoScaling Groups should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_cloudwatch_dashboard"></a> [enable\_cloudwatch\_dashboard](#input\_enable\_cloudwatch\_dashboard) | Whether a CloudWatch dashboard used to monitor the scheduler should be created | `bool` | `false` | no |
-| <a name="input_enable_cloudwatch_debug_logging"></a> [enable\_cloudwatch\_debug\_logging](#input\_enable\_cloudwatch\_debug\_logging) | Whether debug logging should be enabled for the instance scheduler | `bool` | `false` | no |
-| <a name="input_enable_docdb_scheduler"></a> [enable\_docdb\_scheduler](#input\_enable\_docdb\_scheduler) | Whether DocumentDB clusters should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_ec2_scheduler"></a> [enable\_ec2\_scheduler](#input\_enable\_ec2\_scheduler) | Whether EC2 instances should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_hub_account_scheduler"></a> [enable\_hub\_account\_scheduler](#input\_enable\_hub\_account\_scheduler) | Whether the hub account should be under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_neptune_scheduler"></a> [enable\_neptune\_scheduler](#input\_enable\_neptune\_scheduler) | Whether Neptune clusters should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_organizations"></a> [enable\_organizations](#input\_enable\_organizations) | Whether the instance scheduler should integrate with AWS Organizations | `bool` | `true` | no |
-| <a name="input_enable_rds_cluster_scheduler"></a> [enable\_rds\_cluster\_scheduler](#input\_enable\_rds\_cluster\_scheduler) | Whether RDS clusters should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_rds_scheduler"></a> [enable\_rds\_scheduler](#input\_enable\_rds\_scheduler) | Whether RDS instances should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_rds_snapshot"></a> [enable\_rds\_snapshot](#input\_enable\_rds\_snapshot) | Whether RDS instances should have snapshots created on stop | `bool` | `false` | no |
-| <a name="input_enable_scheduler"></a> [enable\_scheduler](#input\_enable\_scheduler) | Whether the instance scheduler should be enabled | `bool` | `true` | no |
-| <a name="input_enable_ssm_maintenance_windows"></a> [enable\_ssm\_maintenance\_windows](#input\_enable\_ssm\_maintenance\_windows) | Whether EC2 instances should be managed by SSM Maintenance Windows | `bool` | `false` | no |
-| <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
-| <a name="input_organizational_id"></a> [organizational\_id](#input\_organizational\_id) | The organizational id of the aws estate, used to permit member accounts retrieving the cloudformation templates | `string` | `null` | no |
-| <a name="input_scheduler_asg_rule_prefix"></a> [scheduler\_asg\_rule\_prefix](#input\_scheduler\_asg\_rule\_prefix) | The prefix used to identify the AutoScaling Group scheduled actions | `string` | `"is-"` | no |
-| <a name="input_scheduler_asg_tag_key"></a> [scheduler\_asg\_tag\_key](#input\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
-| <a name="input_scheduler_frequency"></a> [scheduler\_frequency](#input\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |
-| <a name="input_scheduler_log_group_retention"></a> [scheduler\_log\_group\_retention](#input\_scheduler\_log\_group\_retention) | The retention period for the instance scheduler log group | `string` | `"7"` | no |
-| <a name="input_scheduler_organizations_ids"></a> [scheduler\_organizations\_ids](#input\_scheduler\_organizations\_ids) | A list of organizations ids that are permitted to use the scheduler | `list(string)` | `[]` | no |
-| <a name="input_scheduler_regions"></a> [scheduler\_regions](#input\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
-| <a name="input_scheduler_start_tags"></a> [scheduler\_start\_tags](#input\_scheduler\_start\_tags) | The tags used to identify the resources that should be started | `string` | `"InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
-| <a name="input_scheduler_stop_tags"></a> [scheduler\_stop\_tags](#input\_scheduler\_stop\_tags) | The tags used to identify the resources that should be stopped | `string` | `"InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
-| <a name="input_scheduler_timezone"></a> [scheduler\_timezone](#input\_scheduler\_timezone) | The default timezone for the instance scheduler | `string` | `"UTC"` | no |
+| <a name="input_scheduled_tag_value"></a> [scheduled\_tag\_value](#input\_scheduled\_tag\_value) | The value of the tag that will be applied to resources | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to apply to the resources | `map(string)` | n/a | yes |
+| <a name="input_aurora"></a> [aurora](#input\_aurora) | Configuration for the Aurora clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
+| <a name="input_autoscaling"></a> [autoscaling](#input\_autoscaling) | Configuration for the autoscaling groups to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>    scheduled_tag_name = optional(string, null)<br/>    # Override the default scheduled_tag_name if provided<br/>    scheduled_tag_value = optional(string, null)<br/>    # Override the default scheduled_tag_value if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
+| <a name="input_documentdb"></a> [documentdb](#input\_documentdb) | Configuration for the DocumentDB clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
+| <a name="input_ec2"></a> [ec2](#input\_ec2) | Configuration for the EC2 instances to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
+| <a name="input_enable_aurora"></a> [enable\_aurora](#input\_enable\_aurora) | Whether Aurora clusters should be tagged | `bool` | `false` | no |
+| <a name="input_enable_autoscaling"></a> [enable\_autoscaling](#input\_enable\_autoscaling) | Whether autoscaling groups should be tagged | `bool` | `false` | no |
+| <a name="input_enable_debug"></a> [enable\_debug](#input\_enable\_debug) | Whether debug logging should be enabled for the lambda function | `bool` | `false` | no |
+| <a name="input_enable_documentdb"></a> [enable\_documentdb](#input\_enable\_documentdb) | Whether DocumentDB clusters should be tagged | `bool` | `false` | no |
+| <a name="input_enable_ec2"></a> [enable\_ec2](#input\_enable\_ec2) | Whether EC2 instances should be tagged | `bool` | `false` | no |
+| <a name="input_enable_neptune"></a> [enable\_neptune](#input\_enable\_neptune) | Whether Neptune clusters should be tagged | `bool` | `false` | no |
+| <a name="input_enable_rds"></a> [enable\_rds](#input\_enable\_rds) | Whether RDS instances should be tagged | `bool` | `false` | no |
+| <a name="input_eventbridge_rule_name_prefix"></a> [eventbridge\_rule\_name\_prefix](#input\_eventbridge\_rule\_name\_prefix) | The name of the eventbridge rule that will trigger the lambda function | `string` | `"lza-scheduler-tagging"` | no |
+| <a name="input_lambda_execution_role_name_prefix"></a> [lambda\_execution\_role\_name\_prefix](#input\_lambda\_execution\_role\_name\_prefix) | The name of the IAM role that will be created for the lambda function | `string` | `"lza-scheduler-tagging"` | no |
+| <a name="input_lambda_function_name_prefix"></a> [lambda\_function\_name\_prefix](#input\_lambda\_function\_name\_prefix) | The name of the lambda function that will be created | `string` | `"lza-scheduler-tagging"` | no |
+| <a name="input_lambda_log_retention"></a> [lambda\_log\_retention](#input\_lambda\_log\_retention) | The number of days to retain the logs for the lambda function | `number` | `7` | no |
+| <a name="input_lambda_memory_size"></a> [lambda\_memory\_size](#input\_lambda\_memory\_size) | The amount of memory in MB allocated to the lambda function | `number` | `128` | no |
+| <a name="input_lambda_policy_name_prefix"></a> [lambda\_policy\_name\_prefix](#input\_lambda\_policy\_name\_prefix) | The name of the IAM policy that will be created for the lambda function | `string` | `"lza-scheduler-tagging"` | no |
+| <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | The amount of time in seconds before the lambda function times out | `number` | `10` | no |
+| <a name="input_neptune"></a> [neptune](#input\_neptune) | Configuration for the Neptune clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
+| <a name="input_rds"></a> [rds](#input\_rds) | Configuration for the RDS instances to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
+| <a name="input_schedule"></a> [schedule](#input\_schedule) | The schedule expression that will trigger the lambda function | `string` | `"cron(0/15 * * * ? *)"` | no |
+| <a name="input_scheduled_tag_name"></a> [scheduled\_tag\_name](#input\_scheduled\_tag\_name) | The name of the tag that will be applied to resources | `string` | `"Schedule"` | no |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_account_id"></a> [account\_id](#output\_account\_id) | The account id of the scheduler |
-| <a name="output_scheduler_dynamodb_table"></a> [scheduler\_dynamodb\_table](#output\_scheduler\_dynamodb\_table) | The DynamoDB table to use for the scheduler |
-| <a name="output_scheduler_role_arn"></a> [scheduler\_role\_arn](#output\_scheduler\_role\_arn) | The role arn of the scheduler |
-| <a name="output_scheduler_sns_issue_topic_arn"></a> [scheduler\_sns\_issue\_topic\_arn](#output\_scheduler\_sns\_issue\_topic\_arn) | The SNS topic to use for the scheduler |
+No outputs.
 <!-- END_TF_DOCS -->

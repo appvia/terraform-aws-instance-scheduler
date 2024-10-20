@@ -42,6 +42,10 @@ The following provides an example of how to use the module,
 - Next we can use a stackset, or stack to deploy the resources to the target accounts (spokes).
 - Ensure the resources in the account was tagged with the `var.scheduler_tag_name` and the value points to a known schedule definition.
 
+### Producing the Scheduler
+
+You can use the following example to deploy the scheduler,
+
 ```hcl
 locals {
   tags = {
@@ -82,7 +86,15 @@ module "scheduler" {
   ## this detail in the AWS Organizations console
   scheduler_organizations_ids = ["o-7enwqkxxxx"]
 }
+```
 
+### Producing the Spokes
+
+The `spoke` module can be used to deploy the resources to the target accounts, and thus enabling them to be managed by the scheduler. Once the spoke has been deployed, it will register the account with the scheduler and the resources will be managed based on the schedules and periods defined. Currently two modules are supported for the deployment, stackset or individual stack.
+
+To deploy to multiple accounts, you can use the `stackset` module. The following example demonstrates how to deploy the spoke using `var.enable_stackset`;
+
+```hcl
 module "stackset_spoke" {
   source = "github.com/appvia/terraform-aws-instance-scheduler//modules/spoke?ref=main"
 
@@ -98,18 +110,42 @@ module "stackset_spoke" {
     "development"    = "ou-123456789013"
   }
 }
+```
 
+To deploy to a single account, you can use the `standalone` module. The following example demonstrates how to deploy the spoke using `var.enable_standalone`;
+
+```hcl
+module "stackset_spoke" {
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/spoke?ref=main"
+
+  enable_organizations = true
+  enable_standalone    = true
+  scheduler_account_id = "123456789012"
+  tags                 = local.tags
+
+  organizational_units = {
+    "infrastructure" = "ou-123456789012"
+    "development"    = "ou-123456789013"
+  }
+}
+```
+
+### Configuring the Schedules
+
+The Instance Scheduler provides a python CLI to manage the schedules and periods. The following example demonstrates how to configure the schedules and periods using the `config` module, and define them as IaC. This definition would be place into the same codebase as the scheduler definition, as it uses the output from the module.
+
+```hcl
 module "config" {
-  source = "../../../config"
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/spoke?ref=main"
 
   dyanmodb_table_name = module.scheduler.scheduler_dynamodb_table
 
   periods = {
     "uk_working_hours" = {
       description = "UK Working Hours"
-      start_time  = "06:00"
-      end_time    = "19:30"
-      weekdays    = ["mon-fri"]
+      start_time = "06:00"
+      end_time = "19:30"
+      weekdays = ["mon-fri"]
     }
   }
 
@@ -125,6 +161,41 @@ module "config" {
   ]
 }
 ```
+
+### Tagging Module
+
+For a complete operational understanding of the Instance Scheduler please refer to [AWS Instance Scheduler](https://docs.aws.amazon.com/solutions/latest/instance-scheduler-on-aws/welcome.html) implementation guide, but essentially for the resources under scope for scheduler, it will discovery those whom have the `var.scheduler_tag_name` tag, and use the value of this tag as a lookup in the schedules defined in the configuration. If will then take the appropriate action/s based on the schedule. For resources NOT tagged with the `var.scheduler_tag_name`, these will be ignored from the scheduling process all together.
+
+While we have enforcement of tagging at the IAM boundary level, and service control policies, we found it difficult to enforce these across the board for various reasons, so we ended up adding a `tagging` module to help.
+
+The following example demonstrates how to enforce tagging, using a set of lambda functions which on interval will discovery the resources in the account, filtering where configured, and tagging the rest with the appropriate schedule tags.
+
+```hcl
+module "tagging" {
+  source = "../../"
+
+  ## The tag name
+  scheduled_tag_name = "Schedule"
+  ## The default tag value
+  scheduled_tag_value = "uk_office_hours"
+  ## Cron for every 15 minutes
+  schedule = "rate(15 minutes)"
+
+  ## Enable tagging for the following resources
+  enable_autoscaling = true
+  enable_ec2         = true
+  enable_rds         = true
+
+  autoscaling = {
+    # Override the default schedule
+    schedule = "rate(1 hour)"
+  }
+
+  rds = {
+    # Override the default schedule
+    schedule = "rate(1 hour)"
+  }
+}
 
 ## Update Documentation
 
@@ -161,3 +232,4 @@ No inputs.
 
 No outputs.
 <!-- END_TF_DOCS -->
+```

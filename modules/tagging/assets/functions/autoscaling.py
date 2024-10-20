@@ -52,7 +52,7 @@ def lambda_handler(event, context):
                             'ResourceType': 'auto-scaling-group',
                             'Key': tag_name,
                             'Value': tag_value,
-                            'PropagateAtLaunch': True
+                            'PropagateAtLaunch': False
                         }
                     ]
                 )
