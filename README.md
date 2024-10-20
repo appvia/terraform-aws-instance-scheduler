@@ -196,6 +196,7 @@ module "tagging" {
     schedule = "rate(1 hour)"
   }
 }
+```
 
 ## Update Documentation
 
@@ -232,4 +233,7 @@ No inputs.
 
 No outputs.
 <!-- END_TF_DOCS -->
+
+```
+
 ```
