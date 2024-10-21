@@ -93,7 +93,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_cloudformation_hub_stack_name"></a> [cloudformation\_hub\_stack\_name](#input\_cloudformation\_hub\_stack\_name) | The name of the cloudformation stack in the hub account | `string` | `"lza-instance-scheduler-hub"` | no |
 | <a name="input_enable_asg_scheduler"></a> [enable\_asg\_scheduler](#input\_enable\_asg\_scheduler) | Whether AutoScaling Groups should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_cloudwatch_dashboard"></a> [enable\_cloudwatch\_dashboard](#input\_enable\_cloudwatch\_dashboard) | Whether a CloudWatch dashboard used to monitor the scheduler should be created | `bool` | `false` | no |
-| <a name="input_enable_cloudwatch_debug_logging"></a> [enable\_cloudwatch\_debug\_logging](#input\_enable\_cloudwatch\_debug\_logging) | Whether debug logging should be enabled for the instance scheduler | `bool` | `false` | no |
+| <a name="input_enable_debug"></a> [enable\_debug](#input\_enable\_debug) | Whether debug logging should be enabled for the instance scheduler | `bool` | `false` | no |
 | <a name="input_enable_docdb_scheduler"></a> [enable\_docdb\_scheduler](#input\_enable\_docdb\_scheduler) | Whether DocumentDB clusters should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_ec2_scheduler"></a> [enable\_ec2\_scheduler](#input\_enable\_ec2\_scheduler) | Whether EC2 instances should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_hub_account_scheduler"></a> [enable\_hub\_account\_scheduler](#input\_enable\_hub\_account\_scheduler) | Whether the hub account should be under the remit of the scheduler | `bool` | `true` | no |

@@ -83,7 +83,7 @@ variable "enable_cloudwatch_dashboard" {
   default     = false
 }
 
-variable "enable_cloudwatch_debug_logging" {
+variable "enable_debug" {
   description = "Whether debug logging should be enabled for the instance scheduler"
   type        = bool
   default     = false

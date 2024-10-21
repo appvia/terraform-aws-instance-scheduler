@@ -30,7 +30,7 @@ locals {
     StartedTags                 = var.scheduler_start_tags
     StoppedTags                 = var.scheduler_stop_tags
     TagName                     = var.scheduler_tag_name
-    Trace                       = var.enable_cloudwatch_debug_logging ? "Yes" : "No"
+    Trace                       = var.enable_debug ? "Yes" : "No"
     UsingAWSOrganizations       = var.enable_organizations ? "Yes" : "No"
   }
 }
