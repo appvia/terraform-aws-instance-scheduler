@@ -30,3 +30,4 @@ resource "aws_cloudformation_stack" "spoke" {
     tags = var.tags
   })
 }
+

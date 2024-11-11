@@ -89,13 +89,13 @@ variable "lambda_policy_name_prefix" {
   default     = "lza-scheduler-tagging"
 }
 
-variable "scheduled_tag_name" {
+variable "scheduler_tag_name" {
   description = "The name of the tag that will be applied to resources"
   type        = string
   default     = "Schedule"
 }
 
-variable "scheduled_tag_value" {
+variable "scheduler_tag_value" {
   description = "The value of the tag that will be applied to resources"
   type        = string
 }
@@ -107,10 +107,10 @@ variable "autoscaling" {
     # List of tags on resources that should be excluded from the tagging process
     schedule = optional(string, null)
     # Override the default schedule if provided
-    scheduled_tag_name = optional(string, null)
-    # Override the default scheduled_tag_name if provided
-    scheduled_tag_value = optional(string, null)
-    # Override the default scheduled_tag_value if provided
+    scheduler_tag_name = optional(string, null)
+    # Override the default scheduler_tag_name if provided
+    scheduler_tag_value = optional(string, null)
+    # Override the default scheduler_tag_value if provided
   })
   default = {
     enable = false

@@ -8,9 +8,9 @@ module "tagging_enforcement" {
   source = "../../"
 
   ## The tag name
-  scheduled_tag_name = "Schedule"
+  scheduler_tag_name = "Schedule"
   ## The default tag value 
-  scheduled_tag_value = "uk_office_hours"
+  scheduler_tag_value = "uk_office_hours"
   ## Cron for every 15 minutes
   schedule = "rate(15 minutes)"
 

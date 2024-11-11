@@ -195,23 +195,9 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 3. Run `terraform-docs markdown table --output-file ${PWD}/README.md --output-mode inject .`
 
 <!-- BEGIN_TF_DOCS -->
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-
 ## Providers
 
 No providers.
-
-## Modules
-
-No modules.
-
-## Resources
-
-No resources.
 
 ## Inputs
 

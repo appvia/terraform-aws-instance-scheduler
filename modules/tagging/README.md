@@ -54,44 +54,20 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 3. Run `terraform-docs markdown table --output-file ${PWD}/README.md --output-mode inject .`
 
 <!-- BEGIN_TF_DOCS -->
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.7 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
-
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0.0 |
 
-## Modules
-
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_lambda_function"></a> [lambda\_function](#module\_lambda\_function) | terraform-aws-modules/lambda/aws | 7.14.0 |
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [aws_cloudwatch_event_rule.invoke_lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
-| [aws_cloudwatch_event_target.lambda_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
-| [aws_iam_policy.lambda_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_role.lambda_execution_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy_attachment.lambda_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_lambda_permission.allow_eventbridge_invoke](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
-
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_scheduled_tag_value"></a> [scheduled\_tag\_value](#input\_scheduled\_tag\_value) | The value of the tag that will be applied to resources | `string` | n/a | yes |
+| <a name="input_scheduler_tag_value"></a> [scheduler\_tag\_value](#input\_scheduler\_tag\_value) | The value of the tag that will be applied to resources | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to apply to the resources | `map(string)` | n/a | yes |
 | <a name="input_aurora"></a> [aurora](#input\_aurora) | Configuration for the Aurora clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
-| <a name="input_autoscaling"></a> [autoscaling](#input\_autoscaling) | Configuration for the autoscaling groups to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>    scheduled_tag_name = optional(string, null)<br/>    # Override the default scheduled_tag_name if provided<br/>    scheduled_tag_value = optional(string, null)<br/>    # Override the default scheduled_tag_value if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
+| <a name="input_autoscaling"></a> [autoscaling](#input\_autoscaling) | Configuration for the autoscaling groups to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>    scheduler_tag_name = optional(string, null)<br/>    # Override the default scheduler_tag_name if provided<br/>    scheduler_tag_value = optional(string, null)<br/>    # Override the default scheduler_tag_value if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
 | <a name="input_documentdb"></a> [documentdb](#input\_documentdb) | Configuration for the DocumentDB clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
 | <a name="input_ec2"></a> [ec2](#input\_ec2) | Configuration for the EC2 instances to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
 | <a name="input_enable_aurora"></a> [enable\_aurora](#input\_enable\_aurora) | Whether Aurora clusters should be tagged | `bool` | `false` | no |
@@ -111,7 +87,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_neptune"></a> [neptune](#input\_neptune) | Configuration for the Neptune clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
 | <a name="input_rds"></a> [rds](#input\_rds) | Configuration for the RDS instances to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
 | <a name="input_schedule"></a> [schedule](#input\_schedule) | The schedule expression that will trigger the lambda function | `string` | `"cron(0/15 * * * ? *)"` | no |
-| <a name="input_scheduled_tag_name"></a> [scheduled\_tag\_name](#input\_scheduled\_tag\_name) | The name of the tag that will be applied to resources | `string` | `"Schedule"` | no |
+| <a name="input_scheduler_tag_name"></a> [scheduler\_tag\_name](#input\_scheduler\_tag\_name) | The name of the tag that will be applied to resources | `string` | `"Schedule"` | no |
 
 ## Outputs
 
