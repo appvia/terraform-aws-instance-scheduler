@@ -61,7 +61,7 @@ module "lambda_function" {
   ## Envionment variables for the Lambda function
   environment_variables = {
     DEBUG              = var.enable_debug ? "True" : "False"
-    EXCLUDE_TAG_KEYS   = each.value.excluded_tags
+    EXCLUDE_TAG_KEYS   = try(each.value.excluded_tags, "")
     SCHEDULE_TAG_NAME  = each.value.tag_name
     SCHEDULE_TAG_VALUE = each.value.tag_value
   }

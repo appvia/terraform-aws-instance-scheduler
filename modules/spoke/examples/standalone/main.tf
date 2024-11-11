@@ -21,3 +21,20 @@ module "standalone_spoke" {
     "GitRepo"     = "https://github.com/appvia/terraform-aws-instance-scheduler"
   }
 }
+
+## Ensure the resources are tagging correctly 
+module "tagging" {
+  source = "../../../tagging"
+
+  enable_autoscaling  = true
+  scheduler_tag_name  = "Schedule"
+  scheduler_tag_value = "uk_working_hours"
+  schedule            = "rate(5 minutes)"
+
+  tags = {
+    Environment = "Production"
+    Owner       = "Solutions"
+    Product     = "LandingZone"
+    GitRepo     = "https://github.com/appvia/terraform-aws-instance-scheduler"
+  }
+}
