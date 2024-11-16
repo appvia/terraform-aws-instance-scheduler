@@ -26,10 +26,12 @@ resource "aws_dynamodb_table_item" "schedules" {
   table_name = data.aws_dynamodb_table.table.name
 
   item = templatefile("${path.module}/assets/schedule.json", {
-    description     = each.value.description,
-    name            = each.key,
-    override_status = each.value.override_status,
-    periods         = each.value.periods,
-    timezone        = each.value.timezone,
+    description        = each.value.description,
+    enforced           = each.value.enforced,
+    name               = each.key,
+    override_status    = each.value.override_status,
+    periods            = each.value.periods,
+    stop_new_instances = each.value.stop_new_instances
+    timezone           = each.value.timezone,
   })
 }

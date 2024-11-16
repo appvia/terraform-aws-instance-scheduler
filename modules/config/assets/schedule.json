@@ -17,6 +17,16 @@
     "S": "${ timezone }"
   },
   %{ endif ~}
+  %{ if enforced != null ~}
+  "enforced": {
+    "s": ${ "${ enforced }" }
+  },
+  %{ endif ~}
+  %{ if stop_new_instances != null ~}
+  "stop_new_instances": {
+    "S": "${ stop_new_instances }" }
+  },
+  %{ endif ~}
   "description": {
     "S": "${ description }"
   },

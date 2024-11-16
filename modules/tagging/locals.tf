@@ -1,14 +1,19 @@
 
 locals {
+  ## A map of the resources which are going to be tagged 
+  resources_in_scope_all = {
+    for k, v in local.all_resources : k => v if v != null
+  }
+
   ## A map of the resources which are going to be tagged - we could 
   ## probably reduce this somewhat
-  resources_in_scope_all = merge({
-    "aurora" : var.enable_aurora ? {
-      "tag_name" : var.scheduler_tag_name,
-      "tag_value" : var.scheduler_tag_value,
-      "schedule" : var.aurora.schedule != null ? var.aurora.schedule : var.schedule,
-      "excluded_tags" : var.aurora.excluded_tags
-      "execution_policy" : jsonencode({
+  all_resources = merge({
+    aurora = var.enable_aurora ? {
+      tag_name      = coalesce(var.scheduler_tag_name, var.scheduler_tag_value)
+      tag_value     = coalesce(var.scheduler_tag_value, var.scheduler_tag_value)
+      schedule      = coalesce(var.aurora.schedule, var.schedule)
+      excluded_tags = coalesce(var.aurora.excluded_tags, [])
+      execution_policy = jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
           {
@@ -25,12 +30,12 @@ locals {
       })
     } : null,
 
-    autoscaling : var.enable_autoscaling == true ? {
-      tag_name : var.autoscaling.scheduler_tag_name != null ? var.autoscaling.scheduler_tag_name : var.scheduler_tag_name,
-      tag_value : var.autoscaling.scheduler_tag_value != null ? var.autoscaling.scheduler_tag_value : var.scheduler_tag_value,
-      schedule : var.autoscaling.schedule != null ? var.autoscaling.schedule : var.schedule
-      excluded_tags : var.autoscaling.excluded_tags
-      execution_policy : jsonencode({
+    autoscaling = var.enable_autoscaling ? {
+      tag_name      = coalesce(var.autoscaling.scheduler_tag_name, var.scheduler_tag_name)
+      tag_value     = coalesce(var.autoscaling.scheduler_tag_value, var.scheduler_tag_value)
+      schedule      = coalesce(var.autoscaling.schedule, var.schedule)
+      excluded_tags = coalesce(var.autoscaling.excluded_tags, [])
+      execution_policy = jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
           {
@@ -47,12 +52,12 @@ locals {
       })
     } : null,
 
-    "ec2" : var.enable_ec2 ? {
-      "tag_name" : var.scheduler_tag_name,
-      "tag_value" : var.scheduler_tag_value
-      "schedule" : var.ec2.schedule != null ? var.ec2.schedule : var.schedule,
-      "excluded_tags" : var.ec2.excluded_tags
-      "execution_policy" : jsonencode({
+    ec2 = var.enable_ec2 == true ? {
+      tag_name      = coalesce(var.scheduler_tag_name, var.scheduler_tag_name)
+      tag_value     = coalesce(var.scheduler_tag_value, var.scheduler_tag_value)
+      schedule      = coalesce(var.ec2.schedule, var.schedule)
+      excluded_tags = coalesce(var.ec2.excluded_tags, [])
+      execution_policy = jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
           {
@@ -68,12 +73,12 @@ locals {
       })
     } : null,
 
-    "rds" : var.enable_rds ? {
-      "tag_name" : var.scheduler_tag_name,
-      "tag_value" : var.scheduler_tag_value,
-      "schedule" : var.rds.schedule != null ? var.rds.schedule : var.schedule,
-      "excluded_tags" : var.rds.excluded_tags
-      "execution_policy" : jsonencode({
+    rds = var.enable_rds ? {
+      tag_name      = coalesce(var.scheduler_tag_name, var.scheduler_tag_value)
+      tag_value     = coalesce(var.scheduler_tag_value, var.scheduler_tag_value)
+      schedule      = coalesce(var.rds.schedule, var.schedule)
+      excluded_tags = coalesce(var.rds.excluded_tags, [])
+      execution_policy = jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
           {
@@ -90,12 +95,12 @@ locals {
       })
     } : null,
 
-    "documentdb" : var.enable_documentdb ? {
-      "tag_name" : var.scheduler_tag_name,
-      "tag_value" : var.scheduler_tag_value,
-      "schedule" : var.documentdb.schedule != null ? var.documentdb.schedule : var.schedule,
-      "excluded_tags" : var.documentdb.excluded_tags
-      "execution_policy" : jsonencode({
+    documentdb = var.enable_documentdb ? {
+      tag_name      = coalesce(var.scheduler_tag_name, var.scheduler_tag_value)
+      tag_value     = coalesce(var.scheduler_tag_value, var.scheduler_tag_value)
+      schedule      = coalesce(var.documentdb.schedule, var.schedule)
+      excluded_tags = coalesce(var.documentdb.excluded_tags, [])
+      execution_policy = jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
           {
@@ -112,12 +117,12 @@ locals {
       })
     } : null,
 
-    "neptune" : var.enable_neptune ? {
-      "tag_name" : var.scheduler_tag_name,
-      "tag_value" : var.scheduler_tag_value,
-      "schedule" : var.neptune.schedule != null ? var.neptune.schedule : var.schedule,
-      "excluded_tags" : var.neptune.excluded_tagsA
-      "execution_policy" : jsonencode({
+    neptune = var.enable_neptune ? {
+      tag_name      = coalesce(var.scheduler_tag_name, var.scheduler_tag_value)
+      tag_value     = coalesce(var.scheduler_tag_value, var.scheduler_tag_value)
+      schedule      = coalesce(var.neptune.schedule, var.schedule)
+      excluded_tags = coalesce(var.neptune.excluded_tags, [])
+      execution_policy = jsonencode({
         "Version" : "2012-10-17",
         "Statement" : [
           {
