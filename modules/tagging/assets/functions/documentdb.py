@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     """
 
     # Retrieve the environment variables
-    exclude_tag_keys = os.getenv('EXCLUDE_TAG_KEYS', '').split(',')
+    exclude_tag_keys = list(filter(None, os.getenv('EXCLUDE_TAG_KEYS', '').split(',')))
     tag_name = os.getenv('SCHEDULE_TAG_NAME', 'Schedule')
     tag_value = os.getenv('SCHEDULE_TAG_VALUE', '')
 
@@ -22,6 +22,11 @@ def lambda_handler(event, context):
     except Exception as e:
         print(f"Error retrieving DocumentDB clusters: {str(e)}")
         return
+
+    print(f"Found {len(clusters)} DocumentDB clusters.")
+    print(f"Tag name: {tag_name}")
+    print(f"Tag value: {tag_value}")
+    print(f"Excluded tags: {exclude_tag_keys}")
 
     for cluster in clusters:
         cluster_arn = cluster['DBClusterArn']
@@ -34,32 +39,40 @@ def lambda_handler(event, context):
             print(f"Error retrieving tags for DocumentDB cluster {cluster_id}: {str(e)}")
             continue
 
-        # Check if the cluster has any of the excluded tags
-        exclude_instance = any(tag['Key'] in exclude_tag_keys for tag in current_tags)
-        if exclude_instance:
-            print(f"Skipping tagging for DocumentDB cluster {cluster_id} because it has an excluded tag.")
+        # Skip if the tag already exists
+        if tag_name in current_tags:
+            print(f"Skipping {cluster_id} due to already tagged")
             continue
 
-        # Check if the 'Schedule' tag is already present
-        has_schedule_tag = any(tag['Key'] == tag_name for tag in current_tags)
+        # Skip if the instance has any of the excluded tags
+        exclude_instance = False
+        for pairs in exclude_tag_keys:
+            exclude_key, exclude_value = pairs.split("=")
+            exclude_instance = any(
+                tag == exclude_key and value == exclude_value
+                for tag, value in current_tags.items()
+            )
+            if exclude_instance:
+                break
 
-        if not has_schedule_tag:
-            try:
-                # Add the 'Schedule' tag to the cluster
-                docdb_client.add_tags_to_resource(
-                    ResourceName=cluster_arn,
-                    Tags=[
-                        {
-                            'Key': tag_name,
-                            'Value': tag_value
-                        }
-                    ]
-                )
-                print(f"Added '{tag_name}' tag to DocumentDB cluster {cluster_id}.")
-            except Exception as e:
-                print(f"Error adding '{tag_name}' tag to DocumentDB cluster {cluster_id}: {str(e)}")
-        else:
-            print(f"'{tag_name}' tag already exists for DocumentDB cluster {cluster_id}.")
+        if exclude_instance:
+            print(f"Skipping {cluster_id} because it has an excluded tag.")
+            continue
+
+        try:
+            # Add the 'Schedule' tag to the cluster
+            docdb_client.add_tags_to_resource(
+                ResourceName=cluster_arn,
+                Tags=[
+                    {
+                        'Key': tag_name,
+                        'Value': tag_value
+                    }
+                ]
+            )
+            print(f"Added '{tag_name}' tag to DocumentDB cluster {cluster_id}.")
+        except Exception as e:
+            print(f"Error adding '{tag_name}' tag to DocumentDB cluster {cluster_id}: {str(e)}")
 
     return {
         'statusCode': 200,

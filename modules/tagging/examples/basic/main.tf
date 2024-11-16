@@ -16,11 +16,12 @@ module "tagging_enforcement" {
 
   ## Enable tagging for the following resources 
   enable_autoscaling = true
-  enable_ec2         = true
-  enable_rds         = true
+  enable_ec2         = false
+  enable_rds         = false
 
   autoscaling = {
-    schedule = "cron(0 8 * * ? *)"
+    #excluded_tags = ["Environment=Sandbox"]
+    schedule = "rate(15 minutes)"
   }
 
   tags = {

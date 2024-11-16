@@ -13,7 +13,7 @@ def lambda_handler(event, context):
 
     # Retrieve the environment variables
     exclude_tag_keys = os.getenv('EXCLUDE_TAG_KEYS', '').split(',')
-    tag_name = os.getenv('SCHEDULE_TAG_NAME', '')
+    tag_name = os.getenv('SCHEDULE_TAG_NAME', 'Schedule')
     tag_value = os.getenv('SCHEDULE_TAG_VALUE', '')
 
     # List all RDS instances
@@ -34,32 +34,40 @@ def lambda_handler(event, context):
             print(f"Error retrieving tags for RDS instance {instance_id}: {str(e)}")
             continue
 
-        # Check if the instance has any of the excluded tags
-        exclude_instance = any(tag['Key'] in exclude_tag_keys for tag in current_tags)
-        if exclude_instance:
-            print(f"Skipping tagging for RDS instance {instance_id} because it has an excluded tag.")
+        # Skip if the tag already exists
+        if tag_name in current_tags:
+            print(f"RDS {instance_id} already has the tag {tag_name}. Skipping.")
             continue
 
-        # Check if the 'Schedule' tag is already present
-        has_schedule_tag = any(tag['Key'] == tag_name for tag in current_tags)
+        # Skip if the ASG has any of the excluded tags
+        exclude_instance = False
+        for pairs in exclude_tag_keys:
+            exclude_key, exclude_value = pairs.split("=")
+            exclude_instance = any(
+                tag == exclude_key and value == exclude_value
+                for tag, value in current_tags.items()
+            )
+            if exclude_instance:
+                break
 
-        if not has_schedule_tag:
-            try:
-                # Add the 'Schedule' tag to the instance
-                rds_client.add_tags_to_resource(
-                    ResourceName=instance_arn,
-                    Tags=[
-                        {
-                            'Key': 'Schedule',
-                            'Value': tag_value
-                        }
-                    ]
-                )
-                print(f"Added 'Schedule' tag to RDS instance {instance_id}.")
-            except Exception as e:
-                print(f"Error adding 'Schedule' tag to RDS instance {instance_id}: {str(e)}")
-        else:
-            print(f"'Schedule' tag already exists for RDS instance {instance_id}.")
+        if exclude_instance:
+            print(f"Skipping RDS {instance_id} because it has an excluded tag.")
+            continue
+
+        try:
+            # Add the 'Schedule' tag to the instance
+            rds_client.add_tags_to_resource(
+                ResourceName=instance_arn,
+                Tags=[
+                    {
+                        'Key': 'Schedule',
+                        'Value': tag_value
+                    }
+                ]
+            )
+            print(f"Added 'Schedule' tag to RDS instance {instance_id}.")
+        except Exception as e:
+            print(f"Error adding 'Schedule' tag to RDS instance {instance_id}: {str(e)}")
 
     return {
         'statusCode': 200,
