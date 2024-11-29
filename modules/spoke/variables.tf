@@ -33,7 +33,7 @@ variable "scheduler_account_id" {
   description = "The account id of where the orchcastrator is running"
   type        = string
 
-  # Should be a validate account id 
+  # Should be a validate account id
   validation {
     condition     = can(regex("^[0-9]{12}$", var.scheduler_account_id))
     error_message = "The scheduler_account_id must be a valid AWS account id"

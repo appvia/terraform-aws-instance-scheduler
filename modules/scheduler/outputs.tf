@@ -28,3 +28,13 @@ output "cloudformation_spoke_arn" {
   description = "The ARN for the spoke cloudformation scheduler template"
   value       = aws_s3_object.instance_scheduler_template_remote.arn
 }
+
+output "cloudformation_spoke_url" {
+  description = "The URL for the spoke cloudformation scheduler template"
+  value       = format("https://%s.s3.%s.amazonaws.com/%s", module.s3_bucket.s3_bucket_id, local.region, aws_s3_object.instance_scheduler_template_remote.key)
+}
+
+output "cloudformation_scheduler_url" {
+  description = "The URL for the scheduler cloudformation scheduler template"
+  value       = format("https://%s.s3.%s.amazonaws.com/%s", module.s3_bucket.s3_bucket_id, local.region, aws_s3_object.instance_scheduler_template.key)
+}

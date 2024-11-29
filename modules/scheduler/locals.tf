@@ -1,12 +1,15 @@
 
 locals {
-  ## The account id of the scheduler account 
+  ## The account id of the scheduler account
   account_id = data.aws_caller_identity.current.account_id
 
-  ## The expected arn of the s3 bucket  
+  ## The current region
+  region = data.aws_region.current.name
+
+  ## The expected arn of the s3 bucket
   bucket_arn = format("arn:aws:s3:::%s", var.cloudformation_bucket_name)
 
-  ## Parameters for the cloudformation stack in the hub account 
+  ## Parameters for the cloudformation stack in the hub account
   cloudformation_hub_stack_parameters = {
     AsgRulePrefix               = var.scheduler_asg_rule_prefix
     AsgScheduledTagKey          = var.scheduler_asg_tag_key

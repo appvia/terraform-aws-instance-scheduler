@@ -22,16 +22,16 @@ module "scheduler" {
 
   ## The regions that the scheduler will manage resources in
   scheduler_regions = ["eu-west-2"]
-  ## The tag placed on the resources that the scheduler will manage 
-  ## the lifecycle for based on the schedules and periods defined 
+  ## The tag placed on the resources that the scheduler will manage
+  ## the lifecycle for based on the schedules and periods defined
   scheduler_tag_name = "Schedule"
   ## The tags used on ASG resources to identify the resources that should be started
   scheduler_asg_tag_key = "Schedule"
-  ## Is the interval in minutes that the scheduler will check for resources 
-  ## that need to be started or stopped 
+  ## Is the interval in minutes that the scheduler will check for resources
+  ## that need to be started or stopped
   scheduler_frequency = 5
-  ## The organizations id that are permitted to use the scheduler - you can 
-  ## this detail in the AWS Organizations console 
+  ## The organizations id that are permitted to use the scheduler - you can
+  ## this detail in the AWS Organizations console
   scheduler_organizations_ids = ["o-7enwqk0f2c"]
 
   tags = {
@@ -52,7 +52,7 @@ module "config" {
     "uk_working_hours" = {
       description = "Resources will run during the UK working hours, anything outside of this will be stopped"
       start_time  = "06:00"
-      end_time    = "19:30"
+      end_time    = "19:00"
       weekdays    = ["mon-fri"]
     }
   }

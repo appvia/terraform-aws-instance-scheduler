@@ -1,5 +1,5 @@
 
-## Provision the cloudformation stack within the spoke accounts 
+## Provision the cloudformation stack within the spoke accounts
 module "spokes" {
   count   = var.enable_stackset ? 1 : 0
   source  = "appvia/stackset/aws"
@@ -17,7 +17,7 @@ module "spokes" {
   })
 }
 
-## Provision a standalone cloudformation stack within the spoke account 
+## Provision a standalone cloudformation stack within the spoke account
 resource "aws_cloudformation_stack" "spoke" {
   count = var.enable_standalone ? 1 : 0
 
