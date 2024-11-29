@@ -76,6 +76,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_enable_ec2_scheduler"></a> [enable\_ec2\_scheduler](#input\_enable\_ec2\_scheduler) | Whether EC2 instances should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_hub_account_scheduler"></a> [enable\_hub\_account\_scheduler](#input\_enable\_hub\_account\_scheduler) | Whether the hub account should be under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_neptune_scheduler"></a> [enable\_neptune\_scheduler](#input\_enable\_neptune\_scheduler) | Whether Neptune clusters should under the remit of the scheduler | `bool` | `true` | no |
+| <a name="input_enable_organizational_bucket"></a> [enable\_organizational\_bucket](#input\_enable\_organizational\_bucket) | Indicate we should allow everyone in the organizations access to the cloudformation bucket | `bool` | `false` | no |
 | <a name="input_enable_organizations"></a> [enable\_organizations](#input\_enable\_organizations) | Whether the instance scheduler should integrate with AWS Organizations | `bool` | `true` | no |
 | <a name="input_enable_rds_cluster_scheduler"></a> [enable\_rds\_cluster\_scheduler](#input\_enable\_rds\_cluster\_scheduler) | Whether RDS clusters should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_rds_scheduler"></a> [enable\_rds\_scheduler](#input\_enable\_rds\_scheduler) | Whether RDS instances should under the remit of the scheduler | `bool` | `true` | no |
@@ -83,6 +84,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_enable_scheduler"></a> [enable\_scheduler](#input\_enable\_scheduler) | Whether the instance scheduler should be enabled | `bool` | `true` | no |
 | <a name="input_enable_ssm_maintenance_windows"></a> [enable\_ssm\_maintenance\_windows](#input\_enable\_ssm\_maintenance\_windows) | Whether EC2 instances should be managed by SSM Maintenance Windows | `bool` | `false` | no |
 | <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
+| <a name="input_organizational_id"></a> [organizational\_id](#input\_organizational\_id) | The AWS Organization ID used in conjunction with the organizational bucket | `string` | `""` | no |
 | <a name="input_scheduler_asg_rule_prefix"></a> [scheduler\_asg\_rule\_prefix](#input\_scheduler\_asg\_rule\_prefix) | The prefix used to identify the AutoScaling Group scheduled actions | `string` | `"is-"` | no |
 | <a name="input_scheduler_asg_tag_key"></a> [scheduler\_asg\_tag\_key](#input\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
 | <a name="input_scheduler_frequency"></a> [scheduler\_frequency](#input\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |

@@ -1,5 +1,5 @@
 
-## Craft a resource iam policy for the bucket 
+## Craft a resource iam policy for the bucket
 data "aws_iam_policy_document" "bucket" {
   statement {
     actions   = ["s3:GetObject", "s3:ListBucket"]
@@ -8,6 +8,16 @@ data "aws_iam_policy_document" "bucket" {
     principals {
       type        = "Service"
       identifiers = ["cloudformation.amazonaws.com"]
+    }
+
+    dynamic "condition" {
+      for_each = var.enable_organizational_bucket ? [] : toset([])
+
+      content {
+        test     = "StringEquals"
+        variable = "aws:PrincipalOrgID"
+        values   = var.organizational_id
+      }
     }
   }
 
@@ -19,10 +29,20 @@ data "aws_iam_policy_document" "bucket" {
       type        = "AWS"
       identifiers = [format("arn:aws:iam::%s:root", local.account_id)]
     }
+
+    dynamic "condition" {
+      for_each = var.enable_organizational_bucket ? [] : toset([])
+
+      content {
+        test     = "StringNotEquals"
+        variable = "aws:PrincipalOrgID"
+        values   = var.organizational_id
+      }
+    }
   }
 }
 
-## Provision an s3 bucket to store the cloudformation templates 
+## Provision an s3 bucket to store the cloudformation templates
 module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "4.2.1"
@@ -73,7 +93,19 @@ resource "aws_s3_object" "instance_scheduler_template" {
   })
 }
 
-## Provision the cloudformation stack within the centralized account 
+## Upload the cloudformation template to the bucket
+resource "aws_s3_object" "instance_scheduler_template_remote" {
+  acl                    = "private"
+  bucket                 = module.s3_bucket.s3_bucket_id
+  key                    = "cloudformation/instance-scheduler-on-aws-remote.template"
+  server_side_encryption = "AES256"
+
+  content = templatefile("${path.module}/assets/cloudformation/instance-scheduler-on-aws-remote.template", {
+    tags = var.tags
+  })
+}
+
+## Provision the cloudformation stack within the centralized account
 resource "aws_cloudformation_stack" "hub" {
   name         = var.cloudformation_hub_stack_name
   capabilities = var.cloudformation_hub_stack_capabilities

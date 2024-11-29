@@ -23,6 +23,18 @@ variable "enable_organizations" {
   default     = true
 }
 
+variable "enable_organizational_bucket" {
+  description = "Indicate we should allow everyone in the organizations access to the cloudformation bucket"
+  type        = bool
+  default     = false
+}
+
+variable "organizational_id" {
+  description = "The AWS Organization ID used in conjunction with the organizational bucket"
+  type        = string
+  default     = ""
+}
+
 variable "enable_ssm_maintenance_windows" {
   description = "Whether EC2 instances should be managed by SSM Maintenance Windows"
   type        = bool
