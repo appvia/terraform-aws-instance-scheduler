@@ -5,11 +5,12 @@ module "lambda_function" {
   source   = "terraform-aws-modules/lambda/aws"
   version  = "7.14.0"
 
-  create_package = false
+  create_package = true
   description    = "Automatically tags RDS instances with a 'Schedule' tag if missing"
   function_name  = format("%s-%s", var.lambda_function_name_prefix, each.key)
   function_tags  = var.tags
   handler        = format("%s.lambda_handler", each.key)
+  hash_extra     = each.key
   memory_size    = var.lambda_memory_size
   runtime        = "python3.9"
   source_path    = format("%s/assets/functions/%s.py", path.module, each.key)

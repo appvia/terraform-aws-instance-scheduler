@@ -1,10 +1,4 @@
 
-variable "lambda_function_name_prefix" {
-  description = "The name of the lambda function that will be created"
-  type        = string
-  default     = "lza-scheduler-tagging"
-}
-
 variable "eventbridge_rule_name_prefix" {
   description = "The name of the eventbridge rule that will trigger the lambda function"
   type        = string
@@ -65,6 +59,12 @@ variable "lambda_log_retention" {
   default     = 7
 }
 
+variable "lambda_function_name_prefix" {
+  description = "The name of the lambda function"
+  type        = string
+  default     = "lza-scheduler-tagging"
+}
+
 variable "enable_debug" {
   description = "Whether debug logging should be enabled for the lambda function"
   type        = bool
@@ -79,12 +79,6 @@ variable "lambda_timeout" {
 
 variable "lambda_execution_role_name_prefix" {
   description = "The name of the IAM role that will be created for the lambda function"
-  type        = string
-  default     = "lza-scheduler-tagging"
-}
-
-variable "lambda_policy_name_prefix" {
-  description = "The name of the IAM policy that will be created for the lambda function"
   type        = string
   default     = "lza-scheduler-tagging"
 }

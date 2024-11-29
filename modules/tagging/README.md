@@ -58,7 +58,6 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | >= 2.6.0 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0.0 |
 
 ## Inputs
@@ -80,10 +79,9 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_enable_rds"></a> [enable\_rds](#input\_enable\_rds) | Whether RDS instances should be tagged | `bool` | `false` | no |
 | <a name="input_eventbridge_rule_name_prefix"></a> [eventbridge\_rule\_name\_prefix](#input\_eventbridge\_rule\_name\_prefix) | The name of the eventbridge rule that will trigger the lambda function | `string` | `"lza-scheduler-tagging"` | no |
 | <a name="input_lambda_execution_role_name_prefix"></a> [lambda\_execution\_role\_name\_prefix](#input\_lambda\_execution\_role\_name\_prefix) | The name of the IAM role that will be created for the lambda function | `string` | `"lza-scheduler-tagging"` | no |
-| <a name="input_lambda_function_name_prefix"></a> [lambda\_function\_name\_prefix](#input\_lambda\_function\_name\_prefix) | The name of the lambda function that will be created | `string` | `"lza-scheduler-tagging"` | no |
+| <a name="input_lambda_function_name_prefix"></a> [lambda\_function\_name\_prefix](#input\_lambda\_function\_name\_prefix) | The name of the lambda function | `string` | `"lza-scheduler-tagging"` | no |
 | <a name="input_lambda_log_retention"></a> [lambda\_log\_retention](#input\_lambda\_log\_retention) | The number of days to retain the logs for the lambda function | `number` | `7` | no |
 | <a name="input_lambda_memory_size"></a> [lambda\_memory\_size](#input\_lambda\_memory\_size) | The amount of memory in MB allocated to the lambda function | `number` | `128` | no |
-| <a name="input_lambda_policy_name_prefix"></a> [lambda\_policy\_name\_prefix](#input\_lambda\_policy\_name\_prefix) | The name of the IAM policy that will be created for the lambda function | `string` | `"lza-scheduler-tagging"` | no |
 | <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | The amount of time in seconds before the lambda function times out | `number` | `10` | no |
 | <a name="input_neptune"></a> [neptune](#input\_neptune) | Configuration for the Neptune clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
 | <a name="input_rds"></a> [rds](#input\_rds) | Configuration for the RDS instances to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
