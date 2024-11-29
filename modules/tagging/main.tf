@@ -1,31 +1,22 @@
 
-## Package the Lambda function code 
-data "archive_file" "lambda" {
-  type        = "zip"
-  source_dir  = "${path.module}/assets/functions"
-  output_path = "${path.module}/builds/package.zip"
-}
-
 ## Configure the Lambda function for the tagging process of the resource
 module "lambda_function" {
   for_each = local.resources_in_scope_all
   source   = "terraform-aws-modules/lambda/aws"
   version  = "7.14.0"
 
-  create_package         = false
-  description            = "Automatically tags RDS instances with a 'Schedule' tag if missing"
-  function_name          = format("%s-%s", var.lambda_function_name_prefix, each.key)
-  function_tags          = var.tags
-  handler                = format("%s.lambda_handler", each.key)
-  hash_extra             = data.archive_file.lambda.output_base64sha256
-  local_existing_package = data.archive_file.lambda.output_path
-  memory_size            = var.lambda_memory_size
-  runtime                = "python3.9"
-  source_path            = format("%s/assets/functions/%s.py", path.module, each.key)
-  tags                   = var.tags
-  timeout                = var.lambda_timeout
+  create_package = false
+  description    = "Automatically tags RDS instances with a 'Schedule' tag if missing"
+  function_name  = format("%s-%s", var.lambda_function_name_prefix, each.key)
+  function_tags  = var.tags
+  handler        = format("%s.lambda_handler", each.key)
+  memory_size    = var.lambda_memory_size
+  runtime        = "python3.9"
+  source_path    = format("%s/assets/functions/%s.py", path.module, each.key)
+  tags           = var.tags
+  timeout        = var.lambda_timeout
 
-  ## The role that the Lambda function will assume 
+  ## The role that the Lambda function will assume
   create_role      = true
   role_name        = format("%s-%s", var.lambda_execution_role_name_prefix, each.key)
   role_path        = "/"
