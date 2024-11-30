@@ -2,8 +2,8 @@
 #
 ## https://s3.amazonaws.com/solutions-reference/instance-scheduler-on-aws/v3.0.5/instance-scheduler-on-aws.template
 ##
-## You can retrieve the latest version by running the following command: 
-## 
+## You can retrieve the latest version by running the following command:
+##
 ## $ curl -s https://s3.amazonaws.com/solutions-reference/instance-scheduler-on-aws/latest/instance-scheduler-on-aws.template > latest.template
 ##
 #
@@ -3897,11 +3897,6 @@ Resources:
           - "-"
           - Ref: Namespace
           - "-Operational-Insights-Dashboard"
-      Tags:
-%{ for tag, value in tags ~}
-      - Key: ${tag}
-        Value: ${value}
-%{ endfor ~}
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/OperationalInsightsDashboard/Resource
     Condition: OpsMonitoringCondition
