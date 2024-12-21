@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "bucket" {
 ## Provision an s3 bucket to store the cloudformation templates
 module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "4.2.1"
+  version = "4.3.0"
 
   acl                                      = "private"
   attach_deny_incorrect_encryption_headers = true
