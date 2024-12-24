@@ -1,6 +1,6 @@
 plugin "aws" {
   enabled = true
-  version = "0.34.0"
+  version = "0.35.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 
@@ -61,7 +61,7 @@ rule "terraform_module_pinned_source" {
 }
 
 rule "terraform_standard_module_structure" {
-  enabled = false
+  enabled = true
 }
 
 rule "terraform_workspace_remote" {
