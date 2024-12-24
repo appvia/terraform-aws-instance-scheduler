@@ -13,8 +13,26 @@ permissions:
   pull-requests: write
 
 jobs:
-  module-validation:
+  config-validation:
     uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@main
-    name: Module Validation
+    name: Config Module
     with:
-      working-directory: .
+      working-directory: modules/config
+
+  tagging-validation:
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@main
+    name: Tagging Module
+    with:
+      working-directory: modules/tagging
+
+  scheduler-validation:
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@main
+    name: Scheduler Module
+    with:
+      working-directory: modules/scheduler
+
+  spoke-validation:
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@main
+    name: Spoke Module
+    with:
+      working-directory: modules/spoke
