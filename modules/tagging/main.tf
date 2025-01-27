@@ -3,7 +3,7 @@
 module "lambda_function" {
   for_each = local.resources_in_scope_all
   source   = "terraform-aws-modules/lambda/aws"
-  version  = "7.20.0"
+  version  = "7.20.1"
 
   create_package = true
   description    = "Automatically tags RDS instances with a 'Schedule' tag if missing"
