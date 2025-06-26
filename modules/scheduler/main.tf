@@ -42,6 +42,16 @@ data "aws_iam_policy_document" "bucket" {
   }
 }
 
+## Provision the cloudformation macro if required 
+module "cloudformation_macro" {
+  count  = var.enable_cloudformation_macro ? 1 : 0
+  source = "../macro"
+
+  name_prefix                   = "scheduler-add-default-tags"
+  cloudformation_transform_name = local.cloudformation_macro_name
+  tags                          = var.tags
+}
+
 ## Provision an s3 bucket to store the cloudformation templates
 module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
@@ -88,9 +98,7 @@ resource "aws_s3_object" "instance_scheduler_template" {
   key                    = "cloudformation/instance-scheduler-on-aws.template"
   server_side_encryption = "AES256"
 
-  content = templatefile("${path.module}/assets/cloudformation/instance-scheduler-on-aws.template", {
-    tags = var.tags
-  })
+  content = file("${path.module}/assets/cloudformation/instance-scheduler-on-aws.template")
 }
 
 ## Upload the cloudformation template to the bucket
@@ -101,7 +109,8 @@ resource "aws_s3_object" "instance_scheduler_template_remote" {
   server_side_encryption = "AES256"
 
   content = templatefile("${path.module}/assets/cloudformation/instance-scheduler-on-aws-remote.template", {
-    tags = var.tags
+    enable_macro = var.enable_cloudformation_macro
+    macro_name   = var.cloudformation_macro_name
   })
 }
 
@@ -113,5 +122,8 @@ resource "aws_cloudformation_stack" "hub" {
   template_url = format("https://%s.s3.amazonaws.com/%s", module.s3_bucket.s3_bucket_id, aws_s3_object.instance_scheduler_template.key)
   tags         = var.tags
 
-  depends_on = [aws_s3_object.instance_scheduler_template]
+  depends_on = [
+    aws_s3_object.instance_scheduler_template,
+    module.cloudformation_macro,
+  ]
 }

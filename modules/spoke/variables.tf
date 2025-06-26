@@ -17,6 +17,18 @@ variable "organizational_units" {
   default     = {}
 }
 
+variable "enable_cloudformation_macro" {
+  description = "Whether the cloudformation macro should be enabled"
+  type        = bool
+  default     = true
+}
+
+variable "cloudformation_macro_name" {
+  description = "The name of the cloudformation macro"
+  type        = string
+  default     = "AddDefaultTags"
+}
+
 variable "enable_organizations" {
   description = "Whether the stack should be enabled for AWS Organizations"
   type        = bool

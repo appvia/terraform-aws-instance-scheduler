@@ -36,3 +36,9 @@ jobs:
     name: Spoke Module
     with:
       working-directory: modules/spoke
+
+  macro-validation:
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@main
+    name: Macro Module
+    with:
+      working-directory: modules/macro

@@ -6,6 +6,9 @@ locals {
   ## The current region
   region = data.aws_region.current.name
 
+  ## Name of the cloudformation macro
+  cloudformation_macro_name = "SchedulerAddDefaultTags"
+
   ## The expected arn of the s3 bucket
   bucket_arn = format("arn:aws:s3:::%s", var.cloudformation_bucket_name)
 
