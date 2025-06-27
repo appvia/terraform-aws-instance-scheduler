@@ -26,7 +26,13 @@ variable "enable_cloudformation_macro" {
 variable "cloudformation_macro_name" {
   description = "The name of the cloudformation macro"
   type        = string
-  default     = "AddDefaultTags"
+  default     = "SchedulerAddDefaultTags"
+}
+
+variable "cloudformation_transform_stack_name" {
+  description = "The name of the cloudformation transform stack"
+  type        = string
+  default     = "lza-instance-scheduler-add-default-tags"
 }
 
 variable "enable_organizations" {

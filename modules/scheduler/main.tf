@@ -47,9 +47,10 @@ module "cloudformation_macro" {
   count  = var.enable_cloudformation_macro ? 1 : 0
   source = "../macro"
 
-  name_prefix                   = "scheduler-add-default-tags"
-  cloudformation_transform_name = local.cloudformation_macro_name
-  tags                          = var.tags
+  name_prefix                         = "scheduler-default-tags"
+  cloudformation_transform_name       = var.cloudformation_macro_name
+  cloudformation_transform_stack_name = var.cloudformation_transform_stack_name
+  tags                                = var.tags
 }
 
 ## Provision an s3 bucket to store the cloudformation templates

@@ -29,6 +29,12 @@ variable "cloudformation_macro_name" {
   default     = "AddDefaultTags"
 }
 
+variable "cloudformation_transform_stack_name" {
+  description = "The name of the cloudformation transform stack"
+  type        = string
+  default     = "lza-instance-scheduler-spoke-add-default-tags"
+}
+
 variable "enable_organizations" {
   description = "Whether the stack should be enabled for AWS Organizations"
   type        = bool

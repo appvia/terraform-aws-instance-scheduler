@@ -7,7 +7,11 @@ variable "architecture" {
 variable "cloudformation_transform_name" {
   description = "Name of the cloudformation transform"
   type        = string
-  default     = "AddDefaultTags"
+}
+
+variable "cloudformation_transform_stack_name" {
+  description = "Name of the cloudformation transform stack"
+  type        = string
 }
 
 variable "log_retention_days" {

@@ -72,7 +72,7 @@ resource "aws_lambda_permission" "allow_cloudformation" {
 
 # CloudFormation Transform (Macro)
 resource "aws_cloudformation_stack" "current" {
-  name = var.cloudformation_transform_name
+  name = var.cloudformation_transform_stack_name
   tags = var.tags
 
   template_body = jsonencode({
@@ -82,7 +82,7 @@ resource "aws_cloudformation_stack" "current" {
       TransformFunction = {
         Type = "AWS::CloudFormation::Macro"
         Properties = {
-          Name         = "${var.name_prefix}-default-tags-macro"
+          Name         = var.cloudformation_transform_name
           Description  = "Macro to add default tags to CloudFormation resources"
           FunctionName = aws_lambda_function.current.arn
         }
