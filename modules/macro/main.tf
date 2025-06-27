@@ -45,6 +45,7 @@ resource "aws_cloudwatch_log_group" "current" {
 ## Provision the Lambda function
 resource "aws_lambda_function" "current" {
   architectures    = [var.architecture]
+  description      = "Lambda function to add default tags to CloudFormation resources"
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = local.lambda_function_name
   role             = aws_iam_role.current.arn

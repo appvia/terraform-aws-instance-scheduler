@@ -13,9 +13,9 @@ output "lambda_role_arn" {
   value       = aws_iam_role.current.arn
 }
 
-output "cloudformation_stack_name" {
-  description = "Name of the CloudFormation stack containing the macro"
-  value       = aws_cloudformation_stack.current.name
+output "macro_name" {
+  description = "Name of the CloudFormation macro"
+  value       = aws_cloudformation_stack.current
 }
 
 output "cloudwatch_log_group_name" {
