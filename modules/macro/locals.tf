@@ -4,7 +4,7 @@ locals {
   # The region
   region = data.aws_region.current.name
   # The name of the CloudWatch log group
-  cloudwatch_log_group_name = format("/aws/lambda/%s-cloudformation-macro", var.name_prefix)
+  cloudwatch_log_group_name = format("/aws/lambda/%s", local.lambda_function_name)
   # The name of the Lambda function
   lambda_function_name = format("%s-cloudformation", var.name_prefix)
   # The name of the IAM role
