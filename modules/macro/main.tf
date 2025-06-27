@@ -29,7 +29,7 @@ resource "aws_iam_role" "current" {
 
 ## Provision the IAM policy for CloudWatch Logs
 resource "aws_iam_role_policy" "current" {
-  name   = local.cloudwatch_log_group_name
+  name   = local.iam_role_policy_name
   policy = data.aws_iam_policy_document.cloudwatch.json
   role   = aws_iam_role.current.id
 }
