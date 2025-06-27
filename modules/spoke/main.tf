@@ -11,7 +11,10 @@ module "spokes" {
   region               = local.region
   tags                 = var.tags
   organizational_units = values(var.organizational_units)
-  template             = file("${path.module}/assets/cloudformation/instance-scheduler-on-aws-remote.template")
+  template = templatefile("${path.module}/assets/cloudformation/instance-scheduler-on-aws-remote.template", {
+    enable_macro = var.enable_cloudformation_macro
+    macro_name   = var.cloudformation_macro_name
+  })
 }
 
 ## Provision the cloudformation macro if required 

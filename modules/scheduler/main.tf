@@ -98,7 +98,10 @@ resource "aws_s3_object" "instance_scheduler_template" {
   key                    = "cloudformation/instance-scheduler-on-aws.template"
   server_side_encryption = "AES256"
 
-  content = file("${path.module}/assets/cloudformation/instance-scheduler-on-aws.template")
+  content = templatefile("${path.module}/assets/cloudformation/instance-scheduler-on-aws.template", {
+    enable_macro = var.enable_cloudformation_macro
+    macro_name   = var.cloudformation_macro_name
+  })
 }
 
 ## Upload the cloudformation template to the bucket
