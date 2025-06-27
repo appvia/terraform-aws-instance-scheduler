@@ -17,6 +17,18 @@ variable "cloudformation_bucket_name" {
   default     = "lza-instance-scheduler-templates"
 }
 
+variable "enable_cloudformation_macro" {
+  description = "Whether the cloudformation macro should be enabled"
+  type        = bool
+  default     = true
+}
+
+variable "cloudformation_macro_name" {
+  description = "The name of the cloudformation macro"
+  type        = string
+  default     = "AddDefaultTags"
+}
+
 variable "enable_organizations" {
   description = "Whether the instance scheduler should integrate with AWS Organizations"
   type        = bool

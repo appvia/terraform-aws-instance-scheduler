@@ -194,12 +194,28 @@ module "tagging" {
 }
 ```
 
+### Cloudformation Default Tagging
+
+The current cloudformation templates provided by AWS do not come with tagging enabled on the resources. In order to injects tags into the all the resources provisioned via the solution we are using a [Cloudformation Transform Macro](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/transform-reference.html). This is essentially a lambda called by the cloudformation service, passing the template and used to inject the tags.
+
+You can enable the feature as such
+
+```hcl
+module "scheduler" {
+  source = "../modules/scheduler"
+
+  ... 
+  enable_cloudformation_macro = true 
+  tags                        = var.tags 
+}
+```
+
 ## Update Documentation
 
 The `terraform-docs` utility is used to generate this README. Follow the below steps to update:
 
 1. Make changes to the `.terraform-docs.yml` file
-2. Fetch the `terraform-docs` binary (https://terraform-docs.io/user-guide/installation/)
+2. Fetch the `terraform-docs` binary (<https://terraform-docs.io/user-guide/installation/>)
 3. Run `terraform-docs markdown table --output-file ${PWD}/README.md --output-mode inject .`
 
 <!-- BEGIN_TF_DOCS -->
