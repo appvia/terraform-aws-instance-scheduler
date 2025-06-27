@@ -79,9 +79,9 @@ update-cloudformation-template() {
 EOF
     cat <<EOF >> "$TEMP_DIR/${filename}.yaml"
 AWSTemplateFormatVersion: 2010-09-09
-{% if enable_macro %}
+%{ if enable_macro ~}
 Transform: \${ macro_name }
-{% endif %}
+%{ endif ~}
 EOF
   ## Copy the temporary file to the final file
   cat "$TEMP_DIR/${filename}.yaml.tmp" >> "$TEMP_DIR/${filename}.yaml"

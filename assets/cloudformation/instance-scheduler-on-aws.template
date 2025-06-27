@@ -3,9 +3,9 @@
 ## Source: https://s3.amazonaws.com/solutions-reference/instance-scheduler-on-aws/latest/instance-scheduler-on-aws.template
 #
 AWSTemplateFormatVersion: 2010-09-09
-{% if enable_macro %}
+%{ if enable_macro ~}
 Transform: ${ macro_name }
-{% endif %}
+%{ endif ~}
 Description: (SO0030) instance-scheduler-on-aws v3.0.10
 Metadata:
   AWS::CloudFormation::Interface:
