@@ -72,8 +72,9 @@ resource "aws_lambda_permission" "allow_cloudformation" {
 
 # CloudFormation Transform (Macro)
 resource "aws_cloudformation_stack" "current" {
-  name = var.cloudformation_transform_stack_name
-  tags = var.tags
+  name         = var.cloudformation_transform_stack_name
+  capabilities = ["CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
+  tags         = var.tags
 
   template_body = jsonencode({
     AWSTemplateFormatVersion = "2010-09-09"
