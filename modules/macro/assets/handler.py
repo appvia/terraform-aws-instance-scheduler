@@ -170,6 +170,9 @@ def does_not_support_tags(resource_type):
         "AWS::CloudWatch::InsightRule",
         "AWS::CloudWatch::MetricStream",
         
+        # CloudWatch Dashboard
+        "AWS::CloudWatch::Dashboard",
+        
         # Systems Manager Resources
         "AWS::SSM::Association",
         "AWS::SSM::ResourceDataSync",
