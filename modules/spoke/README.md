@@ -40,7 +40,10 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 |------|-------------|------|---------|:--------:|
 | <a name="input_scheduler_account_id"></a> [scheduler\_account\_id](#input\_scheduler\_account\_id) | The account id of where the orchcastrator is running | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
+| <a name="input_cloudformation_macro_name"></a> [cloudformation\_macro\_name](#input\_cloudformation\_macro\_name) | The name of the cloudformation macro | `string` | `"AddDefaultTags"` | no |
 | <a name="input_cloudformation_spoke_stack_name"></a> [cloudformation\_spoke\_stack\_name](#input\_cloudformation\_spoke\_stack\_name) | The name of the cloudformation stack in the spoke accounts | `string` | `"lza-instance-scheduler-spoke"` | no |
+| <a name="input_cloudformation_transform_stack_name"></a> [cloudformation\_transform\_stack\_name](#input\_cloudformation\_transform\_stack\_name) | The name of the cloudformation transform stack | `string` | `"lza-instance-scheduler-spoke-add-default-tags"` | no |
+| <a name="input_enable_cloudformation_macro"></a> [enable\_cloudformation\_macro](#input\_enable\_cloudformation\_macro) | Whether the cloudformation macro should be enabled | `bool` | `true` | no |
 | <a name="input_enable_organizations"></a> [enable\_organizations](#input\_enable\_organizations) | Whether the stack should be enabled for AWS Organizations | `bool` | `true` | no |
 | <a name="input_enable_stackset"></a> [enable\_stackset](#input\_enable\_stackset) | Whether the stackset should be enabled | `bool` | `false` | no |
 | <a name="input_enable_standalone"></a> [enable\_standalone](#input\_enable\_standalone) | Whether the stack should be standalone | `bool` | `true` | no |
