@@ -1,12 +1,9 @@
 
 locals {
-  ## Is the current region 
+  ## Is the current region
   region = var.region
 
-  ## Name of the cloudformation macro
-  cloudformation_macro_name = "SpokeAddDefaultTags"
-
-  ## Parameters for the cloudformation stack in the spoke accounts 
+  ## Parameters for the cloudformation stack in the spoke accounts
   cloudformation_spoke_stack_parameters = {
     InstanceSchedulerAccount : var.scheduler_account_id
     UsingAWSOrganizations : var.enable_organizations ? "Yes" : "No"
