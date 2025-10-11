@@ -70,7 +70,6 @@ def does_not_support_tags(resource_type):
         "AWS::KMS::Alias",
       
         # IAM Resources (most don't support tags)
-        "AWS::IAM::Role",
         "AWS::IAM::Policy",
         "AWS::IAM::User",
         "AWS::IAM::Group",
