@@ -3,7 +3,7 @@
 module "spokes" {
   count   = var.enable_stackset ? 1 : 0
   source  = "appvia/stackset/aws"
-  version = "0.2.4"
+  version = "0.2.5"
 
   name                 = var.cloudformation_spoke_stack_name
   description          = "Used to deploy the instance scheduler stack to spoke accounts"
