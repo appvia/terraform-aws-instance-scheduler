@@ -1,0 +1,38 @@
+---
+name: Update Templates
+on:
+  schedule:
+    - cron: "0 0 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  update-templates:
+    name: Update Templates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+      - name: Run Update Script
+        run: |
+          ./scripts/update.sh
+      - name: Check for Changes
+        run: |
+          git diff --exit-code
+      - name: Create Pull Request
+        if: success()
+        uses: peter-evans/create-pull-request@v8
+        with:
+          base: main
+          body: "This PR updates the cloudformation templates for the instance scheduler"
+          branch-suffix: timestamp
+          labels: "chore"
+          reviewers: gambool99
+          title: "[UPDATE] - Instance Scheduler Cloudformation"
