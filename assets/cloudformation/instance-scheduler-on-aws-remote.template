@@ -6,7 +6,7 @@ AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: ${ macro_name }
 %{ endif ~}
-Description: (SO0030S) instance-scheduler-on-aws remote v3.0.10
+Description: (SO0030S) instance-scheduler-on-aws remote v3.0.12
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -50,59 +50,7 @@ Parameters:
     Type: CommaDelimitedList
     Default: ""
     Description: comma-separated list of kms arns to grant Instance Scheduler kms:CreateGrant permissions to provide the EC2  service with Decrypt permissions for encrypted EBS volumes. This allows the scheduler to start EC2 instances with attached encrypted EBS volumes. provide just (*) to give limited access to all kms keys, leave blank to disable. For details on the exact policy created, refer to security section of the implementation guide (https://aws.amazon.com/solutions/implementations/instance-scheduler-on-aws/)
-Mappings:
-  AppRegistryForInstanceSchedulerSolution25A90F05:
-    Data:
-      ID: SO0030
-      Version: v3.0.10
-      AppRegistryApplicationName: instance-scheduler-on-aws
-      SolutionName: instance-scheduler-on-aws
-      ApplicationType: AWS-Solutions
 Resources:
-  AppRegistry968496A3:
-    Type: AWS::ServiceCatalogAppRegistry::Application
-    Properties:
-      Description:
-        Fn::Join:
-          - ""
-          - - 'Service Catalog application to track and manage all your resources for the solution '
-            - Fn::FindInMap:
-                - AppRegistryForInstanceSchedulerSolution25A90F05
-                - Data
-                - SolutionName
-      Name:
-        Fn::Join:
-          - '-'
-          - - Fn::FindInMap:
-                - AppRegistryForInstanceSchedulerSolution25A90F05
-                - Data
-                - AppRegistryApplicationName
-            - Ref: AWS::Region
-            - Ref: AWS::AccountId
-            - Ref: AWS::StackName
-      Tags:
-        Solutions:ApplicationType:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - ApplicationType
-        Solutions:SolutionID:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - ID
-        Solutions:SolutionName:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - SolutionName
-        Solutions:SolutionVersion:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - Version
-    Metadata:
-      aws:cdk:path: instance-scheduler-on-aws-remote/AppRegistry
   EC2SchedulerCrossAccountRole:
     Type: AWS::IAM::Role
     Properties:
@@ -355,11 +303,11 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
       Description: Custom Resource Provider used for spoke account self registration via aws organization
       Environment:
         Variables:
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           HUB_REGISTRATION_LAMBDA_ARN:
             Fn::Join:
               - ""

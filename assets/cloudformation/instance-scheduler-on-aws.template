@@ -6,7 +6,7 @@ AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: ${ macro_name }
 %{ endif ~}
-Description: (SO0030) instance-scheduler-on-aws v3.0.10
+Description: (SO0030) instance-scheduler-on-aws v3.0.12
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -70,7 +70,7 @@ Metadata:
         default: Protect DynamoDB Tables
     ParameterGroups:
       - Label:
-          default: Scheduler (v3.0.10)
+          default: Scheduler (v3.0.12)
         Parameters:
           - TagName
           - SchedulerFrequency
@@ -782,13 +782,6 @@ Mappings:
   Send:
     AnonymousUsage:
       Data: "Yes"
-  AppRegistryForInstanceSchedulerSolution25A90F05:
-    Data:
-      ID: SO0030
-      Version: v3.0.10
-      AppRegistryApplicationName: instance-scheduler-on-aws
-      SolutionName: instance-scheduler-on-aws
-      ApplicationType: AWS-Solutions
   CronExpressionsForSchedulingIntervals:
     IntervalMinutesToCron:
       "1": cron(0/1 * * * ? *)
@@ -879,50 +872,6 @@ Conditions:
               - Ref: KmsKeyArns
           - ""
 Resources:
-  AppRegistry968496A3:
-    Type: AWS::ServiceCatalogAppRegistry::Application
-    Properties:
-      Description:
-        Fn::Join:
-          - ""
-          - - 'Service Catalog application to track and manage all your resources for the solution '
-            - Fn::FindInMap:
-                - AppRegistryForInstanceSchedulerSolution25A90F05
-                - Data
-                - SolutionName
-      Name:
-        Fn::Join:
-          - '-'
-          - - Fn::FindInMap:
-                - AppRegistryForInstanceSchedulerSolution25A90F05
-                - Data
-                - AppRegistryApplicationName
-            - Ref: AWS::Region
-            - Ref: AWS::AccountId
-            - Ref: AWS::StackName
-      Tags:
-        Solutions:ApplicationType:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - ApplicationType
-        Solutions:SolutionID:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - ID
-        Solutions:SolutionName:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - SolutionName
-        Solutions:SolutionVersion:
-          Fn::FindInMap:
-            - AppRegistryForInstanceSchedulerSolution25A90F05
-            - Data
-            - Version
-    Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/AppRegistry
   MetricsGeneratorRole83735CC4:
     Type: AWS::IAM::Role
     Properties:
@@ -933,12 +882,6 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
         Version: "2012-10-17"
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/MetricsGeneratorRole/Resource
   MetricsGeneratorRoleDefaultPolicy19F5F29A:
@@ -972,11 +915,11 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
       Description: Custom Resource Provider used to generate unique UUIDs for solution deployments
       Environment:
         Variables:
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           UUID_KEY: /Solutions/instance-scheduler-on-aws/UUID/
           STACK_ID:
             Ref: AWS::StackId
@@ -987,12 +930,6 @@ Resources:
           - MetricsGeneratorRole83735CC4
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 60
       TracingConfig:
         Mode: Active
@@ -1018,12 +955,6 @@ Resources:
             - Ref: MetricsUuidGenerator172A04DB
       RetentionInDays:
         Ref: LogRetentionDays
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Metadata:
@@ -1105,12 +1036,6 @@ Resources:
                     - :root
             Resource: '*'
         Version: "2012-10-17"
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy:
       Fn::If:
         - ddbDeletionProtectionCondition
@@ -1145,12 +1070,6 @@ Resources:
         Fn::GetAtt:
           - InstanceSchedulerEncryptionKey
           - Arn
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerSnsTopic/Resource
   SchedulerLogGroup:
@@ -1163,12 +1082,6 @@ Resources:
             - -logs
       RetentionInDays:
         Ref: LogRetentionDays
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
     Metadata:
@@ -1204,12 +1117,6 @@ Resources:
             - Arn
         SSEEnabled: true
         SSEType: KMS
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy:
       Fn::If:
         - ddbDeletionProtectionCondition
@@ -1252,12 +1159,6 @@ Resources:
         SSEType: KMS
       StreamSpecification:
         StreamViewType: KEYS_ONLY
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy:
       Fn::If:
         - ddbDeletionProtectionCondition
@@ -1298,12 +1199,6 @@ Resources:
             - Arn
         SSEEnabled: true
         SSEType: KMS
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy:
       Fn::If:
         - ddbDeletionProtectionCondition
@@ -1326,12 +1221,6 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
         Version: "2012-10-17"
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationRole/Resource
   SpokeRegistrationRoleDefaultPolicy7A7A6954:
@@ -1365,13 +1254,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
-      Description: spoke account registration handler, version v3.0.10
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
+      Description: spoke account registration handler, version v3.0.12
       Environment:
         Variables:
           CONFIG_TABLE:
             Ref: ConfigTable
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           LOG_GROUP:
             Ref: SchedulerLogGroup
           ISSUES_TOPIC_ARN:
@@ -1394,12 +1283,6 @@ Resources:
           - SpokeRegistrationRole0E2E4D3E
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 60
       TracingConfig:
         Mode: Active
@@ -1549,12 +1432,6 @@ Resources:
               Service: ssm.amazonaws.com
         Version: "2012-10-17"
       Description: Role assumed by SSM Automation to call the spoke registration lambda
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SpokeDeregistrationRunbookRole/Resource
   SpokeDeregistrationRunbookRoleDefaultPolicy208AD52D:
@@ -1617,11 +1494,6 @@ Resources:
       DocumentFormat: YAML
       DocumentType: Automation
       Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
         - Key: CdkGenerated
           Value: "true"
     Metadata:
@@ -1636,12 +1508,6 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
         Version: "2012-10-17"
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/MainLambdaRole/Resource
   MainLambdaRoleDefaultPolicy5347C905:
@@ -1769,8 +1635,8 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
-      Description: EC2 and RDS instance scheduler, version v3.0.10
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
+      Description: EC2 and RDS instance scheduler, version v3.0.12
       Environment:
         Variables:
           LOG_GROUP:
@@ -1782,7 +1648,7 @@ Resources:
               - TraceCondition
               - "True"
               - "False"
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           DEFAULT_TIMEZONE:
             Ref: DefaultTimezone
           ENABLE_AWS_ORGANIZATIONS:
@@ -1799,7 +1665,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.0.10
+          SOLUTION_VERSION: v3.0.12
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -1818,12 +1684,6 @@ Resources:
           - MainLambdaRole500DC55A
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 300
       TracingConfig:
         Mode: Active
@@ -1872,12 +1732,6 @@ Resources:
           - ""
           - - Ref: Namespace
             - -SchedulingRequestHandler-Role
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -1918,8 +1772,8 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
-      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.0.10
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
+      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.0.12
       Environment:
         Variables:
           CONFIG_TABLE:
@@ -1928,7 +1782,7 @@ Resources:
             Ref: StateTable
           MAINT_WINDOW_TABLE:
             Ref: MaintenanceWindowTable
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           STACK_NAME:
             Ref: AWS::StackName
           LOG_GROUP:
@@ -1995,7 +1849,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.0.10
+          SOLUTION_VERSION: v3.0.12
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -2010,12 +1864,6 @@ Resources:
           - schedulingRequestHandlerRoleD87803EB
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 300
       TracingConfig:
         Mode: Active
@@ -2041,12 +1889,6 @@ Resources:
             - Ref: schedulingRequestHandlerLambdaC395DC9E
       RetentionInDays:
         Ref: LogRetentionDays
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Metadata:
@@ -2215,12 +2057,6 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
         Version: "2012-10-17"
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestratorRole/Resource
   SchedulingOrchestratorRoleDefaultPolicy29DE8B0D:
@@ -2270,11 +2106,11 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
-      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.0.10
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
+      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.0.12
       Environment:
         Variables:
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           LOG_GROUP:
             Ref: SchedulerLogGroup
           ISSUES_TOPIC_ARN:
@@ -2360,7 +2196,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.0.10
+          SOLUTION_VERSION: v3.0.12
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -2375,12 +2211,6 @@ Resources:
           - SchedulingOrchestratorRoleAD0FF7B1
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 300
       TracingConfig:
         Mode: Active
@@ -2406,12 +2236,6 @@ Resources:
             - Ref: SchedulingOrchestratorBB4C4C5A
       RetentionInDays:
         Ref: LogRetentionDays
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Metadata:
@@ -2528,12 +2352,6 @@ Resources:
           - ""
           - - Ref: Namespace
             - -AsgRequestHandler-Role
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -2570,13 +2388,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
-      Description: Instance Scheduler for AutoScaling Groups version v3.0.10
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
+      Description: Instance Scheduler for AutoScaling Groups version v3.0.12
       Environment:
         Variables:
           CONFIG_TABLE:
             Ref: ConfigTable
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           ISSUES_TOPIC_ARN:
             Ref: InstanceSchedulerSnsTopic
           POWERTOOLS_LOG_LEVEL:
@@ -2605,7 +2423,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.0.10
+          SOLUTION_VERSION: v3.0.12
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -2620,12 +2438,6 @@ Resources:
           - ASGRole21C54AF6
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 300
       TracingConfig:
         Mode: Active
@@ -2651,12 +2463,6 @@ Resources:
             - Ref: ASGHandler0F6D6751
       RetentionInDays:
         Ref: LogRetentionDays
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Metadata:
@@ -2762,12 +2568,6 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
         Version: "2012-10-17"
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ASGOrchRole/Resource
     Condition: ScheduleASGsCondition
@@ -2819,11 +2619,11 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
-      Description: Instance Scheduler orchestrator for AutoScaling Groups version v3.0.10
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
+      Description: Instance Scheduler orchestrator for AutoScaling Groups version v3.0.12
       Environment:
         Variables:
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           CONFIG_TABLE:
             Ref: ConfigTable
           ISSUES_TOPIC_ARN:
@@ -2852,7 +2652,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.0.10
+          SOLUTION_VERSION: v3.0.12
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -2867,12 +2667,6 @@ Resources:
           - ASGSchedulerASGOrchRole5B79F32B
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 60
       TracingConfig:
         Mode: Active
@@ -2899,12 +2693,6 @@ Resources:
             - Ref: ASGSchedulerASGOrchestrator6629B72C
       RetentionInDays:
         Ref: LogRetentionDays
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Metadata:
@@ -2995,12 +2783,6 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
         Version: "2012-10-17"
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ScheduleUpdateHandlerRole/Resource
     Condition: ScheduleASGsCondition
@@ -3072,11 +2854,11 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.0.10/57f78401d30a6f888f94f82266e172f43b813ba478c27ac49593dacabedd2152.zip
-      Description: Instance Scheduler handler for updates to schedules version v3.0.10
+        S3Key: instance-scheduler-on-aws/v3.0.12/783d9b08ebb21df838928ac2b01a489d3e952dca507a70feea47dd428eb494e0.zip
+      Description: Instance Scheduler handler for updates to schedules version v3.0.12
       Environment:
         Variables:
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.10
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.0.12
           CONFIG_TABLE:
             Ref: ConfigTable
           ISSUES_TOPIC_ARN:
@@ -3105,7 +2887,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.0.10
+          SOLUTION_VERSION: v3.0.12
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3120,12 +2902,6 @@ Resources:
           - ASGSchedulerScheduleUpdateHandlerRole25C919AA
           - Arn
       Runtime: python3.11
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
       Timeout: 60
       TracingConfig:
         Mode: Active
@@ -3158,12 +2934,6 @@ Resources:
         Ref: ASGSchedulerScheduleUpdateHandlerCC8A8D00
       MaximumBatchingWindowInSeconds: 60
       StartingPosition: LATEST
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ASGScheduler/ScheduleUpdateHandler/DynamoDBEventSource:instancescheduleronawsConfigTableF5DC8AC4/Resource
     Condition: ScheduleASGsCondition
@@ -3177,12 +2947,6 @@ Resources:
             - Ref: ASGSchedulerScheduleUpdateHandlerCC8A8D00
       RetentionInDays:
         Ref: LogRetentionDays
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Metadata:
@@ -3266,7 +3030,7 @@ Resources:
   ASGSchedulerASGOrchRule510DB4D0:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger scheduling for AutoScaling Groups version v3.0.10
+      Description: Instance Scheduler - Rule to trigger scheduling for AutoScaling Groups version v3.0.12
       ScheduleExpression: rate(1 hour)
       State: ENABLED
       Targets:
@@ -3315,12 +3079,6 @@ Resources:
           - ""
           - - Ref: Namespace
             - -ASG-Scheduling-Role
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -3373,7 +3131,7 @@ Resources:
   SchedulerEventRuleDD9A6B32:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.0.10
+      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.0.12
       ScheduleExpression:
         Fn::FindInMap:
           - CronExpressionsForSchedulingIntervals
@@ -3428,12 +3186,6 @@ Resources:
           - ""
           - - Ref: Namespace
             - -Scheduler-Role
-      Tags:
-        - Key: awsApplication
-          Value:
-            Fn::GetAtt:
-              - AppRegistry968496A3
-              - ApplicationTagValue
     Metadata:
       cfn_nag:
         rules_to_suppress:
