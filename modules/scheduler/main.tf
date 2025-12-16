@@ -56,7 +56,7 @@ module "cloudformation_macro" {
 ## Provision an s3 bucket to store the cloudformation templates
 module "s3_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "5.9.0"
+  version = "5.9.1"
 
   acl                                      = "private"
   attach_deny_incorrect_encryption_headers = true
