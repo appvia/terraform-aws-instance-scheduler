@@ -23,9 +23,6 @@ jobs:
       - name: Run Update Script
         run: |
           ./scripts/update.sh
-      - name: Check for Changes
-        run: |
-          git diff --exit-code
       - name: Create Pull Request
         if: success()
         uses: peter-evans/create-pull-request@v8
