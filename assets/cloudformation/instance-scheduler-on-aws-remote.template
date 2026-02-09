@@ -6,7 +6,7 @@ AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: ${ macro_name }
 %{ endif ~}
-Description: (SO0030S) instance-scheduler-on-aws remote v3.1.1
+Description: (SO0030S) instance-scheduler-on-aws remote v3.1.2
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -280,7 +280,9 @@ Resources:
             Resource:
               Fn::Join:
                 - ""
-                - - 'arn:aws:events:*:'
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:*:'
                   - Ref: AWS::AccountId
                   - :event-bus/IS-LocalEvents-
                   - Ref: Namespace
@@ -430,13 +432,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.1/80af371fbcee48774eec7364ce159e3c2be9ebcc91c7ecb80f19496681d4fc59.zip
+        S3Key: instance-scheduler-on-aws/v3.1.2/c69e911ae20c01a1270ee00648b96ad240a1cafbfd2cd80a426920be8db857b3.zip
       Description: Custom Resource for creating regional event rules for tagging resources.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.1
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.2
           TAGGING_EVENT_RULE_ROLE_ARN:
             Fn::GetAtt:
               - HubTagEventForwardingRole5BEE3911
@@ -453,8 +455,12 @@ Resources:
                 - :event-bus/
                 - Ref: Namespace
                 - -RegistrationEvents
-          EVENT_RULE_PREFIX: IS-Tagging
-          VERSION: v3.1.1
+          EVENT_RULE_PREFIX:
+            Fn::Join:
+              - ""
+              - - IS-Tagging-
+                - Ref: Namespace
+          VERSION: v3.1.2
           SCHEDULE_TAG_KEY:
             Ref: ScheduleTagKey
           REGIONAL_EVENT_BUS_NAME:
@@ -483,7 +489,7 @@ Resources:
       - CreateRegionalEventRulesLambdaRole1BE94A3C
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CreateRegionalEventRulesLambda/Resource
-      aws:asset:path: asset.80af371fbcee48774eec7364ce159e3c2be9ebcc91c7ecb80f19496681d4fc59
+      aws:asset:path: asset.c69e911ae20c01a1270ee00648b96ad240a1cafbfd2cd80a426920be8db857b3
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -502,11 +508,29 @@ Resources:
               - events:RemoveTargets
             Effect: Allow
             Resource:
-              Fn::Join:
-                - ""
-                - - 'arn:aws:events:*:'
-                  - Ref: AWS::AccountId
-                  - :rule/IS-Tagging*
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-
+                    - Ref: Namespace
+                    - '*'
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-resource-tagging
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-asg-tagging*
           - Action:
               - events:CreateEventBus
               - events:DeleteEventBus
@@ -514,7 +538,9 @@ Resources:
             Resource:
               Fn::Join:
                 - ""
-                - - 'arn:aws:events:*:'
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:*:'
                   - Ref: AWS::AccountId
                   - :event-bus/IS-LocalEvents-
                   - Ref: Namespace
@@ -552,6 +578,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
+      version: v3.1.2
     UpdateReplacePolicy: Retain
     DeletionPolicy: Delete
     Metadata:
@@ -577,7 +604,9 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ""
-                    - - 'arn:aws:ssm:*:'
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
                       - Ref: AWS::AccountId
                       - :parameter/IS/
                       - Ref: Namespace
@@ -593,7 +622,9 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ""
-                    - - 'arn:aws:ssm:*:'
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
                       - Ref: AWS::AccountId
                       - :parameter/IS/
                       - Ref: Namespace
@@ -649,7 +680,9 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ""
-                    - - 'arn:aws:ssm:*:'
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
                       - Ref: AWS::AccountId
                       - :parameter/IS/
                       - Ref: Namespace
@@ -665,7 +698,9 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ""
-                    - - 'arn:aws:ssm:*:'
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
                       - Ref: AWS::AccountId
                       - :parameter/IS/
                       - Ref: Namespace
@@ -732,7 +767,9 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ""
-                    - - 'arn:aws:ssm:*:'
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
                       - Ref: AWS::AccountId
                       - :parameter/IS/
                       - Ref: Namespace
@@ -748,7 +785,9 @@ Resources:
                 Resource:
                   Fn::Join:
                     - ""
-                    - - 'arn:aws:ssm:*:'
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
                       - Ref: AWS::AccountId
                       - :parameter/IS/
                       - Ref: Namespace
@@ -774,13 +813,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.1/80af371fbcee48774eec7364ce159e3c2be9ebcc91c7ecb80f19496681d4fc59.zip
+        S3Key: instance-scheduler-on-aws/v3.1.2/c69e911ae20c01a1270ee00648b96ad240a1cafbfd2cd80a426920be8db857b3.zip
       Description: Custom Resource Provider used for region registration
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.1
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.2
           HUB_ACCOUNT_ID:
             Ref: InstanceSchedulerAccount
           STACK_ID:
@@ -794,7 +833,9 @@ Resources:
           HUB_REGISTRATION_FUNCTION_ARN:
             Fn::Join:
               - ""
-              - - 'arn:aws:lambda:'
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':lambda:'
                 - Ref: AWS::Region
                 - ':'
                 - Ref: InstanceSchedulerAccount
@@ -827,7 +868,7 @@ Resources:
       - RegionRegistrationLambdaRoleED66DE1B
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationCustomResourceLambda/Resource
-      aws:asset:path: asset.80af371fbcee48774eec7364ce159e3c2be9ebcc91c7ecb80f19496681d4fc59
+      aws:asset:path: asset.c69e911ae20c01a1270ee00648b96ad240a1cafbfd2cd80a426920be8db857b3
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -840,13 +881,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.1/80af371fbcee48774eec7364ce159e3c2be9ebcc91c7ecb80f19496681d4fc59.zip
+        S3Key: instance-scheduler-on-aws/v3.1.2/c69e911ae20c01a1270ee00648b96ad240a1cafbfd2cd80a426920be8db857b3.zip
       Description: Custom Resource lambda to wait and confirm region registrations.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.1
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.2
           HUB_ACCOUNT_ID:
             Ref: InstanceSchedulerAccount
           STACK_ID:
@@ -860,7 +901,9 @@ Resources:
           HUB_REGISTRATION_FUNCTION_ARN:
             Fn::Join:
               - ""
-              - - 'arn:aws:lambda:'
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':lambda:'
                 - Ref: AWS::Region
                 - ':'
                 - Ref: InstanceSchedulerAccount
@@ -893,7 +936,7 @@ Resources:
       - RegionRegistrationWaitingLambdaRole96F8D082
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationWaitLambda/Resource
-      aws:asset:path: asset.80af371fbcee48774eec7364ce159e3c2be9ebcc91c7ecb80f19496681d4fc59
+      aws:asset:path: asset.c69e911ae20c01a1270ee00648b96ad240a1cafbfd2cd80a426920be8db857b3
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -975,7 +1018,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.1/bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca.zip
+        S3Key: instance-scheduler-on-aws/v3.1.2/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - onEvent (instance-scheduler-on-aws-remote/CustomResourceProvider)
       Environment:
         Variables:
@@ -1004,7 +1047,7 @@ Resources:
       - CustomResourceProviderframeworkonEventServiceRole7EBC5835
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onEvent/Resource
-      aws:asset:path: asset.bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
       aws:asset:is-bundled: false
       aws:asset:property: Code
       guard:
@@ -1082,7 +1125,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.1/bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca.zip
+        S3Key: instance-scheduler-on-aws/v3.1.2/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - isComplete (instance-scheduler-on-aws-remote/CustomResourceProvider)
       Environment:
         Variables:
@@ -1109,7 +1152,7 @@ Resources:
       - CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-isComplete/Resource
-      aws:asset:path: asset.bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
       aws:asset:is-bundled: false
       aws:asset:property: Code
       guard:
@@ -1187,7 +1230,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.1/bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca.zip
+        S3Key: instance-scheduler-on-aws/v3.1.2/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - onTimeout (instance-scheduler-on-aws-remote/CustomResourceProvider)
       Environment:
         Variables:
@@ -1214,7 +1257,7 @@ Resources:
       - CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onTimeout/Resource
-      aws:asset:path: asset.bdc104ed9cab1b5b6421713c8155f0b753380595356f710400609664d3635eca
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
       aws:asset:is-bundled: false
       aws:asset:property: Code
       guard:
@@ -1334,7 +1377,9 @@ Resources:
             Resource:
               Fn::Join:
                 - ""
-                - - 'arn:aws:lambda:'
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':lambda:'
                   - Ref: AWS::Region
                   - ':'
                   - Ref: InstanceSchedulerAccount
@@ -1357,19 +1402,59 @@ Resources:
           - Arn
       regions:
         Ref: Regions
+      version: v3.1.2
     DependsOn:
-      - EC2SchedulerCrossAccountRoleASGSchedulingPermissionsAE9E3D48
-      - EC2SchedulerCrossAccountRoleEc2SchedulingPermissions35C26E2F
-      - EC2SchedulerCrossAccountRoleRdsSchedulingPermissions18D04034
-      - EC2SchedulerCrossAccountRole
-      - EC2SchedulerCrossAccountRoleResourceGroupsTaggingPermissions5A354A85
-      - RegionRegistrationLambdaRoleED66DE1B
-      - RegionRegistrationWaitingLambdaRole96F8D082
-      - SpokeRegistrationUpdateSSMParamRole3F15A1F5
+      - IamPolicyDeploymentGate
+      - IamRoleDeploymentGate
+      - LambdaDeploymentGate
     UpdateReplacePolicy: Retain
     DeletionPolicy: Delete
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/RegisterRegions/Default
+  LambdaDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - CreateRegionalEventRulesLambda4F6A2D62
+      - CustomResourceProviderframeworkisComplete2713CDE6
+      - CustomResourceProviderframeworkonEvent0AA4376C
+      - CustomResourceProviderframeworkonTimeout39980DF9
+      - RegionRegistrationCustomResourceLambda632460E5
+      - RegionRegistrationWaitLambda671C2191
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/LambdaDeploymentGate
+  IamRoleDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - CreateRegionalEventRulesLambdaRole1BE94A3C
+      - CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
+      - CustomResourceProviderframeworkonEventServiceRole7EBC5835
+      - CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
+      - CustomResourceProviderwaiterstatemachineRole09462DF6
+      - EC2SchedulerCrossAccountRole
+      - HubTagEventForwardingRole5BEE3911
+      - RegionRegistrationLambdaRoleED66DE1B
+      - RegionRegistrationWaitingLambdaRole96F8D082
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/IamRoleDeploymentGate
+  IamPolicyDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - CreateRegionalEventRulesLambdaRoleDefaultPolicy80005665
+      - CreateRegionalEventRulesPolicyBA8F60E9
+      - CustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy289A380C
+      - CustomResourceProviderframeworkonEventServiceRoleDefaultPolicy93CD1647
+      - CustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy0C25C854
+      - CustomResourceProviderwaiterstatemachineRoleDefaultPolicy37566898
+      - EC2SchedulerCrossAccountRoleASGSchedulingPermissionsAE9E3D48
+      - EC2SchedulerCrossAccountRoleEc2SchedulingPermissions35C26E2F
+      - EC2SchedulerCrossAccountRoleRdsSchedulingPermissions18D04034
+      - EC2SchedulerCrossAccountRoleRegionalEventBusPermissionsCE7D7CD4
+      - EC2SchedulerCrossAccountRoleResourceGroupsTaggingPermissions5A354A85
+      - HubTagEventForwardingRoleDefaultPolicy5747D549
+      - RegionRegistrationLambdaRoleDefaultPolicy7AA4928B
+      - RegionRegistrationWaitingLambdaRoleDefaultPolicy8BBEB5F7
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/IamPolicyDeploymentGate
 Conditions:
   EC2SchedulerCrossAccountRolekmsAccessCondition6C83D407:
     Fn::Not:
