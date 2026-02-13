@@ -4,7 +4,7 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
 
   ## The current region
-  region = data.aws_region.current.name
+  region = data.aws_region.current.region
 
   ## The expected arn of the s3 bucket
   bucket_arn = format("arn:aws:s3:::%s", var.cloudformation_bucket_name)

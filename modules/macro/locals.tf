@@ -2,7 +2,7 @@ locals {
   # The account ID and region
   account_id = data.aws_caller_identity.current.account_id
   # The region
-  region = data.aws_region.current.name
+  region = data.aws_region.current.region
   # The name of the CloudWatch log group
   cloudwatch_log_group_name = format("/aws/lambda/%s", local.lambda_function_name)
   # The name of the Lambda function
