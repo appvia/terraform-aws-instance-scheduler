@@ -204,7 +204,10 @@ def does_not_support_tags(resource_type):
         "AWS::ServiceDiscovery::Service",
         
         # Service Catalog App Registry
-        "AWS::ServiceCatalogAppRegistry::Application"
+        "AWS::ServiceCatalogAppRegistry::Application",
+
+        # Logs Insights
+        "AWS::Logs::QueryDefinition"
     }
     
     return resource_type in non_taggable_resources
