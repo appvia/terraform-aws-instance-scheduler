@@ -116,6 +116,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_scheduler_account_id"></a> [scheduler\_account\_id](#input\_scheduler\_account\_id) | The account id of where the orchcastrator is running | `string` | n/a | yes |
+| <a name="input_artifacts_dir"></a> [artifacts\_dir](#input\_artifacts\_dir) | The output path to store lambda function code artifacts | `string` | `"builds"` | no |
 | <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates (region added) | `string` | `"lz-instance-scheduler-spoke-templates"` | no |
 | <a name="input_cloudformation_macro_name"></a> [cloudformation\_macro\_name](#input\_cloudformation\_macro\_name) | The name of the cloudformation macro | `string` | `"AddDefaultTags"` | no |
 | <a name="input_cloudformation_spoke_stack_name"></a> [cloudformation\_spoke\_stack\_name](#input\_cloudformation\_spoke\_stack\_name) | The name of the cloudformation stack in the spoke accounts | `string` | `"lz-instance-scheduler-spoke"` | no |

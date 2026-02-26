@@ -128,6 +128,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 |------|-------------|------|---------|:--------:|
 | <a name="input_scheduler_tag_name"></a> [scheduler\_tag\_name](#input\_scheduler\_tag\_name) | The tag name used to identify the resources that should be scheduled | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
+| <a name="input_artifacts_dir"></a> [artifacts\_dir](#input\_artifacts\_dir) | The path to the directory where the Lambda function code artifacts are stored | `string` | `"builds"` | no |
 | <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates | `string` | `"lza-instance-scheduler-templates"` | no |
 | <a name="input_cloudformation_hub_stack_capabilities"></a> [cloudformation\_hub\_stack\_capabilities](#input\_cloudformation\_hub\_stack\_capabilities) | The capabilities required for the cloudformation stack in the hub account | `list(string)` | <pre>[<br/>  "CAPABILITY_NAMED_IAM",<br/>  "CAPABILITY_AUTO_EXPAND",<br/>  "CAPABILITY_IAM"<br/>]</pre> | no |
 | <a name="input_cloudformation_hub_stack_name"></a> [cloudformation\_hub\_stack\_name](#input\_cloudformation\_hub\_stack\_name) | The name of the cloudformation stack in the hub account | `string` | `"lza-instance-scheduler-hub"` | no |

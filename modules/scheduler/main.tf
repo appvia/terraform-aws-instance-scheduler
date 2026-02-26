@@ -42,11 +42,12 @@ data "aws_iam_policy_document" "bucket" {
   }
 }
 
-## Provision the cloudformation macro if required 
+## Provision the cloudformation macro if required
 module "cloudformation_macro" {
   count  = var.enable_cloudformation_macro ? 1 : 0
   source = "../macro"
 
+  artifacts_dir                       = var.artifacts_dir
   name_prefix                         = "scheduler-default-tags"
   cloudformation_transform_name       = var.cloudformation_macro_name
   cloudformation_transform_stack_name = var.cloudformation_transform_stack_name

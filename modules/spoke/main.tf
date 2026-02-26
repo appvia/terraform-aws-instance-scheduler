@@ -80,12 +80,12 @@ module "cloudformation_macro" {
   count  = var.enable_cloudformation_macro ? 1 : 0
   source = "../macro"
 
+  artifacts_dir                       = var.artifacts_dir
   name_prefix                         = "spoke-default-tags"
   cloudformation_transform_name       = var.cloudformation_macro_name
   cloudformation_transform_stack_name = var.cloudformation_transform_stack_name
   tags                                = var.tags
 }
-
 
 ## Provision a standalone cloudformation stack within the spoke account
 resource "aws_cloudformation_stack" "spoke" {

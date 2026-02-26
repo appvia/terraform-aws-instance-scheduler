@@ -1,3 +1,8 @@
+variable "artifacts_dir" {
+  description = "The path to the directory where the Lambda function code artifacts are stored"
+  type        = string
+  default     = "builds"
+}
 
 variable "cloudformation_bucket_name" {
   description = "The name of the S3 bucket used to store the cloudformation templates"
