@@ -1,6 +1,6 @@
 
 variable "cloudformation_bucket_name" {
-  description = "The name of the S3 bucket used to store the cloudformation templates (region added)"
+  description = "The name of the S3 bucket used to store the cloudformation templates"
   type        = string
   default     = "lz-instance-scheduler-spoke-templates"
 }
@@ -14,7 +14,7 @@ variable "cloudformation_macro_name" {
 variable "cloudformation_spoke_stack_name" {
   description = "The name of the cloudformation stack in the spoke accounts"
   type        = string
-  default     = "lz-instance-scheduler-spoke"
+  default     = "lz-instance-scheduler-spokes"
 }
 
 variable "cloudformation_transform_stack_name" {
@@ -35,6 +35,12 @@ variable "kms_key_arns" {
   default     = []
 }
 
+variable "organizational_units" {
+  description = "The organizational units to deploy the stack to (when using a stackset)"
+  type        = map(string)
+  default     = {}
+}
+
 variable "scheduler_account_id" {
   description = "The account id of where the orchcastrator is running"
   type        = string
@@ -49,5 +55,4 @@ variable "scheduler_account_id" {
 variable "tags" {
   description = "The tags to apply to the resources"
   type        = map(string)
-  default     = {}
 }

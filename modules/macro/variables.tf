@@ -14,16 +14,16 @@ variable "cloudformation_transform_stack_name" {
   type        = string
 }
 
-variable "log_retention_days" {
-  description = "CloudWatch log retention period in days"
-  type        = number
-  default     = 14
-}
-
 variable "log_kms_key_id" {
   description = "KMS key ID to use for CloudWatch log encryption"
   type        = string
   default     = null
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch log retention period in days"
+  type        = number
+  default     = 14
 }
 
 variable "memory_size" {

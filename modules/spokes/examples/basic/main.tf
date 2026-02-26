@@ -4,19 +4,11 @@
 # to build your own root module that invokes this module
 #####################################################################################
 
-module "stackset_spoke" {
+module "standalone_spoke" {
   source = "../.."
 
-  enable_organizations = true
-  enable_standalone    = false
-  enable_stackset      = true
-  region               = "eu-west-2"
-  scheduler_account_id = "123456789012"
-
-  organizational_units = {
-    "infrastructure" = "ou-123456789012"
-    "development"    = "ou-123456789013"
-  }
+  cloudformation_bucket_name = "lza-instance-scheduler-spoke-templates"
+  scheduler_account_id       = "970526142943"
 
   tags = {
     "Environment" = "Development"
@@ -24,5 +16,22 @@ module "stackset_spoke" {
     "Product"     = "LandingZone"
     "Provisioner" = "Terraform"
     "GitRepo"     = "https://github.com/appvia/terraform-aws-instance-scheduler"
+  }
+}
+
+## Ensure the resources are tagging correctly
+module "tagging" {
+  source = "../../../tagging"
+
+  enable_autoscaling  = true
+  scheduler_tag_name  = "Schedule"
+  scheduler_tag_value = "uk_working_hours"
+  schedule            = "rate(5 minutes)"
+
+  tags = {
+    Environment = "Production"
+    Owner       = "Solutions"
+    Product     = "LandingZone"
+    GitRepo     = "https://github.com/appvia/terraform-aws-instance-scheduler"
   }
 }

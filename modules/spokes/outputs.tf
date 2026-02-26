@@ -8,7 +8,7 @@ output "bucket_name" {
   value       = module.s3_bucket.s3_bucket_id
 }
 
-output "cloudformation_arn" {
-  description = "The ARN of the cloudformation stack deployed to the spoke account"
-  value       = aws_cloudformation_stack.spoke.id
+output "stackset_arn" {
+  description = "The ARN of the stackset deployed to the spoke accounts"
+  value       = aws_cloudformation_stack_set.spokes.id
 }

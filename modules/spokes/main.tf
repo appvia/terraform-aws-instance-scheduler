@@ -32,7 +32,7 @@ module "s3_bucket" {
   attach_deny_insecure_transport_policy    = true
   attach_deny_unencrypted_object_uploads   = true
   attach_require_latest_tls_policy         = true
-  bucket                                   = local.bucket_name
+  bucket                                   = var.cloudformation_bucket_name
   control_object_ownership                 = true
   force_destroy                            = true
   object_ownership                         = "ObjectWriter"
@@ -75,6 +75,48 @@ resource "aws_s3_object" "spoke_template" {
   })
 }
 
+## Provision the cloudformation stack within the spoke accounts
+resource "aws_cloudformation_stack_set" "spokes" {
+  capabilities     = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
+  description      = "Used to deploy the instance scheduler stack to spoke accounts"
+  name             = var.cloudformation_spoke_stack_name
+  parameters       = local.cloudformation_spoke_stack_parameters
+  permission_model = "SERVICE_MANAGED"
+  tags             = var.tags
+  template_url     = format("https://%s.s3.amazonaws.com/%s", module.s3_bucket.s3_bucket_id, aws_s3_object.spoke_template.key)
+
+  auto_deployment {
+    enabled                          = true
+    retain_stacks_on_account_removal = true
+  }
+
+  lifecycle {
+    ignore_changes = [administration_role_arn]
+  }
+
+  depends_on = [aws_s3_object.spoke_template]
+}
+
+## Provision a stackset to the organizational units if enabled
+resource "aws_cloudformation_stack_set_instance" "spokes" {
+  for_each = var.organizational_units
+
+  stack_set_name            = aws_cloudformation_stack_set.spokes.name
+  stack_set_instance_region = local.region
+
+  operation_preferences {
+    failure_tolerance_count = 0
+    max_concurrent_count    = 10
+    region_concurrency_type = "PARALLEL"
+  }
+
+  deployment_targets {
+    organizational_unit_ids = [each.value]
+  }
+
+  depends_on = [aws_cloudformation_stack_set.spokes]
+}
+
 ## Provision the cloudformation macro if required
 module "cloudformation_macro" {
   count  = var.enable_cloudformation_macro ? 1 : 0
@@ -85,19 +127,3 @@ module "cloudformation_macro" {
   cloudformation_transform_stack_name = var.cloudformation_transform_stack_name
   tags                                = var.tags
 }
-
-
-## Provision a standalone cloudformation stack within the spoke account
-resource "aws_cloudformation_stack" "spoke" {
-  name         = var.cloudformation_spoke_stack_name
-  capabilities = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
-  parameters   = local.cloudformation_spoke_stack_parameters
-  tags         = var.tags
-  template_url = format("https://%s.s3.amazonaws.com/%s", module.s3_bucket.s3_bucket_id, aws_s3_object.spoke_template.key)
-
-  depends_on = [
-    aws_s3_object.spoke_template,
-    module.cloudformation_macro,
-  ]
-}
-
