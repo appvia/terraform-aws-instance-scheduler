@@ -96,7 +96,7 @@ module "macro" {
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | n/a |
+| <a name="provider_archive"></a> [archive](#provider\_archive) | >= 2.7.1 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0.0 |
 
 ## Inputs
@@ -107,6 +107,7 @@ module "macro" {
 | <a name="input_cloudformation_transform_stack_name"></a> [cloudformation\_transform\_stack\_name](#input\_cloudformation\_transform\_stack\_name) | Name of the cloudformation transform stack | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to all resources | `map(string)` | n/a | yes |
 | <a name="input_architecture"></a> [architecture](#input\_architecture) | Lambda function architecture | `string` | `"arm64"` | no |
+| <a name="input_artifacts_dir"></a> [artifacts\_dir](#input\_artifacts\_dir) | The path to the directory where the Lambda function code artifacts are stored | `string` | `"builds"` | no |
 | <a name="input_log_kms_key_id"></a> [log\_kms\_key\_id](#input\_log\_kms\_key\_id) | KMS key ID to use for CloudWatch log encryption | `string` | `null` | no |
 | <a name="input_log_retention_days"></a> [log\_retention\_days](#input\_log\_retention\_days) | CloudWatch log retention period in days | `number` | `14` | no |
 | <a name="input_memory_size"></a> [memory\_size](#input\_memory\_size) | Lambda function memory size in MB | `number` | `128` | no |
