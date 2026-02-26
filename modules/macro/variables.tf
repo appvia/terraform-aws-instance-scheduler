@@ -4,6 +4,12 @@ variable "architecture" {
   default     = "arm64"
 }
 
+variable "artifacts_dir" {
+  description = "The path to the directory where the Lambda function code artifacts are stored"
+  type        = string
+  default     = "builds"
+}
+
 variable "cloudformation_transform_name" {
   description = "Name of the cloudformation transform"
   type        = string

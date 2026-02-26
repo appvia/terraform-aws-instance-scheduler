@@ -9,5 +9,5 @@ data "aws_region" "current" {}
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/assets"
-  output_path = "${path.module}/lambda_function.zip"
+  output_path = format("%s/lambda_function.zip", var.artifacts_dir)
 }
