@@ -79,7 +79,6 @@ module "scheduler" {
   scheduler_asg_rule_prefix     = "legacy-"
   scheduler_regions             = ["eu-west-2"]
   scheduler_frequency           = 30
-  enable_hub_account_scheduler  = false
   tags                          = local.tags
 }
 ```

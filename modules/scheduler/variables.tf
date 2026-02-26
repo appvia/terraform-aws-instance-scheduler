@@ -58,56 +58,20 @@ variable "enable_debug" {
   default     = false
 }
 
-variable "enable_docdb_scheduler" {
-  description = "Whether DocumentDB clusters should under the remit of the scheduler"
-  type        = bool
-  default     = true
-}
-
-variable "enable_ec2_scheduler" {
-  description = "Whether EC2 instances should under the remit of the scheduler"
-  type        = bool
-  default     = true
-}
-
-variable "enable_hub_account_scheduler" {
-  description = "Whether the hub account should be under the remit of the scheduler"
-  type        = bool
-  default     = true
-}
-
-variable "enable_neptune_scheduler" {
-  description = "Whether Neptune clusters should under the remit of the scheduler"
-  type        = bool
-  default     = true
-}
-
-variable "enable_organizational_bucket" {
-  description = "Indicate we should allow everyone in the organizations access to the cloudformation bucket"
-  type        = bool
-  default     = false
-}
-
 variable "enable_organizations" {
   description = "Whether the instance scheduler should integrate with AWS Organizations"
   type        = bool
   default     = true
 }
 
-variable "enable_rds_cluster_scheduler" {
-  description = "Whether RDS clusters should under the remit of the scheduler"
-  type        = bool
-  default     = true
-}
-
-variable "enable_rds_scheduler" {
-  description = "Whether RDS instances should under the remit of the scheduler"
-  type        = bool
-  default     = true
-}
-
 variable "enable_rds_snapshot" {
   description = "Whether RDS instances should have snapshots created on stop"
+  type        = bool
+  default     = false
+}
+
+variable "enable_retain_logs" {
+  description = "Whether the instance scheduler should retain logs"
   type        = bool
   default     = false
 }
@@ -163,6 +127,18 @@ variable "scheduler_log_group_retention" {
   description = "The retention period for the instance scheduler log group"
   type        = string
   default     = "7"
+}
+
+variable "scheduler_memory_size" {
+  description = "The memory size for the instance scheduler"
+  type        = number
+  default     = 128
+}
+
+variable "scheduler_orchestrator_memory_size" {
+  description = "The memory size for the instance scheduler orchestrator"
+  type        = number
+  default     = 128
 }
 
 variable "scheduler_organizations_ids" {

@@ -10,14 +10,10 @@ data "aws_iam_policy_document" "bucket" {
       identifiers = ["cloudformation.amazonaws.com"]
     }
 
-    dynamic "condition" {
-      for_each = var.enable_organizational_bucket ? [] : toset([])
-
-      content {
-        test     = "StringEquals"
-        variable = "aws:PrincipalOrgID"
-        values   = var.organizational_id
-      }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:PrincipalOrgID"
+      values   = [var.organizational_id]
     }
   }
 
@@ -28,16 +24,6 @@ data "aws_iam_policy_document" "bucket" {
     principals {
       type        = "AWS"
       identifiers = [format("arn:aws:iam::%s:root", local.account_id)]
-    }
-
-    dynamic "condition" {
-      for_each = var.enable_organizational_bucket ? [] : toset([])
-
-      content {
-        test     = "StringNotEquals"
-        variable = "aws:PrincipalOrgID"
-        values   = var.organizational_id
-      }
     }
   }
 }

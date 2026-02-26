@@ -94,7 +94,6 @@ module "scheduler" {
   scheduler_asg_rule_prefix     = "legacy-"
   scheduler_regions             = ["eu-west-2"]
   scheduler_frequency           = 30
-  enable_hub_account_scheduler  = false
   enable_scheduler              = true
   tags                          = local.tags
 }
@@ -138,15 +137,9 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_enable_cloudformation_macro"></a> [enable\_cloudformation\_macro](#input\_enable\_cloudformation\_macro) | Whether the cloudformation macro should be enabled | `bool` | `true` | no |
 | <a name="input_enable_cloudwatch_dashboard"></a> [enable\_cloudwatch\_dashboard](#input\_enable\_cloudwatch\_dashboard) | Whether a CloudWatch dashboard used to monitor the scheduler should be created | `bool` | `false` | no |
 | <a name="input_enable_debug"></a> [enable\_debug](#input\_enable\_debug) | Whether debug logging should be enabled for the instance scheduler | `bool` | `false` | no |
-| <a name="input_enable_docdb_scheduler"></a> [enable\_docdb\_scheduler](#input\_enable\_docdb\_scheduler) | Whether DocumentDB clusters should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_ec2_scheduler"></a> [enable\_ec2\_scheduler](#input\_enable\_ec2\_scheduler) | Whether EC2 instances should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_hub_account_scheduler"></a> [enable\_hub\_account\_scheduler](#input\_enable\_hub\_account\_scheduler) | Whether the hub account should be under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_neptune_scheduler"></a> [enable\_neptune\_scheduler](#input\_enable\_neptune\_scheduler) | Whether Neptune clusters should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_organizational_bucket"></a> [enable\_organizational\_bucket](#input\_enable\_organizational\_bucket) | Indicate we should allow everyone in the organizations access to the cloudformation bucket | `bool` | `false` | no |
 | <a name="input_enable_organizations"></a> [enable\_organizations](#input\_enable\_organizations) | Whether the instance scheduler should integrate with AWS Organizations | `bool` | `true` | no |
-| <a name="input_enable_rds_cluster_scheduler"></a> [enable\_rds\_cluster\_scheduler](#input\_enable\_rds\_cluster\_scheduler) | Whether RDS clusters should under the remit of the scheduler | `bool` | `true` | no |
-| <a name="input_enable_rds_scheduler"></a> [enable\_rds\_scheduler](#input\_enable\_rds\_scheduler) | Whether RDS instances should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_rds_snapshot"></a> [enable\_rds\_snapshot](#input\_enable\_rds\_snapshot) | Whether RDS instances should have snapshots created on stop | `bool` | `false` | no |
+| <a name="input_enable_retain_logs"></a> [enable\_retain\_logs](#input\_enable\_retain\_logs) | Whether the instance scheduler should retain logs | `bool` | `false` | no |
 | <a name="input_enable_scheduler"></a> [enable\_scheduler](#input\_enable\_scheduler) | Whether the instance scheduler should be enabled | `bool` | `true` | no |
 | <a name="input_enable_ssm_maintenance_windows"></a> [enable\_ssm\_maintenance\_windows](#input\_enable\_ssm\_maintenance\_windows) | Whether EC2 instances should be managed by SSM Maintenance Windows | `bool` | `false` | no |
 | <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
@@ -155,6 +148,8 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_scheduler_asg_tag_key"></a> [scheduler\_asg\_tag\_key](#input\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
 | <a name="input_scheduler_frequency"></a> [scheduler\_frequency](#input\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |
 | <a name="input_scheduler_log_group_retention"></a> [scheduler\_log\_group\_retention](#input\_scheduler\_log\_group\_retention) | The retention period for the instance scheduler log group | `string` | `"7"` | no |
+| <a name="input_scheduler_memory_size"></a> [scheduler\_memory\_size](#input\_scheduler\_memory\_size) | The memory size for the instance scheduler | `number` | `128` | no |
+| <a name="input_scheduler_orchestrator_memory_size"></a> [scheduler\_orchestrator\_memory\_size](#input\_scheduler\_orchestrator\_memory\_size) | The memory size for the instance scheduler orchestrator | `number` | `128` | no |
 | <a name="input_scheduler_organizations_ids"></a> [scheduler\_organizations\_ids](#input\_scheduler\_organizations\_ids) | A list of organizations ids that are permitted to use the scheduler | `list(string)` | `[]` | no |
 | <a name="input_scheduler_regions"></a> [scheduler\_regions](#input\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
 | <a name="input_scheduler_start_tags"></a> [scheduler\_start\_tags](#input\_scheduler\_start\_tags) | The tags used to identify the resources that should be started | `string` | `"InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
