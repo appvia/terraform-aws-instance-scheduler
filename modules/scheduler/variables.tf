@@ -7,7 +7,7 @@ variable "artifacts_dir" {
 variable "cloudformation_bucket_name" {
   description = "The name of the S3 bucket used to store the cloudformation templates"
   type        = string
-  default     = "lza-instance-scheduler-templates"
+  default     = "lz-instance-scheduler-templates"
 }
 
 variable "cloudformation_hub_stack_capabilities" {
@@ -19,7 +19,7 @@ variable "cloudformation_hub_stack_capabilities" {
 variable "cloudformation_hub_stack_name" {
   description = "The name of the cloudformation stack in the hub account"
   type        = string
-  default     = "lza-instance-scheduler-hub"
+  default     = "lz-instance-scheduler-hub"
 }
 
 variable "cloudformation_macro_name" {
@@ -31,7 +31,7 @@ variable "cloudformation_macro_name" {
 variable "cloudformation_transform_stack_name" {
   description = "The name of the cloudformation transform stack"
   type        = string
-  default     = "lza-instance-scheduler-add-default-tags"
+  default     = "lz-instance-scheduler-add-default-tags"
 }
 
 variable "enable_asg_scheduler" {

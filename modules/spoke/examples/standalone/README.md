@@ -45,7 +45,7 @@ module "standalone_spoke" {
   source = "../.."
 
   scheduler_account_id                = "111122223333"
-  cloudformation_bucket_name_prefix   = "prod-instance-scheduler-spoke"
+  cloudformation_bucket_name          = "prod-instance-scheduler-templates"
   cloudformation_spoke_stack_name     = "prod-instance-scheduler-spoke"
   enable_cloudformation_macro         = true
   cloudformation_macro_name           = "AddDefaultTags"
@@ -72,7 +72,7 @@ module "standalone_spoke" {
 
   scheduler_account_id              = "111122223333"
   cloudformation_spoke_stack_name   = "legacy-instance-scheduler-spoke"
-  cloudformation_bucket_name_prefix = "legacy-instance-scheduler-spoke"
+  cloudformation_bucket_name      = "legacy-instance-scheduler-templates"
   enable_cloudformation_macro       = false
   enable_standalone                 = true
   enable_stackset                   = false

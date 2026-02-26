@@ -1,11 +1,11 @@
 output "bucket_arn" {
   description = "The ARN of the S3 bucket used to store the cloudformation templates"
-  value       = module.s3_bucket.s3_bucket_arn
+  value       = format("arn:aws:s3:::%s", var.cloudformation_bucket_name)
 }
 
 output "bucket_name" {
   description = "The name of the S3 bucket used to store the cloudformation templates"
-  value       = module.s3_bucket.s3_bucket_id
+  value       = var.cloudformation_bucket_name
 }
 
 output "stackset_arn" {

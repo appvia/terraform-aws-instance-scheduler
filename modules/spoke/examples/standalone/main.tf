@@ -7,7 +7,7 @@
 module "standalone_spoke" {
   source = "../.."
 
-  cloudformation_bucket_name = "lza-instance-scheduler-spoke-templates"
+  cloudformation_bucket_name = "lz-instance-scheduler-templates"
   scheduler_account_id       = "970526142943"
 
   tags = {

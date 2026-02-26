@@ -1,1 +1,1493 @@
-../../../../assets/cloudformation/instance-scheduler-on-aws-remote.template
+---
+#
+## Source: https://s3.amazonaws.com/solutions-reference/instance-scheduler-on-aws/latest/instance-scheduler-on-aws-remote.template
+#
+AWSTemplateFormatVersion: 2010-09-09
+%{ if enable_macro ~}
+Transform: ${ macro_name }
+%{ endif ~}
+Description: (SO0030S) instance-scheduler-on-aws remote v3.1.4
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      Namespace:
+        default: Namespace
+      UsingAWSOrganizations:
+        default: Use AWS Organizations
+      InstanceSchedulerAccount:
+        default: Hub Account ID
+      ScheduleTagKey:
+        default: Schedule tag key
+      Regions:
+        default: Region(s)
+      KmsKeyArns:
+        default: Kms Key Arns for EC2
+      LicenseManagerArns:
+        default: License Manager Arns for EC2
+    ParameterGroups:
+      - Label:
+          default: Infrastructure
+        Parameters:
+          - Namespace
+          - UsingAWSOrganizations
+          - InstanceSchedulerAccount
+          - ScheduleTagKey
+      - Label:
+          default: Member-Account Scheduling
+        Parameters:
+          - Regions
+          - KmsKeyArns
+          - LicenseManagerArns
+Parameters:
+  Namespace:
+    Type: String
+    Default: default
+    Description: Unique identifier used to differentiate between multiple solution deployments. Must be set to the same value as the Hub stack. Must be non-empty for Organizations deployments.
+  UsingAWSOrganizations:
+    Type: String
+    Default: "No"
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Use AWS Organizations to automate spoke account registration. Must be set to the same value as the Hub stack
+  InstanceSchedulerAccount:
+    Type: String
+    AllowedPattern: ^\d{12}$
+    ConstraintDescription: Account number is a 12 digit number
+    Description: Account ID of the Instance Scheduler Hub stack that should be allowed to schedule resources in this account.
+  ScheduleTagKey:
+    Type: String
+    Default: Schedule
+    Description: 'The tag key Instance Scheduler will read to determine the schedule for a resource. Must be set to the same value as the Hub stack. '
+    MaxLength: 127
+    MinLength: 1
+  Regions:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Comma-separated List of regions in which resources should be scheduled. Leave blank for current region only.
+  KmsKeyArns:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: comma-separated list of kms arns to grant Instance Scheduler kms:CreateGrant permissions to provide the EC2  service with Decrypt permissions for encrypted EBS volumes. This allows the scheduler to start EC2 instances with attached encrypted EBS volumes. provide just (*) to give limited access to all kms keys, leave blank to disable. For details on the exact policy created, refer to security section of the implementation guide (https://aws.amazon.com/solutions/implementations/instance-scheduler-on-aws/)
+  LicenseManagerArns:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: comma-separated list of license manager arns to grant Instance Scheduler ec2:StartInstance permissions to provide the EC2  service with license manager permissions to start the instances. This allows the scheduler to start EC2 instances with license manager configuration enabled. Leave blank to disable. For details on the exact policy created, refer to security section of the implementation guide (https://aws.amazon.com/solutions/implementations/instance-scheduler-on-aws/)
+Resources:
+  EC2SchedulerCrossAccountRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':iam::'
+                    - Ref: InstanceSchedulerAccount
+                    - :role/
+                    - Ref: Namespace
+                    - -SchedulingRequestHandler-Role
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':iam::'
+                    - Ref: InstanceSchedulerAccount
+                    - :role/
+                    - Ref: Namespace
+                    - -ResourceRegistrationHandler-Role
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':iam::'
+                    - Ref: InstanceSchedulerAccount
+                    - :role/
+                    - Ref: Namespace
+                    - -IceErrorRetryHandler-Role
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':iam::'
+                    - Ref: InstanceSchedulerAccount
+                    - :role/
+                    - Ref: Namespace
+                    - -SpokeRegistrationHandler-Role
+        Version: "2012-10-17"
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -Scheduler-Role
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+    UpdateReplacePolicy: Retain
+  EC2SchedulerCrossAccountRoleEc2SchedulingPermissions35C26E2F:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: ec2:DescribeInstances
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - ec2:StartInstances
+              - ec2:StopInstances
+              - ec2:CreateTags
+              - ec2:DeleteTags
+              - ec2:ModifyInstanceAttribute
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:ec2:*:$${AWS::AccountId}:instance/*
+          - Action: ssm:DescribeMaintenanceWindows
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: EC2SchedulerCrossAccountRoleEc2SchedulingPermissions35C26E2F
+      Roles:
+        - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/Ec2SchedulingPermissions/Resource
+  EC2SchedulerCrossAccountRoleRdsSchedulingPermissions18D04034:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - rds:DescribeDBClusters
+              - rds:DescribeDBInstances
+              - tag:GetResources
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - rds:DeleteDBSnapshot
+              - rds:DescribeDBSnapshots
+              - rds:StopDBInstance
+              - rds:CreateDBSnapshot
+              - rds:AddTagsToResource
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:rds:*:$${AWS::AccountId}:snapshot:*
+          - Action:
+              - rds:AddTagsToResource
+              - rds:RemoveTagsFromResource
+              - rds:StartDBInstance
+              - rds:StopDBInstance
+              - rds:CreateDBSnapshot
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:rds:*:$${AWS::AccountId}:db:*
+          - Action:
+              - rds:AddTagsToResource
+              - rds:RemoveTagsFromResource
+              - rds:StartDBCluster
+              - rds:StopDBCluster
+              - rds:CreateDBClusterSnapshot
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:rds:*:$${AWS::AccountId}:cluster:*
+        Version: "2012-10-17"
+      PolicyName: EC2SchedulerCrossAccountRoleRdsSchedulingPermissions18D04034
+      Roles:
+        - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/RdsSchedulingPermissions/Resource
+  EC2SchedulerCrossAccountRoleASGSchedulingPermissionsAE9E3D48:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - autoscaling:BatchPutScheduledUpdateGroupAction
+              - autoscaling:BatchDeleteScheduledAction
+              - autoscaling:CreateOrUpdateTags
+              - autoscaling:DeleteTags
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':autoscaling:*:'
+                  - Ref: AWS::AccountId
+                  - :autoScalingGroup:*:autoScalingGroupName/*
+          - Action:
+              - autoscaling:DescribeAutoScalingGroups
+              - autoscaling:DescribeScheduledActions
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: EC2SchedulerCrossAccountRoleASGSchedulingPermissionsAE9E3D48
+      Roles:
+        - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/ASGSchedulingPermissions/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Required permissions to describe AutoScaling Groups
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+          - reason: Required permissions to modify scheduled scaling actions on AutoScaling Groups
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::arn:<AWS::Partition>:autoscaling:*:<AWS::AccountId>:autoScalingGroup:*:autoScalingGroupName/*
+  EC2SchedulerCrossAccountRoleResourceGroupsTaggingPermissions5A354A85:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - tag:TagResources
+              - tag:UntagResources
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: EC2SchedulerCrossAccountRoleResourceGroupsTaggingPermissions5A354A85
+      Roles:
+        - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/ResourceGroupsTaggingPermissions/Resource
+  EC2SchedulerCrossAccountRoleRegionalEventBusPermissionsCE7D7CD4:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:*:'
+                  - Ref: AWS::AccountId
+                  - :event-bus/IS-LocalEvents-
+                  - Ref: Namespace
+        Version: "2012-10-17"
+      PolicyName: EC2SchedulerCrossAccountRoleRegionalEventBusPermissionsCE7D7CD4
+      Roles:
+        - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/RegionalEventBusPermissions/Resource
+  EC2SchedulerCrossAccountRoleKmsPermissions93DB5FB5:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: kms:CreateGrant
+            Condition:
+              Bool:
+                kms:GrantIsForAWSResource: true
+              StringLike:
+                kms:ViaService: ec2.*.amazonaws.com
+              ForAllValues:StringEquals:
+                kms:GrantOperations:
+                  - Decrypt
+                kms:EncryptionContextKeys:
+                  - aws:ebs:id
+              "Null":
+                kms:EncryptionContextKeys: false
+                kms:GrantOperations: false
+            Effect: Allow
+            Resource:
+              Ref: KmsKeyArns
+        Version: "2012-10-17"
+      PolicyName: EC2SchedulerCrossAccountRoleKmsPermissions93DB5FB5
+      Roles:
+        - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/KmsPermissions/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Specific kms keys are unknown until runtime, for security, access is instead restricted to only granting decryption permissions to the ec2 service for encrypted EBS volumes
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+    Condition: EC2SchedulerCrossAccountRolekmsAccessCondition6C83D407
+  EC2SchedulerCrossAccountRoleLicenceManagerPermissions660BB08E:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: ec2:StartInstances
+            Effect: Allow
+            Resource:
+              Ref: LicenseManagerArns
+        Version: "2012-10-17"
+      PolicyName: EC2SchedulerCrossAccountRoleLicenceManagerPermissions660BB08E
+      Roles:
+        - Ref: EC2SchedulerCrossAccountRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/EC2SchedulerCrossAccountRole/LicenceManagerPermissions/Resource
+    Condition: EC2SchedulerCrossAccountRolelmConditionAspect0C779AA4
+  CreateRegionalEventRulesLambdaRole1BE94A3C:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CreateRegionalEventRulesLambdaRole/Resource
+  CreateRegionalEventRulesLambdaRoleDefaultPolicy80005665:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: CreateRegionalEventRulesLambdaRoleDefaultPolicy80005665
+      Roles:
+        - Ref: CreateRegionalEventRulesLambdaRole1BE94A3C
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CreateRegionalEventRulesLambdaRole/DefaultPolicy/Resource
+  HubTagEventForwardingRole5BEE3911:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/HubTagEventForwardingRole/Resource
+  HubTagEventForwardingRoleDefaultPolicy5747D549:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:'
+                  - Ref: AWS::Region
+                  - ':'
+                  - Ref: InstanceSchedulerAccount
+                  - :event-bus/
+                  - Ref: Namespace
+                  - -RegistrationEvents
+        Version: "2012-10-17"
+      PolicyName: HubTagEventForwardingRoleDefaultPolicy5747D549
+      Roles:
+        - Ref: HubTagEventForwardingRole5BEE3911
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/HubTagEventForwardingRole/DefaultPolicy/Resource
+  AdministrationLogsC5F47471:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Join:
+          - ""
+          - - instance-scheduler-on-aws-remote-
+            - Ref: Namespace
+            - -administrative-logs
+      RetentionInDays: 365
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/AdministrationLogs/Resource
+      guard:
+        SuppressedRules:
+          - CW_LOGGROUP_RETENTION_PERIOD_CHECK
+          - CLOUDWATCH_LOG_GROUP_ENCRYPTED
+  CreateRegionalEventRulesLambda4F6A2D62:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Custom Resource for creating regional event rules for tagging resources.
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          TAGGING_EVENT_RULE_ROLE_ARN:
+            Fn::GetAtt:
+              - HubTagEventForwardingRole5BEE3911
+              - Arn
+          TAGGING_EVENT_BUS_ARN:
+            Fn::Join:
+              - ""
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':events:'
+                - Ref: AWS::Region
+                - ':'
+                - Ref: InstanceSchedulerAccount
+                - :event-bus/
+                - Ref: Namespace
+                - -RegistrationEvents
+          EVENT_RULE_PREFIX:
+            Fn::Join:
+              - ""
+              - - IS-Tagging-
+                - Ref: Namespace
+          VERSION: v3.1.4
+          SCHEDULE_TAG_KEY:
+            Ref: ScheduleTagKey
+          REGIONAL_EVENT_BUS_NAME:
+            Fn::Join:
+              - ""
+              - - IS-LocalEvents-
+                - Ref: Namespace
+      Handler: instance_scheduler.handler.create_region_event_rules_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel: INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - CreateRegionalEventRulesLambdaRole1BE94A3C
+          - Arn
+      Runtime: python3.12
+      Timeout: 900
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - CreateRegionalEventRulesLambdaRoleDefaultPolicy80005665
+      - CreateRegionalEventRulesLambdaRole1BE94A3C
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CreateRegionalEventRulesLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  CreateRegionalEventRulesPolicyBA8F60E9:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - events:DeleteRule
+              - events:PutTargets
+              - events:PutRule
+              - events:RemoveTargets
+            Effect: Allow
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-
+                    - Ref: Namespace
+                    - '*'
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-resource-tagging
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-asg-tagging*
+          - Action:
+              - events:CreateEventBus
+              - events:DeleteEventBus
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:*:'
+                  - Ref: AWS::AccountId
+                  - :event-bus/IS-LocalEvents-
+                  - Ref: Namespace
+          - Action:
+              - events:ListRules
+              - events:DescribeRule
+            Effect: Allow
+            Resource: '*'
+          - Action: iam:PassRole
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - HubTagEventForwardingRole5BEE3911
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: CreateRegionalEventRulesPolicyBA8F60E9
+      Roles:
+        - Ref: CreateRegionalEventRulesLambdaRole1BE94A3C
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CreateRegionalEventRulesPolicy/Resource
+  CreateRegionalEventRules:
+    Type: Custom::SetupRegionalEvents
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CreateRegionalEventRulesLambda4F6A2D62
+          - Arn
+      regions:
+        Ref: Regions
+      version: v3.1.4
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CreateRegionalEventRules/Default
+  RegionRegistrationLambdaRoleED66DE1B:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParametersByPath
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+              - Action: ssm:DescribeParameters
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                  - ssm:DeleteParameters
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+            Version: "2012-10-17"
+          PolicyName: SpokeRegistrationUpdateSSMParamPolicy
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -InvokeHubFunctionRemoteRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationLambdaRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+          - IAM_NO_INLINE_POLICY_CHECK
+          - IAM_POLICYDOCUMENT_NO_WILDCARD_RESOURCE
+  RegionRegistrationLambdaRoleDefaultPolicy7AA4928B:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: RegionRegistrationLambdaRoleDefaultPolicy7AA4928B
+      Roles:
+        - Ref: RegionRegistrationLambdaRoleED66DE1B
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationLambdaRole/DefaultPolicy/Resource
+  RegionRegistrationWaitingLambdaRole96F8D082:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParametersByPath
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+              - Action: ssm:DescribeParameters
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                  - ssm:DeleteParameters
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+            Version: "2012-10-17"
+          PolicyName: RegionRegistrationWaitLambdaPolicy
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationWaitingLambdaRole/Resource
+      guard:
+        SuppressedRules:
+          - IAM_NO_INLINE_POLICY_CHECK
+          - IAM_POLICYDOCUMENT_NO_WILDCARD_RESOURCE
+  RegionRegistrationWaitingLambdaRoleDefaultPolicy8BBEB5F7:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: RegionRegistrationWaitingLambdaRoleDefaultPolicy8BBEB5F7
+      Roles:
+        - Ref: RegionRegistrationWaitingLambdaRole96F8D082
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationWaitingLambdaRole/DefaultPolicy/Resource
+  SpokeRegistrationUpdateSSMParamRole3F15A1F5:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':iam::'
+                    - Ref: InstanceSchedulerAccount
+                    - :role/
+                    - Ref: Namespace
+                    - -SpokeRegistrationHandler-Role
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParametersByPath
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+              - Action: ssm:DescribeParameters
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                  - ssm:DeleteParameters
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+            Version: "2012-10-17"
+          PolicyName: SpokeRegistrationUpdateSSMParamPolicy
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -SpokeRegistrationUpdateSSMParamRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/SpokeRegistrationUpdateSSMParamRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+          - IAM_NO_INLINE_POLICY_CHECK
+          - IAM_POLICYDOCUMENT_NO_WILDCARD_RESOURCE
+    Condition: isNotHubStackDeployment
+  RegionRegistrationCustomResourceLambda632460E5:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Custom Resource Provider used for region registration
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          HUB_ACCOUNT_ID:
+            Ref: InstanceSchedulerAccount
+          STACK_ID:
+            Ref: AWS::StackId
+          SSM_PARAM_PATH:
+            Fn::Join:
+              - ""
+              - - /IS/
+                - Ref: Namespace
+                - /regions
+          HUB_REGISTRATION_FUNCTION_ARN:
+            Fn::Join:
+              - ""
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':lambda:'
+                - Ref: AWS::Region
+                - ':'
+                - Ref: InstanceSchedulerAccount
+                - :function:InstanceScheduler-
+                - Ref: Namespace
+                - -SpokeRegistration
+          HUB_REGISTRATION_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -SpokeRegistrationInvokeFunction-Role
+      Handler: instance_scheduler.handler.region_registration_events_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel: INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - RegionRegistrationLambdaRoleED66DE1B
+          - Arn
+      Runtime: python3.12
+      Timeout: 900
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - RegionRegistrationLambdaRoleDefaultPolicy7AA4928B
+      - RegionRegistrationLambdaRoleED66DE1B
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationCustomResourceLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  RegionRegistrationWaitLambda671C2191:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Custom Resource lambda to wait and confirm region registrations.
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          HUB_ACCOUNT_ID:
+            Ref: InstanceSchedulerAccount
+          STACK_ID:
+            Ref: AWS::StackId
+          SSM_PARAM_PATH:
+            Fn::Join:
+              - ""
+              - - /IS/
+                - Ref: Namespace
+                - /regions
+          HUB_REGISTRATION_FUNCTION_ARN:
+            Fn::Join:
+              - ""
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':lambda:'
+                - Ref: AWS::Region
+                - ':'
+                - Ref: InstanceSchedulerAccount
+                - :function:InstanceScheduler-
+                - Ref: Namespace
+                - -SpokeRegistration
+          HUB_REGISTRATION_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -SpokeRegistrationInvokeFunction-Role
+      Handler: instance_scheduler.handler.region_registration_events_iscomplete_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel: INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - RegionRegistrationWaitingLambdaRole96F8D082
+          - Arn
+      Runtime: python3.12
+      Timeout: 900
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - RegionRegistrationWaitingLambdaRoleDefaultPolicy8BBEB5F7
+      - RegionRegistrationWaitingLambdaRole96F8D082
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationWaitLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  CustomResourceProviderframeworkonEventServiceRole7EBC5835:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onEvent/ServiceRole/Resource
+  CustomResourceProviderframeworkonEventServiceRoleDefaultPolicy93CD1647:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - RegionRegistrationCustomResourceLambda632460E5
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - RegionRegistrationCustomResourceLambda632460E5
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - RegionRegistrationCustomResourceLambda632460E5
+                - Arn
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - RegionRegistrationWaitLambda671C2191
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - RegionRegistrationWaitLambda671C2191
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - RegionRegistrationWaitLambda671C2191
+                - Arn
+          - Action: states:StartExecution
+            Effect: Allow
+            Resource:
+              Ref: CustomResourceProviderwaiterstatemachineA1F4877C
+        Version: "2012-10-17"
+      PolicyName: CustomResourceProviderframeworkonEventServiceRoleDefaultPolicy93CD1647
+      Roles:
+        - Ref: CustomResourceProviderframeworkonEventServiceRole7EBC5835
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource
+  CustomResourceProviderframeworkonEvent0AA4376C:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+      Description: AWS CDK resource provider framework - onEvent (instance-scheduler-on-aws-remote/CustomResourceProvider)
+      Environment:
+        Variables:
+          USER_ON_EVENT_FUNCTION_ARN:
+            Fn::GetAtt:
+              - RegionRegistrationCustomResourceLambda632460E5
+              - Arn
+          USER_IS_COMPLETE_FUNCTION_ARN:
+            Fn::GetAtt:
+              - RegionRegistrationWaitLambda671C2191
+              - Arn
+          WAITER_STATE_MACHINE_ARN:
+            Ref: CustomResourceProviderwaiterstatemachineA1F4877C
+      Handler: framework.onEvent
+      LoggingConfig:
+        ApplicationLogLevel: FATAL
+        LogFormat: JSON
+      Role:
+        Fn::GetAtt:
+          - CustomResourceProviderframeworkonEventServiceRole7EBC5835
+          - Arn
+      Runtime: nodejs22.x
+      Timeout: 900
+    DependsOn:
+      - CustomResourceProviderframeworkonEventServiceRoleDefaultPolicy93CD1647
+      - CustomResourceProviderframeworkonEventServiceRole7EBC5835
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onEvent/Resource
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  CustomResourceProviderframeworkisCompleteServiceRole88C5CC94:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-isComplete/ServiceRole/Resource
+  CustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy289A380C:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - RegionRegistrationCustomResourceLambda632460E5
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - RegionRegistrationCustomResourceLambda632460E5
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - RegionRegistrationCustomResourceLambda632460E5
+                - Arn
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - RegionRegistrationWaitLambda671C2191
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - RegionRegistrationWaitLambda671C2191
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - RegionRegistrationWaitLambda671C2191
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: CustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy289A380C
+      Roles:
+        - Ref: CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-isComplete/ServiceRole/DefaultPolicy/Resource
+  CustomResourceProviderframeworkisComplete2713CDE6:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+      Description: AWS CDK resource provider framework - isComplete (instance-scheduler-on-aws-remote/CustomResourceProvider)
+      Environment:
+        Variables:
+          USER_ON_EVENT_FUNCTION_ARN:
+            Fn::GetAtt:
+              - RegionRegistrationCustomResourceLambda632460E5
+              - Arn
+          USER_IS_COMPLETE_FUNCTION_ARN:
+            Fn::GetAtt:
+              - RegionRegistrationWaitLambda671C2191
+              - Arn
+      Handler: framework.isComplete
+      LoggingConfig:
+        ApplicationLogLevel: FATAL
+        LogFormat: JSON
+      Role:
+        Fn::GetAtt:
+          - CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
+          - Arn
+      Runtime: nodejs22.x
+      Timeout: 900
+    DependsOn:
+      - CustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy289A380C
+      - CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-isComplete/Resource
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  CustomResourceProviderframeworkonTimeoutServiceRole50C6F805:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onTimeout/ServiceRole/Resource
+  CustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy0C25C854:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - RegionRegistrationCustomResourceLambda632460E5
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - RegionRegistrationCustomResourceLambda632460E5
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - RegionRegistrationCustomResourceLambda632460E5
+                - Arn
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - RegionRegistrationWaitLambda671C2191
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - RegionRegistrationWaitLambda671C2191
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - RegionRegistrationWaitLambda671C2191
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: CustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy0C25C854
+      Roles:
+        - Ref: CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onTimeout/ServiceRole/DefaultPolicy/Resource
+  CustomResourceProviderframeworkonTimeout39980DF9:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+      Description: AWS CDK resource provider framework - onTimeout (instance-scheduler-on-aws-remote/CustomResourceProvider)
+      Environment:
+        Variables:
+          USER_ON_EVENT_FUNCTION_ARN:
+            Fn::GetAtt:
+              - RegionRegistrationCustomResourceLambda632460E5
+              - Arn
+          USER_IS_COMPLETE_FUNCTION_ARN:
+            Fn::GetAtt:
+              - RegionRegistrationWaitLambda671C2191
+              - Arn
+      Handler: framework.onTimeout
+      LoggingConfig:
+        ApplicationLogLevel: FATAL
+        LogFormat: JSON
+      Role:
+        Fn::GetAtt:
+          - CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
+          - Arn
+      Runtime: nodejs22.x
+      Timeout: 900
+    DependsOn:
+      - CustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy0C25C854
+      - CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onTimeout/Resource
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  CustomResourceProviderwaiterstatemachineRole09462DF6:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/waiter-state-machine/Role/Resource
+  CustomResourceProviderwaiterstatemachineRoleDefaultPolicy37566898:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - CustomResourceProviderframeworkisComplete2713CDE6
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - CustomResourceProviderframeworkisComplete2713CDE6
+                        - Arn
+                    - :*
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - CustomResourceProviderframeworkonTimeout39980DF9
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - CustomResourceProviderframeworkonTimeout39980DF9
+                        - Arn
+                    - :*
+        Version: "2012-10-17"
+      PolicyName: CustomResourceProviderwaiterstatemachineRoleDefaultPolicy37566898
+      Roles:
+        - Ref: CustomResourceProviderwaiterstatemachineRole09462DF6
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/waiter-state-machine/Role/DefaultPolicy/Resource
+  CustomResourceProviderwaiterstatemachineA1F4877C:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      DefinitionString:
+        Fn::Join:
+          - ""
+          - - '{"StartAt":"framework-isComplete-task","States":{"framework-isComplete-task":{"End":true,"Retry":[{"ErrorEquals":["States.ALL"],"IntervalSeconds":30,"MaxAttempts":40,"BackoffRate":1}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"framework-onTimeout-task"}],"Type":"Task","Resource":"'
+            - Fn::GetAtt:
+                - CustomResourceProviderframeworkisComplete2713CDE6
+                - Arn
+            - '"},"framework-onTimeout-task":{"End":true,"Type":"Task","Resource":"'
+            - Fn::GetAtt:
+                - CustomResourceProviderframeworkonTimeout39980DF9
+                - Arn
+            - '"}}}'
+      RoleArn:
+        Fn::GetAtt:
+          - CustomResourceProviderwaiterstatemachineRole09462DF6
+          - Arn
+    DependsOn:
+      - CustomResourceProviderwaiterstatemachineRoleDefaultPolicy37566898
+      - CustomResourceProviderwaiterstatemachineRole09462DF6
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/waiter-state-machine/Resource
+  RegionRegistrationCustomResourceLambdaPolicy6FEA993C:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':iam::'
+                  - Ref: InstanceSchedulerAccount
+                  - :role/
+                  - Ref: Namespace
+                  - -SpokeRegistrationInvokeFunction-Role
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: RegionRegistrationCustomResourceLambdaPolicy6FEA993C
+      Roles:
+        - Ref: RegionRegistrationLambdaRoleED66DE1B
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationCustomResourceLambdaPolicy/Resource
+    Condition: isNotHubStackDeployment
+  hubLambdaInvokePolicyE6640037:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':lambda:'
+                  - Ref: AWS::Region
+                  - ':'
+                  - Ref: InstanceSchedulerAccount
+                  - :function:InstanceScheduler-
+                  - Ref: Namespace
+                  - -SpokeRegistration
+        Version: "2012-10-17"
+      PolicyName: hubLambdaInvokePolicyE6640037
+      Roles:
+        - Ref: RegionRegistrationLambdaRoleED66DE1B
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/hubLambdaInvokePolicy/Resource
+    Condition: isHubStackDeployment
+  RegisterRegions:
+    Type: Custom::RegisterRegion
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomResourceProviderframeworkonEvent0AA4376C
+          - Arn
+      regions:
+        Ref: Regions
+      version: v3.1.4
+    DependsOn:
+      - IamPolicyDeploymentGate
+      - IamRoleDeploymentGate
+      - LambdaDeploymentGate
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/RegisterRegions/Default
+  LambdaDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - CreateRegionalEventRulesLambda4F6A2D62
+      - CustomResourceProviderframeworkisComplete2713CDE6
+      - CustomResourceProviderframeworkonEvent0AA4376C
+      - CustomResourceProviderframeworkonTimeout39980DF9
+      - RegionRegistrationCustomResourceLambda632460E5
+      - RegionRegistrationWaitLambda671C2191
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/LambdaDeploymentGate
+  IamRoleDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - CreateRegionalEventRulesLambdaRole1BE94A3C
+      - CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
+      - CustomResourceProviderframeworkonEventServiceRole7EBC5835
+      - CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
+      - CustomResourceProviderwaiterstatemachineRole09462DF6
+      - EC2SchedulerCrossAccountRole
+      - HubTagEventForwardingRole5BEE3911
+      - RegionRegistrationLambdaRoleED66DE1B
+      - RegionRegistrationWaitingLambdaRole96F8D082
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/IamRoleDeploymentGate
+  IamPolicyDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - CreateRegionalEventRulesLambdaRoleDefaultPolicy80005665
+      - CreateRegionalEventRulesPolicyBA8F60E9
+      - CustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy289A380C
+      - CustomResourceProviderframeworkonEventServiceRoleDefaultPolicy93CD1647
+      - CustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy0C25C854
+      - CustomResourceProviderwaiterstatemachineRoleDefaultPolicy37566898
+      - EC2SchedulerCrossAccountRoleASGSchedulingPermissionsAE9E3D48
+      - EC2SchedulerCrossAccountRoleEc2SchedulingPermissions35C26E2F
+      - EC2SchedulerCrossAccountRoleRdsSchedulingPermissions18D04034
+      - EC2SchedulerCrossAccountRoleRegionalEventBusPermissionsCE7D7CD4
+      - EC2SchedulerCrossAccountRoleResourceGroupsTaggingPermissions5A354A85
+      - HubTagEventForwardingRoleDefaultPolicy5747D549
+      - RegionRegistrationLambdaRoleDefaultPolicy7AA4928B
+      - RegionRegistrationWaitingLambdaRoleDefaultPolicy8BBEB5F7
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws-remote/IamPolicyDeploymentGate
+Conditions:
+  EC2SchedulerCrossAccountRolekmsAccessCondition6C83D407:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Select:
+              - 0
+              - Ref: KmsKeyArns
+          - ""
+  EC2SchedulerCrossAccountRolelmConditionAspect0C779AA4:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Select:
+              - 0
+              - Ref: LicenseManagerArns
+          - ""
+  isNotHubStackDeployment:
+    Fn::Equals:
+      - REMOTE
+      - REMOTE
+  isHubStackDeployment:
+    Fn::Equals:
+      - HUB
+      - REMOTE
+Outputs:
+  RegionalEventBusName:
+    Description: Regional event bus name.
+    Value:
+      Fn::GetAtt:
+        - CreateRegionalEventRules
+        - REGIONAL_BUS_NAME
+  SchedulerRoleArn:
+    Description: Scheduler role ARN
+    Value:
+      Fn::GetAtt:
+        - EC2SchedulerCrossAccountRole
+        - Arn

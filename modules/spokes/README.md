@@ -5,14 +5,14 @@
 This module is the organization-scale spoke onboarding path for Instance Scheduler. It solves the challenge of deploying scheduler trust and configuration consistently across many AWS accounts by using CloudFormation StackSets targeted at organizational units.
 
 Architecture overview:
-- Terraform provisions a hardened S3 template bucket in the management account.
-- The remote scheduler template is uploaded once and referenced by a StackSet.
+- Terraform references the hardened scheduler S3 template bucket in the management account.
+- The remote scheduler template is consumed from the published scheduler path and referenced by a StackSet.
 - A StackSet instance is created per configured OU, allowing AWS Organizations to manage account enrollment.
 - Optional macro integration enables consistent default tagging behavior in deployed spoke stacks.
 
 ## Capabilities
 
-- **Security by default**: Private encrypted template storage with strict transport and encryption guardrails.
+- **Security by default**: Consumes templates from the hardened scheduler bucket with strict transport and encryption guardrails.
 - **Scalable rollout**: OU-based StackSet targeting for large multi-account estates.
 - **Operational excellence**: Auto-deployment support helps onboard new accounts joining targeted OUs.
 - **Landing zone alignment**: Designed explicitly for AWS Organizations hub-and-spoke models.
@@ -56,7 +56,7 @@ module "spokes" {
   source = "github.com/appvia/terraform-aws-instance-scheduler//modules/spokes?ref=main"
 
   scheduler_account_id                = "111122223333"
-  cloudformation_bucket_name          = "org-prod-instance-scheduler-spoke-templates"
+  cloudformation_bucket_name          = "org-prod-instance-scheduler-templates"
   cloudformation_spoke_stack_name     = "org-prod-instance-scheduler-spokes"
   enable_cloudformation_macro         = true
   cloudformation_macro_name           = "AddDefaultTags"
@@ -86,7 +86,7 @@ module "spokes" {
 
   scheduler_account_id            = "111122223333"
   cloudformation_spoke_stack_name = "legacy-instance-scheduler-spokes"
-  cloudformation_bucket_name      = "legacy-instance-scheduler-spokes-templates"
+  cloudformation_bucket_name      = "legacy-instance-scheduler-templates"
   enable_cloudformation_macro     = false
   organizational_units = {
     legacy_apps = "ou-abcd-99999999"
@@ -121,9 +121,9 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_scheduler_account_id"></a> [scheduler\_account\_id](#input\_scheduler\_account\_id) | The account id of where the orchcastrator is running | `string` | n/a | yes |
+| <a name="input_scheduler_account_id"></a> [scheduler\_account\_id](#input\_scheduler\_account\_id) | The account id of where the instance scheduler is running | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
-| <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates | `string` | `"lz-instance-scheduler-spoke-templates"` | no |
+| <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates | `string` | `"lz-instance-scheduler-templates"` | no |
 | <a name="input_cloudformation_macro_name"></a> [cloudformation\_macro\_name](#input\_cloudformation\_macro\_name) | The name of the cloudformation macro | `string` | `"AddDefaultTags"` | no |
 | <a name="input_cloudformation_spoke_stack_name"></a> [cloudformation\_spoke\_stack\_name](#input\_cloudformation\_spoke\_stack\_name) | The name of the cloudformation stack in the spoke accounts | `string` | `"lz-instance-scheduler-spokes"` | no |
 | <a name="input_cloudformation_transform_stack_name"></a> [cloudformation\_transform\_stack\_name](#input\_cloudformation\_transform\_stack\_name) | The name of the cloudformation transform stack | `string` | `"lz-instance-scheduler-spoke-add-default-tags"` | no |

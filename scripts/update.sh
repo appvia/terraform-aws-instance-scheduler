@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-set -e 
+set -e
 
-# The default is to enable the macro
-ENABLE_MACRO=true
-# Name of the macro to inject into the template 
+# Name of the macro to inject into the template
 MACRO_NAME="AddDefaultTags"
 # The base url for the cloudformation templates
 CLOUDFORMATION_BASE_URL="https://s3.amazonaws.com/solutions-reference/instance-scheduler-on-aws/latest"
@@ -17,9 +15,8 @@ CLOUDFORMATION_URLS=(
 SED=$(which gsed || which sed)
 
 usage() {
-  cat <<EOF 
+  cat << EOF
   Usage: $0
-    --disable-macro  Disable the macro injection into the template (default: false)
     -m, --macro      Name of the macro to inject into the template (default: $MACRO_NAME)
     -h, --help       Show this help message
 EOF
@@ -33,7 +30,9 @@ EOF
 # Download the template to the temp directory
 download-cloudformation-template() {
   local url=$1
-  local filename=$(basename $url)
+  local filename
+
+  filename=$(basename "${url}")
 
   echo -e "Downloading $url to $TEMP_DIR/$filename"
 
@@ -62,8 +61,8 @@ convert-cloudformation-template() {
 update-cloudformation-template() {
   local url=$1
 
-  filename=$(basename $url)
-  # First we download the template 
+  filename=$(basename "${url}")
+  # First we download the template
   download-cloudformation-template "$url"
   # Then we convert the template to YAML
   convert-cloudformation-template "$TEMP_DIR/${filename}" "$TEMP_DIR/${filename}.yaml.tmp"
@@ -71,13 +70,13 @@ update-cloudformation-template() {
   "$SED" -i 's/\${/\$\${/g' "$TEMP_DIR/${filename}.yaml.tmp"
   # Add the template to the top of the file
   echo -e "Adding the template to the top of the file"
-  cat <<EOF > "$TEMP_DIR/${filename}.yaml"
+  cat << EOF > "$TEMP_DIR/${filename}.yaml"
 ---
 #
 ## Source: $url
 #
 EOF
-    cat <<EOF >> "$TEMP_DIR/${filename}.yaml"
+    cat << EOF >> "$TEMP_DIR/${filename}.yaml"
 AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: \${ macro_name }
@@ -85,32 +84,30 @@ Transform: \${ macro_name }
 EOF
   ## Copy the temporary file to the final file
   cat "$TEMP_DIR/${filename}.yaml.tmp" >> "$TEMP_DIR/${filename}.yaml"
-  # Move the template to the current directory 
-  mv "$TEMP_DIR/${filename}.yaml" "assets/cloudformation/${filename}"
+  # Move the template to the current directory
+  mv "$TEMP_DIR/${filename}.yaml" "modules/scheduler/assets/cloudformation/${filename}"
 }
 
 # Parse the command line arguments
 while [[ ${#} -gt 0 ]]; do
   case $1 in
-    --disable-macro)
-      ENABLE_MACRO=false
-      shift
-      ;;
-    -h|--help) 
+    -h | --help)
       usage
       ;;
     *)
       usage "Unknown argument: $1"
       ;;
-  esac 
-done 
+  esac
+done
 
 # Create a temp directory
 TEMP_DIR=$(mktemp -d)
 # Ensure we delete the temp directory
-trap "rm -rf $TEMP_DIR || true" EXIT
+# shellcheck disable=SC2064
+trap "rm -rf ${TEMP_DIR} || true" EXIT
 
 # Update the templates
 for url in "${CLOUDFORMATION_URLS[@]}"; do
   update-cloudformation-template "$url"
 done
+

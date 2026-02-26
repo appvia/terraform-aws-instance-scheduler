@@ -1,1 +1,5144 @@
-../../../../assets/cloudformation/instance-scheduler-on-aws.template
+---
+#
+## Source: https://s3.amazonaws.com/solutions-reference/instance-scheduler-on-aws/latest/instance-scheduler-on-aws.template
+#
+AWSTemplateFormatVersion: 2010-09-09
+%{ if enable_macro ~}
+Transform: ${ macro_name }
+%{ endif ~}
+Description: (SO0030) instance-scheduler-on-aws v3.1.4
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      Namespace:
+        default: Namespace
+      UsingAWSOrganizations:
+        default: Use AWS Organizations
+      Principals:
+        default: Organization ID/remote account IDs
+      TagName:
+        default: Schedule tag key
+      RetainDataAndLogs:
+        default: Retain data and logs
+      SchedulingActive:
+        default: Enable scheduling
+      DefaultTimezone:
+        default: Default time zone
+      SchedulerFrequency:
+        default: Scheduling interval (minutes)
+      EnableSSMMaintenanceWindows:
+        default: Enable EC2 SSM Maintenance Windows
+      CreateRdsSnapshot:
+        default: Create RDS instance snapshots on stop
+      AsgRulePrefix:
+        default: ASG action name prefix
+      AsgScheduledTagKey:
+        default: ASG scheduled tag key (DEPRECATED)
+      Regions:
+        default: Region(s)
+      KmsKeyArns:
+        default: Kms Key Arns for EC2
+      LicenseManagerArns:
+        default: License Manager Arns for EC2
+      Trace:
+        default: Enable CloudWatch debug Logs
+      LogRetentionDays:
+        default: Log retention period (days)
+      OpsMonitoring:
+        default: Operational Monitoring
+      MemorySize:
+        default: SchedulingRequestHandler Memory size (MB)
+      OrchestratorMemorySize:
+        default: Orchestrator Memory size (MB)
+    ParameterGroups:
+      - Label:
+          default: Infrastructure (v3.1.4)
+        Parameters:
+          - Namespace
+          - UsingAWSOrganizations
+          - Principals
+          - TagName
+          - RetainDataAndLogs
+      - Label:
+          default: GlobalSettings
+        Parameters:
+          - SchedulingActive
+          - DefaultTimezone
+          - SchedulerFrequency
+          - EnableSSMMaintenanceWindows
+          - CreateRdsSnapshot
+          - AsgRulePrefix
+          - AsgScheduledTagKey
+      - Label:
+          default: Hub-Account Scheduling
+        Parameters:
+          - Regions
+          - KmsKeyArns
+          - LicenseManagerArns
+      - Label:
+          default: Monitoring
+        Parameters:
+          - Trace
+          - LogRetentionDays
+          - OpsMonitoring
+      - Label:
+          default: Other
+        Parameters:
+          - MemorySize
+          - OrchestratorMemorySize
+  cdk_nag:
+    rules_to_suppress:
+      - reason: Python 3.11 is the newest available runtime. This finding is a false positive.
+        id: AwsSolutions-L1
+Parameters:
+  Namespace:
+    Type: String
+    Default: default
+    Description: Unique identifier per deployment. Cannot contain spaces.
+  UsingAWSOrganizations:
+    Type: String
+    Default: "No"
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Deploy resources to enable automatic spoke stack registration using AWS Organizations.
+  Principals:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: '(Required) If using AWS Organizations, provide the Organization ID. Eg. o-xxxxyyy. Else, provide a comma-separated list of spoke account ids (max 40) that should be trusted. Eg.: 1111111111, 2222222222'
+  TagName:
+    Type: String
+    Default: Schedule
+    Description: The tag key Instance Scheduler will read to determine the schedule for a resource. The value of the tag with this key on a resource specifies the name of the schedule.
+    MaxLength: 127
+    MinLength: 1
+  RetainDataAndLogs:
+    Type: String
+    Default: Enabled
+    AllowedValues:
+      - Enabled
+      - Disabled
+    Description: Enable data retention for solution DB tables and logs. When enabled, all solution DB tables, logs, and encryption keys will be retained when deleting this stack. To delete these resources when deleting this stack, first disable this parameter.
+  SchedulingActive:
+    Type: String
+    Default: "Yes"
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Set to "No" to suspend all scheduling operations.
+  DefaultTimezone:
+    Type: String
+    Default: UTC
+    AllowedValues:
+      - Africa/Abidjan
+      - Africa/Accra
+      - Africa/Addis_Ababa
+      - Africa/Algiers
+      - Africa/Asmara
+      - Africa/Bamako
+      - Africa/Bangui
+      - Africa/Banjul
+      - Africa/Bissau
+      - Africa/Blantyre
+      - Africa/Brazzaville
+      - Africa/Bujumbura
+      - Africa/Cairo
+      - Africa/Casablanca
+      - Africa/Ceuta
+      - Africa/Conakry
+      - Africa/Dakar
+      - Africa/Dar_es_Salaam
+      - Africa/Djibouti
+      - Africa/Douala
+      - Africa/El_Aaiun
+      - Africa/Freetown
+      - Africa/Gaborone
+      - Africa/Harare
+      - Africa/Johannesburg
+      - Africa/Juba
+      - Africa/Kampala
+      - Africa/Khartoum
+      - Africa/Kigali
+      - Africa/Kinshasa
+      - Africa/Lagos
+      - Africa/Libreville
+      - Africa/Lome
+      - Africa/Luanda
+      - Africa/Lubumbashi
+      - Africa/Lusaka
+      - Africa/Malabo
+      - Africa/Maputo
+      - Africa/Maseru
+      - Africa/Mbabane
+      - Africa/Mogadishu
+      - Africa/Monrovia
+      - Africa/Nairobi
+      - Africa/Ndjamena
+      - Africa/Niamey
+      - Africa/Nouakchott
+      - Africa/Ouagadougou
+      - Africa/Porto-Novo
+      - Africa/Sao_Tome
+      - Africa/Tripoli
+      - Africa/Tunis
+      - Africa/Windhoek
+      - America/Adak
+      - America/Anchorage
+      - America/Anguilla
+      - America/Antigua
+      - America/Araguaina
+      - America/Argentina/Buenos_Aires
+      - America/Argentina/Catamarca
+      - America/Argentina/Cordoba
+      - America/Argentina/Jujuy
+      - America/Argentina/La_Rioja
+      - America/Argentina/Mendoza
+      - America/Argentina/Rio_Gallegos
+      - America/Argentina/Salta
+      - America/Argentina/San_Juan
+      - America/Argentina/San_Luis
+      - America/Argentina/Tucuman
+      - America/Argentina/Ushuaia
+      - America/Aruba
+      - America/Asuncion
+      - America/Atikokan
+      - America/Bahia
+      - America/Bahia_Banderas
+      - America/Barbados
+      - America/Belem
+      - America/Belize
+      - America/Blanc-Sablon
+      - America/Boa_Vista
+      - America/Bogota
+      - America/Boise
+      - America/Cambridge_Bay
+      - America/Campo_Grande
+      - America/Cancun
+      - America/Caracas
+      - America/Cayenne
+      - America/Cayman
+      - America/Chicago
+      - America/Chihuahua
+      - America/Costa_Rica
+      - America/Creston
+      - America/Cuiaba
+      - America/Curacao
+      - America/Danmarkshavn
+      - America/Dawson
+      - America/Dawson_Creek
+      - America/Denver
+      - America/Detroit
+      - America/Dominica
+      - America/Edmonton
+      - America/Eirunepe
+      - America/El_Salvador
+      - America/Fortaleza
+      - America/Glace_Bay
+      - America/Godthab
+      - America/Goose_Bay
+      - America/Grand_Turk
+      - America/Grenada
+      - America/Guadeloupe
+      - America/Guatemala
+      - America/Guayaquil
+      - America/Guyana
+      - America/Halifax
+      - America/Havana
+      - America/Hermosillo
+      - America/Indiana/Indianapolis
+      - America/Indiana/Knox
+      - America/Indiana/Marengo
+      - America/Indiana/Petersburg
+      - America/Indiana/Tell_City
+      - America/Indiana/Vevay
+      - America/Indiana/Vincennes
+      - America/Indiana/Winamac
+      - America/Inuvik
+      - America/Iqaluit
+      - America/Jamaica
+      - America/Juneau
+      - America/Kentucky/Louisville
+      - America/Kentucky/Monticello
+      - America/Kralendijk
+      - America/La_Paz
+      - America/Lima
+      - America/Los_Angeles
+      - America/Lower_Princes
+      - America/Maceio
+      - America/Managua
+      - America/Manaus
+      - America/Marigot
+      - America/Martinique
+      - America/Matamoros
+      - America/Mazatlan
+      - America/Menominee
+      - America/Merida
+      - America/Metlakatla
+      - America/Mexico_City
+      - America/Miquelon
+      - America/Moncton
+      - America/Monterrey
+      - America/Montevideo
+      - America/Montreal
+      - America/Montserrat
+      - America/Nassau
+      - America/New_York
+      - America/Nipigon
+      - America/Nome
+      - America/Noronha
+      - America/North_Dakota/Beulah
+      - America/North_Dakota/Center
+      - America/North_Dakota/New_Salem
+      - America/Ojinaga
+      - America/Panama
+      - America/Pangnirtung
+      - America/Paramaribo
+      - America/Phoenix
+      - America/Port-au-Prince
+      - America/Port_of_Spain
+      - America/Porto_Velho
+      - America/Puerto_Rico
+      - America/Rainy_River
+      - America/Rankin_Inlet
+      - America/Recife
+      - America/Regina
+      - America/Resolute
+      - America/Rio_Branco
+      - America/Santa_Isabel
+      - America/Santarem
+      - America/Santiago
+      - America/Santo_Domingo
+      - America/Sao_Paulo
+      - America/Scoresbysund
+      - America/Sitka
+      - America/St_Barthelemy
+      - America/St_Johns
+      - America/St_Kitts
+      - America/St_Lucia
+      - America/St_Thomas
+      - America/St_Vincent
+      - America/Swift_Current
+      - America/Tegucigalpa
+      - America/Thule
+      - America/Thunder_Bay
+      - America/Tijuana
+      - America/Toronto
+      - America/Tortola
+      - America/Vancouver
+      - America/Whitehorse
+      - America/Winnipeg
+      - America/Yakutat
+      - America/Yellowknife
+      - Antarctica/Casey
+      - Antarctica/Davis
+      - Antarctica/DumontDUrville
+      - Antarctica/Macquarie
+      - Antarctica/Mawson
+      - Antarctica/McMurdo
+      - Antarctica/Palmer
+      - Antarctica/Rothera
+      - Antarctica/Syowa
+      - Antarctica/Vostok
+      - Arctic/Longyearbyen
+      - Asia/Aden
+      - Asia/Almaty
+      - Asia/Amman
+      - Asia/Anadyr
+      - Asia/Aqtau
+      - Asia/Aqtobe
+      - Asia/Ashgabat
+      - Asia/Baghdad
+      - Asia/Bahrain
+      - Asia/Baku
+      - Asia/Bangkok
+      - Asia/Beirut
+      - Asia/Bishkek
+      - Asia/Brunei
+      - Asia/Choibalsan
+      - Asia/Chongqing
+      - Asia/Colombo
+      - Asia/Damascus
+      - Asia/Dhaka
+      - Asia/Dili
+      - Asia/Dubai
+      - Asia/Dushanbe
+      - Asia/Gaza
+      - Asia/Harbin
+      - Asia/Hebron
+      - Asia/Ho_Chi_Minh
+      - Asia/Hong_Kong
+      - Asia/Hovd
+      - Asia/Irkutsk
+      - Asia/Jakarta
+      - Asia/Jayapura
+      - Asia/Jerusalem
+      - Asia/Kabul
+      - Asia/Kamchatka
+      - Asia/Karachi
+      - Asia/Kashgar
+      - Asia/Kathmandu
+      - Asia/Khandyga
+      - Asia/Kolkata
+      - Asia/Krasnoyarsk
+      - Asia/Kuala_Lumpur
+      - Asia/Kuching
+      - Asia/Kuwait
+      - Asia/Macau
+      - Asia/Magadan
+      - Asia/Makassar
+      - Asia/Manila
+      - Asia/Muscat
+      - Asia/Nicosia
+      - Asia/Novokuznetsk
+      - Asia/Novosibirsk
+      - Asia/Omsk
+      - Asia/Oral
+      - Asia/Phnom_Penh
+      - Asia/Pontianak
+      - Asia/Pyongyang
+      - Asia/Qatar
+      - Asia/Qyzylorda
+      - Asia/Rangoon
+      - Asia/Riyadh
+      - Asia/Sakhalin
+      - Asia/Samarkand
+      - Asia/Seoul
+      - Asia/Shanghai
+      - Asia/Singapore
+      - Asia/Taipei
+      - Asia/Tashkent
+      - Asia/Tbilisi
+      - Asia/Tehran
+      - Asia/Thimphu
+      - Asia/Tokyo
+      - Asia/Ulaanbaatar
+      - Asia/Urumqi
+      - Asia/Ust-Nera
+      - Asia/Vientiane
+      - Asia/Vladivostok
+      - Asia/Yakutsk
+      - Asia/Yekaterinburg
+      - Asia/Yerevan
+      - Atlantic/Azores
+      - Atlantic/Bermuda
+      - Atlantic/Canary
+      - Atlantic/Cape_Verde
+      - Atlantic/Faroe
+      - Atlantic/Madeira
+      - Atlantic/Reykjavik
+      - Atlantic/South_Georgia
+      - Atlantic/St_Helena
+      - Atlantic/Stanley
+      - Australia/Adelaide
+      - Australia/Brisbane
+      - Australia/Broken_Hill
+      - Australia/Currie
+      - Australia/Darwin
+      - Australia/Eucla
+      - Australia/Hobart
+      - Australia/Lindeman
+      - Australia/Lord_Howe
+      - Australia/Melbourne
+      - Australia/Perth
+      - Australia/Sydney
+      - Canada/Atlantic
+      - Canada/Central
+      - Canada/Eastern
+      - Canada/Mountain
+      - Canada/Newfoundland
+      - Canada/Pacific
+      - Europe/Amsterdam
+      - Europe/Andorra
+      - Europe/Athens
+      - Europe/Belgrade
+      - Europe/Berlin
+      - Europe/Bratislava
+      - Europe/Brussels
+      - Europe/Bucharest
+      - Europe/Budapest
+      - Europe/Busingen
+      - Europe/Chisinau
+      - Europe/Copenhagen
+      - Europe/Dublin
+      - Europe/Gibraltar
+      - Europe/Guernsey
+      - Europe/Helsinki
+      - Europe/Isle_of_Man
+      - Europe/Istanbul
+      - Europe/Jersey
+      - Europe/Kaliningrad
+      - Europe/Kiev
+      - Europe/Lisbon
+      - Europe/Ljubljana
+      - Europe/London
+      - Europe/Luxembourg
+      - Europe/Madrid
+      - Europe/Malta
+      - Europe/Mariehamn
+      - Europe/Minsk
+      - Europe/Monaco
+      - Europe/Moscow
+      - Europe/Oslo
+      - Europe/Paris
+      - Europe/Podgorica
+      - Europe/Prague
+      - Europe/Riga
+      - Europe/Rome
+      - Europe/Samara
+      - Europe/San_Marino
+      - Europe/Sarajevo
+      - Europe/Simferopol
+      - Europe/Skopje
+      - Europe/Sofia
+      - Europe/Stockholm
+      - Europe/Tallinn
+      - Europe/Tirane
+      - Europe/Uzhgorod
+      - Europe/Vaduz
+      - Europe/Vatican
+      - Europe/Vienna
+      - Europe/Vilnius
+      - Europe/Volgograd
+      - Europe/Warsaw
+      - Europe/Zagreb
+      - Europe/Zaporozhye
+      - Europe/Zurich
+      - GMT
+      - Indian/Antananarivo
+      - Indian/Chagos
+      - Indian/Christmas
+      - Indian/Cocos
+      - Indian/Comoro
+      - Indian/Kerguelen
+      - Indian/Mahe
+      - Indian/Maldives
+      - Indian/Mauritius
+      - Indian/Mayotte
+      - Indian/Reunion
+      - Pacific/Apia
+      - Pacific/Auckland
+      - Pacific/Chatham
+      - Pacific/Chuuk
+      - Pacific/Easter
+      - Pacific/Efate
+      - Pacific/Enderbury
+      - Pacific/Fakaofo
+      - Pacific/Fiji
+      - Pacific/Funafuti
+      - Pacific/Galapagos
+      - Pacific/Gambier
+      - Pacific/Guadalcanal
+      - Pacific/Guam
+      - Pacific/Honolulu
+      - Pacific/Johnston
+      - Pacific/Kiritimati
+      - Pacific/Kosrae
+      - Pacific/Kwajalein
+      - Pacific/Majuro
+      - Pacific/Marquesas
+      - Pacific/Midway
+      - Pacific/Nauru
+      - Pacific/Niue
+      - Pacific/Norfolk
+      - Pacific/Noumea
+      - Pacific/Pago_Pago
+      - Pacific/Palau
+      - Pacific/Pitcairn
+      - Pacific/Pohnpei
+      - Pacific/Port_Moresby
+      - Pacific/Rarotonga
+      - Pacific/Saipan
+      - Pacific/Tahiti
+      - Pacific/Tarawa
+      - Pacific/Tongatapu
+      - Pacific/Wake
+      - Pacific/Wallis
+      - US/Alaska
+      - US/Arizona
+      - US/Central
+      - US/Eastern
+      - US/Hawaii
+      - US/Mountain
+      - US/Pacific
+      - UTC
+    Description: Default IANA time zone identifier used by schedules that do not specify a time zone.
+  SchedulerFrequency:
+    Type: Number
+    Default: "5"
+    AllowedValues:
+      - "1"
+      - "2"
+      - "5"
+      - "10"
+      - "15"
+      - "30"
+      - "60"
+    Description: Interval in minutes between scheduler executions. For EC2 and RDS
+  EnableSSMMaintenanceWindows:
+    Type: String
+    Default: "No"
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Allow schedules to specify a maintenance window name. Instance Scheduler will ensure the instance is running during that maintenance window.
+  CreateRdsSnapshot:
+    Type: String
+    Default: "No"
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Create snapshots before stopping RDS instances (not clusters).
+  AsgRulePrefix:
+    Type: String
+    Default: IS-
+    Description: The prefix Instance Scheduler will use when naming Scheduled Scaling actions for AutoScaling Groups. Actions with this prefix will be added and removed by Instance Scheduler as needed.
+  AsgScheduledTagKey:
+    Type: String
+    Default: scheduled
+    Description: Deprecated. This parameter exists for migration purposes only and should not be edited.
+  Regions:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Comma-separated List of regions in which resources should be scheduled. Leave blank for current region only.
+  KmsKeyArns:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: comma-separated list of kms arns to grant Instance Scheduler kms:CreateGrant permissions to provide the EC2  service with Decrypt permissions for encrypted EBS volumes. This allows the scheduler to start EC2 instances with attached encrypted EBS volumes. provide just (*) to give limited access to all kms keys, leave blank to disable. For details on the exact policy created, refer to security section of the implementation guide (https://aws.amazon.com/solutions/implementations/instance-scheduler-on-aws/)
+  LicenseManagerArns:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: comma-separated list of license manager arns to grant Instance Scheduler ec2:StartInstance permissions to provide the EC2  service with license manager permissions to start the instances. This allows the scheduler to start EC2 instances with license manager configuration enabled. Leave blank to disable. For details on the exact policy created, refer to security section of the implementation guide (https://aws.amazon.com/solutions/implementations/instance-scheduler-on-aws/)
+  Trace:
+    Type: String
+    Default: "No"
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: Enable debug-level logging in CloudWatch Logs.
+  LogRetentionDays:
+    Type: Number
+    Default: 30
+    AllowedValues:
+      - "1"
+      - "3"
+      - "5"
+      - "7"
+      - "14"
+      - "30"
+      - "60"
+      - "90"
+      - "120"
+      - "150"
+      - "180"
+      - "365"
+      - "400"
+      - "545"
+      - "731"
+      - "1827"
+      - "3653"
+    Description: Retention period in days for logs.
+  OpsMonitoring:
+    Type: String
+    Default: Enabled
+    AllowedValues:
+      - Enabled
+      - Disabled
+    Description: Deploy operational metrics and an Ops Monitoring Dashboard to Cloudwatch
+  MemorySize:
+    Type: Number
+    Default: 512
+    AllowedValues:
+      - "128"
+      - "384"
+      - "512"
+      - "640"
+      - "768"
+      - "896"
+      - "1024"
+      - "1152"
+      - "1280"
+      - "1408"
+      - "1536"
+    Description: Memory size of the Lambda function that schedules EC2 and RDS resources. Increase if you are experiencing high memory usage or timeouts.
+  OrchestratorMemorySize:
+    Type: Number
+    Default: 512
+    AllowedValues:
+      - "128"
+      - "384"
+      - "512"
+      - "640"
+      - "768"
+      - "896"
+      - "1024"
+      - "1152"
+      - "1280"
+      - "1408"
+      - "1536"
+    Description: Memory size of the Lambda functions that coordinate multi-account, multi-region scheduling for the other scheduling lambdas. Increase if you are experiencing high memory usage or timeouts.
+Mappings:
+  Send:
+    AnonymousUsage:
+      Data: "Yes"
+  CronExpressionsForSchedulingIntervals:
+    IntervalMinutesToCron:
+      "1": cron(0/1 * * * ? *)
+      "2": cron(0/2 * * * ? *)
+      "5": cron(0/5 * * * ? *)
+      "10": cron(0/10 * * * ? *)
+      "15": cron(0/15 * * * ? *)
+      "30": cron(0/30 * * * ? *)
+      "60": cron(0 0/1 * * ? *)
+  MetricsSchedulingIntervalToSeconds:
+    MinutesToSeconds:
+      "1": "60"
+      "2": "120"
+      "5": "300"
+      "10": "600"
+      "15": "900"
+      "30": "1800"
+      "60": "3600"
+Conditions:
+  AnonymizedMetricsEnabled:
+    Fn::Equals:
+      - Fn::FindInMap:
+          - Send
+          - AnonymousUsage
+          - Data
+      - "Yes"
+  RetainDataAndLogsCondition:
+    Fn::Equals:
+      - Ref: RetainDataAndLogs
+      - Enabled
+  TraceCondition:
+    Fn::Equals:
+      - Ref: Trace
+      - "Yes"
+  SchedulingActiveCondition:
+    Fn::Equals:
+      - Ref: SchedulingActive
+      - "Yes"
+  CreateRdsSnapshotCondition:
+    Fn::Equals:
+      - Ref: CreateRdsSnapshot
+      - "Yes"
+  EnableSSMMaintenanceWindowsCondition:
+    Fn::Equals:
+      - Ref: EnableSSMMaintenanceWindows
+      - "Yes"
+  UsingAWSOrganizationsCondition:
+    Fn::Equals:
+      - Ref: UsingAWSOrganizations
+      - "Yes"
+  OpsMonitoringCondition:
+    Fn::Equals:
+      - Ref: OpsMonitoring
+      - Enabled
+  isPrincipalsEmpty:
+    Fn::Equals:
+      - Fn::Select:
+          - 0
+          - Ref: Principals
+      - ""
+  isPrincipalsNotEmpty:
+    Fn::Not:
+      - Condition: isPrincipalsEmpty
+  ResourceRegistrationisNotHubStackDeployment951A17BF:
+    Fn::Equals:
+      - REMOTE
+      - HUB
+  ResourceRegistrationisHubStackDeploymentF267769A:
+    Fn::Equals:
+      - HUB
+      - HUB
+  SchedulerRolekmsAccessCondition93ED0C6C:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Select:
+              - 0
+              - Ref: KmsKeyArns
+          - ""
+  SchedulerRolelmConditionAspect9B2A2D12:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Select:
+              - 0
+              - Ref: LicenseManagerArns
+          - ""
+Resources:
+  InstanceSchedulerEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description:
+        Fn::Join:
+          - ""
+          - - 'Instance Scheduler CMK - '
+            - Ref: AWS::StackName
+      EnableKeyRotation: true
+      Enabled: true
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':iam::'
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: '*'
+          - Action:
+              - kms:Decrypt
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Principal:
+              Service: logs.amazonaws.com
+            Resource: '*'
+        Version: "2012-10-17"
+    UpdateReplacePolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    DeletionPolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerEncryptionKey/Resource
+  InstanceSchedulerEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName:
+        Fn::Join:
+          - ""
+          - - alias/AwsSolutions/InstanceScheduler/
+            - Ref: Namespace
+            - /instance-scheduler-on-aws
+      TargetKeyId:
+        Fn::GetAtt:
+          - InstanceSchedulerEncryptionKey
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerEncryptionKey/Alias/Resource
+  ResourceRegistryC5838BF9:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: account
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled:
+        Fn::If:
+          - RetainDataAndLogsCondition
+          - "True"
+          - "False"
+      KeySchema:
+        - AttributeName: account
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId:
+          Fn::GetAtt:
+            - InstanceSchedulerEncryptionKey
+            - Arn
+        SSEEnabled: true
+        SSEType: KMS
+    UpdateReplacePolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    DeletionPolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistry/Resource
+  StateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: service
+          AttributeType: S
+        - AttributeName: account-region
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled:
+        Fn::If:
+          - RetainDataAndLogsCondition
+          - "True"
+          - "False"
+      KeySchema:
+        - AttributeName: service
+          KeyType: HASH
+        - AttributeName: account-region
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId:
+          Fn::GetAtt:
+            - InstanceSchedulerEncryptionKey
+            - Arn
+        SSEEnabled: true
+        SSEType: KMS
+    UpdateReplacePolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    DeletionPolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/StateTable/Resource
+  ConfigTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: type
+          AttributeType: S
+        - AttributeName: name
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled:
+        Fn::If:
+          - RetainDataAndLogsCondition
+          - "True"
+          - "False"
+      KeySchema:
+        - AttributeName: type
+          KeyType: HASH
+        - AttributeName: name
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId:
+          Fn::GetAtt:
+            - InstanceSchedulerEncryptionKey
+            - Arn
+        SSEEnabled: true
+        SSEType: KMS
+      StreamSpecification:
+        StreamViewType: KEYS_ONLY
+    UpdateReplacePolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    DeletionPolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ConfigTable/Resource
+  MaintenanceWindowTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: account-region
+          AttributeType: S
+        - AttributeName: name-id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled:
+        Fn::If:
+          - RetainDataAndLogsCondition
+          - "True"
+          - "False"
+      KeySchema:
+        - AttributeName: account-region
+          KeyType: HASH
+        - AttributeName: name-id
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId:
+          Fn::GetAtt:
+            - InstanceSchedulerEncryptionKey
+            - Arn
+        SSEEnabled: true
+        SSEType: KMS
+    UpdateReplacePolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    DeletionPolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MaintenanceWindowTable/Resource
+  MetricsGeneratorRole83735CC4:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsGeneratorRole/Resource
+  MetricsGeneratorRoleDefaultPolicy19F5F29A:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: MetricsGeneratorRoleDefaultPolicy19F5F29A
+      Roles:
+        - Ref: MetricsGeneratorRole83735CC4
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsGeneratorRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  AdministrationLogsC5F47471:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      KmsKeyId:
+        Fn::GetAtt:
+          - InstanceSchedulerEncryptionKey
+          - Arn
+      LogGroupName:
+        Fn::Join:
+          - ""
+          - - instance-scheduler-on-aws-
+            - Ref: Namespace
+            - -administrative-logs
+      RetentionInDays:
+        Ref: LogRetentionDays
+    UpdateReplacePolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    DeletionPolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/AdministrationLogs/Resource
+      guard:
+        SuppressedRules:
+          - CW_LOGGROUP_RETENTION_PERIOD_CHECK
+          - CLOUDWATCH_LOG_GROUP_ENCRYPTED
+  MetricsUuidGenerator172A04DB:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Custom Resource Provider used to generate unique UUIDs for solution deployments
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          UUID_KEY: /Solutions/instance-scheduler-on-aws/UUID/
+          STACK_ID:
+            Ref: AWS::StackId
+      Handler: instance_scheduler.handler.metrics_uuid_custom_resource.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 128
+      Role:
+        Fn::GetAtt:
+          - MetricsGeneratorRole83735CC4
+          - Arn
+      Runtime: python3.12
+      Timeout: 60
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - MetricsGeneratorRoleDefaultPolicy19F5F29A
+      - MetricsGeneratorRole83735CC4
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsUuidGenerator/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  MetricsUuidPermissionsPolicyD0672406:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+          - Action:
+              - ssm:GetParameters
+              - ssm:GetParameter
+              - ssm:GetParameterHistory
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':ssm:'
+                  - Ref: AWS::Region
+                  - ':'
+                  - Ref: AWS::AccountId
+                  - :parameter/Solutions/instance-scheduler-on-aws/UUID/*
+        Version: "2012-10-17"
+      PolicyName: MetricsUuidPermissionsPolicyD0672406
+      Roles:
+        - Ref: MetricsGeneratorRole83735CC4
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsUuidPermissionsPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: backwards compatibility (<=1.5.3) -- ability to read metrics UUID from ssm parameter
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::arn:<AWS::Partition>:ssm:<AWS::Region>:<AWS::AccountId>:parameter/Solutions/instance-scheduler-on-aws/UUID/*
+  MetricsUuidProvider:
+    Type: Custom::MetricsUuid
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - MetricsUuidGenerator172A04DB
+          - Arn
+    DependsOn:
+      - MetricsUuidPermissionsPolicyD0672406
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsUuidProvider/Default
+  SnsReportingAdminLogSubscriptionCanInvokeLambda36DD64FA:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - SnsLogForwarder1E4F3E8B
+          - Arn
+      Principal: logs.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+          - AdministrationLogsC5F47471
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SnsReporting/AdminLogSubscription/CanInvokeLambda
+  SnsReportingAdminLogSubscriptionF82966D5:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn:
+        Fn::GetAtt:
+          - SnsLogForwarder1E4F3E8B
+          - Arn
+      FilterPattern: '{ ($.level = "ERROR") || ($.level = "WARNING") }'
+      LogGroupName:
+        Ref: AdministrationLogsC5F47471
+    DependsOn:
+      - SnsReportingAdminLogSubscriptionCanInvokeLambda36DD64FA
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SnsReporting/AdminLogSubscription/Resource
+  SnsReportingSchedulingLogSubscriptionCanInvokeLambda2D846B99:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - SnsLogForwarder1E4F3E8B
+          - Arn
+      Principal: logs.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+          - SchedulingLogs24313C6E
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SnsReporting/SchedulingLogSubscription/CanInvokeLambda
+  SnsReportingSchedulingLogSubscription1C6FAA36:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn:
+        Fn::GetAtt:
+          - SnsLogForwarder1E4F3E8B
+          - Arn
+      FilterPattern: '{ ($.level = "ERROR") || ($.level = "WARNING") }'
+      LogGroupName:
+        Ref: SchedulingLogs24313C6E
+    DependsOn:
+      - SnsReportingSchedulingLogSubscriptionCanInvokeLambda2D846B99
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SnsReporting/SchedulingLogSubscription/Resource
+  InstanceSchedulerSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      KmsMasterKeyId:
+        Fn::GetAtt:
+          - InstanceSchedulerEncryptionKey
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerSnsTopic/Resource
+  InstanceSchedulerSnsTopicPolicyDDA2EA0A:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sns:Publish
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+            Effect: Deny
+            Principal: '*'
+            Resource:
+              Ref: InstanceSchedulerSnsTopic
+            Sid: AllowPublishThroughSSLOnly
+        Version: "2012-10-17"
+      Topics:
+        - Ref: InstanceSchedulerSnsTopic
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerSnsTopic/Policy/Resource
+  SnsLogForwarderRole9D82E3A7:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SnsLogForwarderRole/Resource
+  SnsLogForwarderRoleDefaultPolicy428A754D:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':logs:'
+                  - Ref: AWS::Region
+                  - ':'
+                  - Ref: AWS::AccountId
+                  - :log-group:/aws/lambda/*
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+          - Action: sns:Publish
+            Effect: Allow
+            Resource:
+              Ref: InstanceSchedulerSnsTopic
+          - Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: SnsLogForwarderRoleDefaultPolicy428A754D
+      Roles:
+        - Ref: SnsLogForwarderRole9D82E3A7
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SnsLogForwarderRole/DefaultPolicy/Resource
+  SnsLogForwarder1E4F3E8B:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Forwards InstanceScheduler Error/Warning logs to SNS
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          SNS_NOTIFICATION_TOPIC:
+            Ref: InstanceSchedulerSnsTopic
+      Handler: instance_scheduler.handler.log_forwarding.handle_log_event
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - SnsLogForwarderRole9D82E3A7
+          - Arn
+      Runtime: python3.12
+      Timeout: 30
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - SnsLogForwarderRoleDefaultPolicy428A754D
+      - SnsLogForwarderRole9D82E3A7
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SnsLogForwarder/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  SchedulingLogs24313C6E:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      KmsKeyId:
+        Fn::GetAtt:
+          - InstanceSchedulerEncryptionKey
+          - Arn
+      LogGroupName:
+        Fn::Join:
+          - ""
+          - - instance-scheduler-on-aws-
+            - Ref: Namespace
+            - -scheduling-logs
+      RetentionInDays:
+        Ref: LogRetentionDays
+    UpdateReplacePolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    DeletionPolicy:
+      Fn::If:
+        - RetainDataAndLogsCondition
+        - Retain
+        - Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulingLogs/Resource
+      guard:
+        SuppressedRules:
+          - CW_LOGGROUP_RETENTION_PERIOD_CHECK
+  globalEventsF68743C0:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name:
+        Fn::Join:
+          - ""
+          - - IS-GlobalEvents-
+            - Ref: Namespace
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/globalEvents/Resource
+  SpokeRegistrationRole0E2E4D3E:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -SpokeRegistrationHandler-Role
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+  SpokeRegistrationRoleDefaultPolicy7A7A6954:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: SpokeRegistrationRoleDefaultPolicy7A7A6954
+      Roles:
+        - Ref: SpokeRegistrationRole0E2E4D3E
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  SpokeRegistrationHandler923F17AC:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: spoke account registration handler, version v3.1.4
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          CONFIG_TABLE:
+            Ref: ConfigTable
+          REGISTRY_TABLE:
+            Ref: ResourceRegistryC5838BF9
+          SCHEDULER_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -Scheduler-Role
+          SCHEDULE_TAG_KEY:
+            Ref: TagName
+          HUB_STACK_NAME:
+            Ref: AWS::StackName
+          SCHEDULING_INTERVAL_MINUTES:
+            Ref: SchedulerFrequency
+          ASG_SCHEDULED_RULES_PREFIX:
+            Ref: AsgRulePrefix
+          ASG_METADATA_TAG_KEY:
+            Ref: AsgScheduledTagKey
+          LOCAL_EVENT_BUS_NAME:
+            Fn::Join:
+              - ""
+              - - IS-LocalEvents-
+                - Ref: Namespace
+          GLOBAL_EVENT_BUS_NAME:
+            Ref: globalEventsF68743C0
+          SSM_PARAM_PATH_NAME:
+            Fn::Join:
+              - ""
+              - - /IS/
+                - Ref: Namespace
+                - /regions
+          SSM_PARAM_UPDATE_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -SpokeRegistrationUpdateSSMParamRole
+      FunctionName:
+        Fn::Join:
+          - ""
+          - - InstanceScheduler-
+            - Ref: Namespace
+            - -SpokeRegistration
+      Handler: instance_scheduler.handler.spoke_registration.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - SpokeRegistrationRole0E2E4D3E
+          - Arn
+      Runtime: python3.12
+      Timeout: 900
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - SpokeRegistrationRoleDefaultPolicy7A7A6954
+      - SpokeRegistrationRole0E2E4D3E
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationHandler/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  SpokeRegistrationPolicy600671FC:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - :iam::*:role/
+                    - Ref: Namespace
+                    - -SpokeRegistrationUpdateSSMParamRole
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - :iam::*:role/
+                    - Ref: Namespace
+                    - -Scheduler-Role
+          - Action:
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+              - ssm:DeleteParameters
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':ssm:*:'
+                  - Ref: AWS::AccountId
+                  - :parameter/IS/
+                  - Ref: Namespace
+                  - /regions/*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - globalEventsF68743C0
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: SpokeRegistrationPolicy600671FC
+      Roles:
+        - Ref: SpokeRegistrationRole0E2E4D3E
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Permission to use solution CMK with dynamo/sns
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Action::kms:GenerateDataKey*
+              - Action::kms:ReEncrypt*
+  SpokeAccountInvokeFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Fn::If:
+          - UsingAWSOrganizationsCondition
+          - Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Principal:
+                  AWS: '*'
+                Action: sts:AssumeRole
+                Condition:
+                  ForAnyValue:StringEquals:
+                    aws:PrincipalOrgID:
+                      Fn::Select:
+                        - 0
+                        - Ref: Principals
+                  ArnLike:
+                    aws:PrincipalArn:
+                      Fn::Join:
+                        - ""
+                        - - 'arn:'
+                          - Ref: AWS::Partition
+                          - :iam::*:role/
+                          - Ref: Namespace
+                          - -InvokeHubFunctionRemoteRole
+          - Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Principal:
+                  AWS:
+                    Ref: Principals
+                Action: sts:AssumeRole
+                Condition:
+                  ArnLike:
+                    aws:PrincipalArn:
+                      Fn::Join:
+                        - ""
+                        - - 'arn:'
+                          - Ref: AWS::Partition
+                          - :iam::*:role/
+                          - Ref: Namespace
+                          - -InvokeHubFunctionRemoteRole
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -SpokeRegistrationInvokeFunction-Role
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SpokeAccountInvokeFunctionRole
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+    Condition: isPrincipalsNotEmpty
+  SpokeAccountInvokeFunctionPolicy56170D6F:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':lambda:'
+                  - Ref: AWS::Region
+                  - ':'
+                  - Ref: AWS::AccountId
+                  - :function:InstanceScheduler-
+                  - Ref: Namespace
+                  - -SpokeRegistration
+        Version: "2012-10-17"
+      PolicyName: SpokeAccountInvokeFunctionPolicy56170D6F
+      Roles:
+        - Fn::Select:
+            - 1
+            - Fn::Split:
+                - /
+                - Fn::Select:
+                    - 5
+                    - Fn::Split:
+                        - ':'
+                        - Fn::GetAtt:
+                            - SpokeAccountInvokeFunctionRole
+                            - Arn
+    DependsOn:
+      - SpokeAccountInvokeFunctionRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SpokeAccountInvokeFunctionPolicy/Resource
+    Condition: isPrincipalsNotEmpty
+  ResourceRegistrationRegistrationEvents5615CE0B:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -RegistrationEvents
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegistrationEvents/Resource
+  ResourceRegistrationRegistrationEventscdkAllowCrossAccountEventBridgeAccessDC854A6F:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName:
+        Ref: ResourceRegistrationRegistrationEvents5615CE0B
+      Statement:
+        Action: events:PutEvents
+        Condition:
+          StringEquals:
+            Fn::If:
+              - UsingAWSOrganizationsCondition
+              - aws:PrincipalOrgId:
+                  Fn::Select:
+                    - 0
+                    - Ref: Principals
+              - aws:SourceAccount:
+                  Ref: Principals
+        Effect: Allow
+        Principal:
+          AWS: '*'
+        Resource:
+          Fn::GetAtt:
+            - ResourceRegistrationRegistrationEvents5615CE0B
+            - Arn
+        Sid: cdk-AllowCrossAccountEventBridgeAccess
+      StatementId: cdk-AllowCrossAccountEventBridgeAccess
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegistrationEvents/cdk-AllowCrossAccountEventBridgeAccess/Resource
+  ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRulesLambdaRole/Resource
+  ResourceRegistrationCreateRegionalEventRulesLambdaRoleDefaultPolicyAEEA7C27:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationCreateRegionalEventRulesLambdaRoleDefaultPolicyAEEA7C27
+      Roles:
+        - Ref: ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRulesLambdaRole/DefaultPolicy/Resource
+  ResourceRegistrationHubTagEventForwardingRole81ECC265:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/HubTagEventForwardingRole/Resource
+  ResourceRegistrationHubTagEventForwardingRoleDefaultPolicy04836F11:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:'
+                  - Ref: AWS::Region
+                  - ':'
+                  - Ref: AWS::AccountId
+                  - :event-bus/
+                  - Ref: Namespace
+                  - -RegistrationEvents
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationHubTagEventForwardingRoleDefaultPolicy04836F11
+      Roles:
+        - Ref: ResourceRegistrationHubTagEventForwardingRole81ECC265
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/HubTagEventForwardingRole/DefaultPolicy/Resource
+  ResourceRegistrationCreateRegionalEventRulesLambdaBADBA499:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Custom Resource for creating regional event rules for tagging resources.
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          TAGGING_EVENT_RULE_ROLE_ARN:
+            Fn::GetAtt:
+              - ResourceRegistrationHubTagEventForwardingRole81ECC265
+              - Arn
+          TAGGING_EVENT_BUS_ARN:
+            Fn::Join:
+              - ""
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':events:'
+                - Ref: AWS::Region
+                - ':'
+                - Ref: AWS::AccountId
+                - :event-bus/
+                - Ref: Namespace
+                - -RegistrationEvents
+          EVENT_RULE_PREFIX:
+            Fn::Join:
+              - ""
+              - - IS-Tagging-
+                - Ref: Namespace
+          VERSION: v3.1.4
+          SCHEDULE_TAG_KEY:
+            Ref: TagName
+          REGIONAL_EVENT_BUS_NAME:
+            Fn::Join:
+              - ""
+              - - IS-LocalEvents-
+                - Ref: Namespace
+      Handler: instance_scheduler.handler.create_region_event_rules_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel: INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
+          - Arn
+      Runtime: python3.12
+      Timeout: 900
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - ResourceRegistrationCreateRegionalEventRulesLambdaRoleDefaultPolicyAEEA7C27
+      - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRulesLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  ResourceRegistrationCreateRegionalEventRulesPolicy1531DABC:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - events:DeleteRule
+              - events:PutTargets
+              - events:PutRule
+              - events:RemoveTargets
+            Effect: Allow
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-
+                    - Ref: Namespace
+                    - '*'
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-resource-tagging
+              - Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':events:*:'
+                    - Ref: AWS::AccountId
+                    - :rule/IS-Tagging-asg-tagging*
+          - Action:
+              - events:CreateEventBus
+              - events:DeleteEventBus
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:*:'
+                  - Ref: AWS::AccountId
+                  - :event-bus/IS-LocalEvents-
+                  - Ref: Namespace
+          - Action:
+              - events:ListRules
+              - events:DescribeRule
+            Effect: Allow
+            Resource: '*'
+          - Action: iam:PassRole
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationHubTagEventForwardingRole81ECC265
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationCreateRegionalEventRulesPolicy1531DABC
+      Roles:
+        - Ref: ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRulesPolicy/Resource
+  ResourceRegistrationCreateRegionalEventRules9BE794F3:
+    Type: Custom::SetupRegionalEvents
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - ResourceRegistrationCreateRegionalEventRulesLambdaBADBA499
+          - Arn
+      regions:
+        Ref: Regions
+      version: v3.1.4
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRules/Default
+  ResourceRegistrationResourceRegistrationLambdaRole536BBF3F:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -ResourceRegistrationHandler-Role
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/ResourceRegistrationLambdaRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  ResourceRegistrationResourceRegistrationLambdaRoleDefaultPolicy5CED86F8:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - :iam::*:role/
+                  - Ref: Namespace
+                  - -Scheduler-Role
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - globalEventsF68743C0
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationResourceRegistrationLambdaRoleDefaultPolicy5CED86F8
+      Roles:
+        - Ref: ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/ResourceRegistrationLambdaRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  ResourceRegistrationResourceRegistrationDLQ283D80AD:
+    Type: AWS::SQS::Queue
+    Properties:
+      SqsManagedSseEnabled: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/ResourceRegistrationDLQ/Resource
+      guard:
+        SuppressedRules:
+          - SQS_QUEUE_KMS_MASTER_KEY_ID_RULE
+  ResourceRegistrationResourceRegistrationDLQPolicy6D1C07B2:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sqs:SendMessage
+            Condition:
+              ArnEquals:
+                aws:SourceArn:
+                  Fn::GetAtt:
+                    - ResourceRegistrationTaggingEventsToLambda5A63CF2E
+                    - Arn
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationResourceRegistrationDLQ283D80AD
+                - Arn
+            Sid: AllowEventRuleinstancescheduleronawsResourceRegistrationTaggingEventsToLambdaB8AD2483
+          - Action: sqs:SendMessage
+            Condition:
+              ArnEquals:
+                aws:SourceArn:
+                  Fn::GetAtt:
+                    - ResourceRegistrationAsgTaggingEventsToLambdaB34CB412
+                    - Arn
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationResourceRegistrationDLQ283D80AD
+                - Arn
+            Sid: AllowEventRuleinstancescheduleronawsResourceRegistrationAsgTaggingEventsToLambdaB2B8CF1E
+        Version: "2012-10-17"
+      Queues:
+        - Ref: ResourceRegistrationResourceRegistrationDLQ283D80AD
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/ResourceRegistrationDLQ/Policy/Resource
+  ResourceRegistrationTaggingEventsToLambda5A63CF2E:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName:
+        Ref: ResourceRegistrationRegistrationEvents5615CE0B
+      EventPattern:
+        source:
+          - aws.tag
+        detail:
+          changed-tag-keys:
+            - Ref: TagName
+      State: ENABLED
+      Targets:
+        - Arn:
+            Fn::GetAtt:
+              - ResourceRegistrationLambda40454DE0
+              - Arn
+          DeadLetterConfig:
+            Arn:
+              Fn::GetAtt:
+                - ResourceRegistrationResourceRegistrationDLQ283D80AD
+                - Arn
+          Id: Target0
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/TaggingEventsToLambda/Resource
+  ResourceRegistrationTaggingEventsToLambdaAllowEventRuleinstancescheduleronawsResourceRegistrationLambda04513943ECF4E0F5:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - ResourceRegistrationLambda40454DE0
+          - Arn
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+          - ResourceRegistrationTaggingEventsToLambda5A63CF2E
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/TaggingEventsToLambda/AllowEventRuleinstancescheduleronawsResourceRegistrationLambda04513943
+  ResourceRegistrationAsgTaggingEventsToLambdaB34CB412:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName:
+        Ref: ResourceRegistrationRegistrationEvents5615CE0B
+      EventPattern:
+        source:
+          - aws.autoscaling
+        detail-type:
+          - AWS API Call via CloudTrail
+        detail:
+          eventSource:
+            - autoscaling.amazonaws.com
+          eventName:
+            - CreateOrUpdateTags
+            - DeleteTags
+          requestParameters:
+            tags:
+              key:
+                - Ref: TagName
+      State: ENABLED
+      Targets:
+        - Arn:
+            Fn::GetAtt:
+              - ResourceRegistrationLambda40454DE0
+              - Arn
+          DeadLetterConfig:
+            Arn:
+              Fn::GetAtt:
+                - ResourceRegistrationResourceRegistrationDLQ283D80AD
+                - Arn
+          Id: Target0
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/AsgTaggingEventsToLambda/Resource
+  ResourceRegistrationAsgTaggingEventsToLambdaAllowEventRuleinstancescheduleronawsResourceRegistrationLambda04513943B6B637EE:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - ResourceRegistrationLambda40454DE0
+          - Arn
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+          - ResourceRegistrationAsgTaggingEventsToLambdaB34CB412
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/AsgTaggingEventsToLambda/AllowEventRuleinstancescheduleronawsResourceRegistrationLambda04513943
+  ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParametersByPath
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+              - Action: ssm:DescribeParameters
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                  - ssm:DeleteParameters
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+            Version: "2012-10-17"
+          PolicyName: SpokeRegistrationUpdateSSMParamPolicy
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -InvokeHubFunctionRemoteRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationLambdaRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+          - IAM_NO_INLINE_POLICY_CHECK
+          - IAM_POLICYDOCUMENT_NO_WILDCARD_RESOURCE
+  ResourceRegistrationRegionRegistrationLambdaRoleDefaultPolicyD77B4753:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationRegionRegistrationLambdaRoleDefaultPolicyD77B4753
+      Roles:
+        - Ref: ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationLambdaRole/DefaultPolicy/Resource
+  ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParametersByPath
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+              - Action: ssm:DescribeParameters
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                  - ssm:DeleteParameters
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+            Version: "2012-10-17"
+          PolicyName: RegionRegistrationWaitLambdaPolicy
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationWaitingLambdaRole/Resource
+      guard:
+        SuppressedRules:
+          - IAM_NO_INLINE_POLICY_CHECK
+          - IAM_POLICYDOCUMENT_NO_WILDCARD_RESOURCE
+  ResourceRegistrationRegionRegistrationWaitingLambdaRoleDefaultPolicy57C65D22:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationRegionRegistrationWaitingLambdaRoleDefaultPolicy57C65D22
+      Roles:
+        - Ref: ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationWaitingLambdaRole/DefaultPolicy/Resource
+  ResourceRegistrationSpokeRegistrationUpdateSSMParamRoleCA31EFC6:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - 'arn:'
+                    - Ref: AWS::Partition
+                    - ':iam::'
+                    - Ref: AWS::AccountId
+                    - :role/
+                    - Ref: Namespace
+                    - -SpokeRegistrationHandler-Role
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParametersByPath
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+              - Action: ssm:DescribeParameters
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                  - ssm:DeleteParameters
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - 'arn:'
+                      - Ref: AWS::Partition
+                      - ':ssm:*:'
+                      - Ref: AWS::AccountId
+                      - :parameter/IS/
+                      - Ref: Namespace
+                      - /regions/*
+            Version: "2012-10-17"
+          PolicyName: SpokeRegistrationUpdateSSMParamPolicy
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -SpokeRegistrationUpdateSSMParamRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/SpokeRegistrationUpdateSSMParamRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+          - IAM_NO_INLINE_POLICY_CHECK
+          - IAM_POLICYDOCUMENT_NO_WILDCARD_RESOURCE
+    Condition: ResourceRegistrationisNotHubStackDeployment951A17BF
+  ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Custom Resource Provider used for region registration
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          HUB_ACCOUNT_ID:
+            Ref: AWS::AccountId
+          STACK_ID:
+            Ref: AWS::StackId
+          SSM_PARAM_PATH:
+            Fn::Join:
+              - ""
+              - - /IS/
+                - Ref: Namespace
+                - /regions
+          HUB_REGISTRATION_FUNCTION_ARN:
+            Fn::Join:
+              - ""
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':lambda:'
+                - Ref: AWS::Region
+                - ':'
+                - Ref: AWS::AccountId
+                - ':function:'
+                - Ref: SpokeRegistrationHandler923F17AC
+          HUB_REGISTRATION_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -SpokeRegistrationInvokeFunction-Role
+      Handler: instance_scheduler.handler.region_registration_events_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
+          - Arn
+      Runtime: python3.12
+      Timeout: 900
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - ResourceRegistrationRegionRegistrationLambdaRoleDefaultPolicyD77B4753
+      - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationCustomResourceLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  ResourceRegistrationRegionRegistrationWaitLambda88C6C302:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Custom Resource lambda to wait and confirm region registrations.
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          HUB_ACCOUNT_ID:
+            Ref: AWS::AccountId
+          STACK_ID:
+            Ref: AWS::StackId
+          SSM_PARAM_PATH:
+            Fn::Join:
+              - ""
+              - - /IS/
+                - Ref: Namespace
+                - /regions
+          HUB_REGISTRATION_FUNCTION_ARN:
+            Fn::Join:
+              - ""
+              - - 'arn:'
+                - Ref: AWS::Partition
+                - ':lambda:'
+                - Ref: AWS::Region
+                - ':'
+                - Ref: AWS::AccountId
+                - ':function:'
+                - Ref: SpokeRegistrationHandler923F17AC
+          HUB_REGISTRATION_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -SpokeRegistrationInvokeFunction-Role
+      Handler: instance_scheduler.handler.region_registration_events_iscomplete_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
+          - Arn
+      Runtime: python3.12
+      Timeout: 900
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleDefaultPolicy57C65D22
+      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationWaitLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  ResourceRegistrationCustomResourceProviderframeworkonEventServiceRole10EAF63B:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-onEvent/ServiceRole/Resource
+  ResourceRegistrationCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy2620E1E1:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                - Arn
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                - Arn
+          - Action: states:StartExecution
+            Effect: Allow
+            Resource:
+              Ref: ResourceRegistrationCustomResourceProviderwaiterstatemachine79C63BA3
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy2620E1E1
+      Roles:
+        - Ref: ResourceRegistrationCustomResourceProviderframeworkonEventServiceRole10EAF63B
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource
+  ResourceRegistrationCustomResourceProviderframeworkonEvent294A3755:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+      Description: AWS CDK resource provider framework - onEvent (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
+      Environment:
+        Variables:
+          USER_ON_EVENT_FUNCTION_ARN:
+            Fn::GetAtt:
+              - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+              - Arn
+          USER_IS_COMPLETE_FUNCTION_ARN:
+            Fn::GetAtt:
+              - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+              - Arn
+          WAITER_STATE_MACHINE_ARN:
+            Ref: ResourceRegistrationCustomResourceProviderwaiterstatemachine79C63BA3
+      Handler: framework.onEvent
+      LoggingConfig:
+        ApplicationLogLevel: FATAL
+        LogFormat: JSON
+      Role:
+        Fn::GetAtt:
+          - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRole10EAF63B
+          - Arn
+      Runtime: nodejs22.x
+      Timeout: 900
+    DependsOn:
+      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy2620E1E1
+      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRole10EAF63B
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-onEvent/Resource
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRole425E0222:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-isComplete/ServiceRole/Resource
+  ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy209D7A94:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                - Arn
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy209D7A94
+      Roles:
+        - Ref: ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRole425E0222
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-isComplete/ServiceRole/DefaultPolicy/Resource
+  ResourceRegistrationCustomResourceProviderframeworkisComplete44F29B9D:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+      Description: AWS CDK resource provider framework - isComplete (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
+      Environment:
+        Variables:
+          USER_ON_EVENT_FUNCTION_ARN:
+            Fn::GetAtt:
+              - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+              - Arn
+          USER_IS_COMPLETE_FUNCTION_ARN:
+            Fn::GetAtt:
+              - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+              - Arn
+      Handler: framework.isComplete
+      LoggingConfig:
+        ApplicationLogLevel: FATAL
+        LogFormat: JSON
+      Role:
+        Fn::GetAtt:
+          - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRole425E0222
+          - Arn
+      Runtime: nodejs22.x
+      Timeout: 900
+    DependsOn:
+      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy209D7A94
+      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRole425E0222
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-isComplete/Resource
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRole47835E8A:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - 'arn:'
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-onTimeout/ServiceRole/Resource
+  ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy1CE45C4E:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+                - Arn
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                        - Arn
+                    - :*
+          - Action: lambda:GetFunction
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy1CE45C4E
+      Roles:
+        - Ref: ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRole47835E8A
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-onTimeout/ServiceRole/DefaultPolicy/Resource
+  ResourceRegistrationCustomResourceProviderframeworkonTimeoutE1C8D0D4:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+      Description: AWS CDK resource provider framework - onTimeout (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
+      Environment:
+        Variables:
+          USER_ON_EVENT_FUNCTION_ARN:
+            Fn::GetAtt:
+              - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+              - Arn
+          USER_IS_COMPLETE_FUNCTION_ARN:
+            Fn::GetAtt:
+              - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+              - Arn
+      Handler: framework.onTimeout
+      LoggingConfig:
+        ApplicationLogLevel: FATAL
+        LogFormat: JSON
+      Role:
+        Fn::GetAtt:
+          - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRole47835E8A
+          - Arn
+      Runtime: nodejs22.x
+      Timeout: 900
+    DependsOn:
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy1CE45C4E
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRole47835E8A
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/framework-onTimeout/Resource
+      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/waiter-state-machine/Role/Resource
+  ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleDefaultPolicy71F426D3:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationCustomResourceProviderframeworkisComplete44F29B9D
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationCustomResourceProviderframeworkisComplete44F29B9D
+                        - Arn
+                    - :*
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ResourceRegistrationCustomResourceProviderframeworkonTimeoutE1C8D0D4
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ResourceRegistrationCustomResourceProviderframeworkonTimeoutE1C8D0D4
+                        - Arn
+                    - :*
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleDefaultPolicy71F426D3
+      Roles:
+        - Ref: ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/waiter-state-machine/Role/DefaultPolicy/Resource
+  ResourceRegistrationCustomResourceProviderwaiterstatemachine79C63BA3:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      DefinitionString:
+        Fn::Join:
+          - ""
+          - - '{"StartAt":"framework-isComplete-task","States":{"framework-isComplete-task":{"End":true,"Retry":[{"ErrorEquals":["States.ALL"],"IntervalSeconds":30,"MaxAttempts":40,"BackoffRate":1}],"Catch":[{"ErrorEquals":["States.ALL"],"Next":"framework-onTimeout-task"}],"Type":"Task","Resource":"'
+            - Fn::GetAtt:
+                - ResourceRegistrationCustomResourceProviderframeworkisComplete44F29B9D
+                - Arn
+            - '"},"framework-onTimeout-task":{"End":true,"Type":"Task","Resource":"'
+            - Fn::GetAtt:
+                - ResourceRegistrationCustomResourceProviderframeworkonTimeoutE1C8D0D4
+                - Arn
+            - '"}}}'
+      RoleArn:
+        Fn::GetAtt:
+          - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178
+          - Arn
+    DependsOn:
+      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleDefaultPolicy71F426D3
+      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/waiter-state-machine/Resource
+  ResourceRegistrationRegionRegistrationCustomResourceLambdaPolicy4210499E:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':iam::'
+                  - Ref: AWS::AccountId
+                  - :role/
+                  - Ref: Namespace
+                  - -SpokeRegistrationInvokeFunction-Role
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationRegionRegistrationCustomResourceLambdaPolicy4210499E
+      Roles:
+        - Ref: ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationCustomResourceLambdaPolicy/Resource
+    Condition: ResourceRegistrationisNotHubStackDeployment951A17BF
+  ResourceRegistrationhubLambdaInvokePolicy5F97F17F:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':lambda:'
+                  - Ref: AWS::Region
+                  - ':'
+                  - Ref: AWS::AccountId
+                  - ':function:'
+                  - Ref: SpokeRegistrationHandler923F17AC
+        Version: "2012-10-17"
+      PolicyName: ResourceRegistrationhubLambdaInvokePolicy5F97F17F
+      Roles:
+        - Ref: ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/hubLambdaInvokePolicy/Resource
+    Condition: ResourceRegistrationisHubStackDeploymentF267769A
+  ResourceRegistrationRegisterRegionsF3C0C449:
+    Type: Custom::RegisterRegion
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - ResourceRegistrationCustomResourceProviderframeworkonEvent294A3755
+          - Arn
+      regions:
+        Ref: Regions
+      version: v3.1.4
+    DependsOn:
+      - DynamoDbTableDeploymentGate
+      - IamPolicyDeploymentGate
+      - IamRoleDeploymentGate
+      - LambdaDeploymentGate
+      - SchedulerRoleASGSchedulingPermissions3ABCC443
+      - SchedulerRoleEc2SchedulingPermissionsF1A25C28
+      - SchedulerRoleRdsSchedulingPermissionsEBB3D20F
+      - SchedulerRole59E73443
+      - SchedulerRoleResourceGroupsTaggingPermissions24BD9721
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegisterRegions/Default
+  ResourceRegistrationLambda40454DE0:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Handles tag events for registration updates of managed resources
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          CONFIG_TABLE:
+            Ref: ConfigTable
+          REGISTRY_TABLE:
+            Ref: ResourceRegistryC5838BF9
+          HUB_STACK_NAME:
+            Ref: AWS::StackName
+          SCHEDULER_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -Scheduler-Role
+          SCHEDULE_TAG_KEY:
+            Ref: TagName
+          SCHEDULING_INTERVAL_MINUTES:
+            Ref: SchedulerFrequency
+          ASG_SCHEDULED_RULES_PREFIX:
+            Ref: AsgRulePrefix
+          ASG_METADATA_TAG_KEY:
+            Ref: AsgScheduledTagKey
+          LOCAL_EVENT_BUS_NAME:
+            Fn::Join:
+              - ""
+              - - IS-LocalEvents-
+                - Ref: Namespace
+          GLOBAL_EVENT_BUS_NAME:
+            Ref: globalEventsF68743C0
+      Handler: instance_scheduler.handler.resource_registration_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      ReservedConcurrentExecutions: 1
+      Role:
+        Fn::GetAtt:
+          - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
+          - Arn
+      Runtime: python3.12
+      Timeout: 300
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - ResourceRegistrationResourceRegistrationLambdaRoleDefaultPolicy5CED86F8
+      - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistrationLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  LambdaDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - HeartbeatMetricsReporter812E35D0
+      - iceErrorRetryHandlerLambda93DCA812
+      - MetricsUuidGenerator172A04DB
+      - ResourceRegistrationCreateRegionalEventRulesLambdaBADBA499
+      - ResourceRegistrationCustomResourceProviderframeworkisComplete44F29B9D
+      - ResourceRegistrationCustomResourceProviderframeworkonEvent294A3755
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutE1C8D0D4
+      - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+      - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+      - ResourceRegistrationLambda40454DE0
+      - Main
+      - SchedulingOrchestratorBB4C4C5A
+      - schedulingRequestHandlerLambdaC395DC9E
+      - SnsLogForwarder1E4F3E8B
+      - SpokeRegistrationHandler923F17AC
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/LambdaDeploymentGate
+  IamRoleDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - HeartbeatMetricsReporterRole9FB59405
+      - iceErrorRetryHandlerRoleBB1DEADD
+      - MainLambdaRole500DC55A
+      - MetricsGeneratorRole83735CC4
+      - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
+      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRole425E0222
+      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRole10EAF63B
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRole47835E8A
+      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178
+      - ResourceRegistrationHubTagEventForwardingRole81ECC265
+      - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
+      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
+      - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
+      - SchedulerRole59E73443
+      - SchedulingOrchestratorRoleAD0FF7B1
+      - schedulingRequestHandlerRoleD87803EB
+      - SnsLogForwarderRole9D82E3A7
+      - SpokeRegistrationRole0E2E4D3E
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/IamRoleDeploymentGate
+  IamPolicyDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - HeartbeatMetricsReporterRoleDefaultPolicy7CE04DA3
+      - iceErrorRetryHandlerRoleDefaultPolicy26094B45
+      - MainLambdaRoleDefaultPolicy5347C905
+      - MetricsGathererPermissionsPolicyAA99320A
+      - MetricsGeneratorRoleDefaultPolicy19F5F29A
+      - MetricsUuidPermissionsPolicyD0672406
+      - ResourceRegistrationCreateRegionalEventRulesLambdaRoleDefaultPolicyAEEA7C27
+      - ResourceRegistrationCreateRegionalEventRulesPolicy1531DABC
+      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy209D7A94
+      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy2620E1E1
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy1CE45C4E
+      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleDefaultPolicy71F426D3
+      - ResourceRegistrationHubTagEventForwardingRoleDefaultPolicy04836F11
+      - ResourceRegistrationRegionRegistrationLambdaRoleDefaultPolicyD77B4753
+      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleDefaultPolicy57C65D22
+      - ResourceRegistrationResourceRegistrationLambdaRoleDefaultPolicy5CED86F8
+      - retryIceErrorHandlerPolicy0496828B
+      - SchedulerRoleASGSchedulingPermissions3ABCC443
+      - SchedulerRoleEc2SchedulingPermissionsF1A25C28
+      - SchedulerRoleRdsSchedulingPermissionsEBB3D20F
+      - SchedulerRoleRegionalEventBusPermissionsA9062DD9
+      - SchedulerRoleResourceGroupsTaggingPermissions24BD9721
+      - SchedulingOrchestratorPermissionsPolicyC2148A26
+      - SchedulingOrchestratorRoleDefaultPolicy29DE8B0D
+      - schedulingRequestHandlerPolicy1BE05FC4
+      - schedulingRequestHandlerRoleDefaultPolicy938ADC4A
+      - SnsLogForwarderRoleDefaultPolicy428A754D
+      - SpokeRegistrationPolicy600671FC
+      - SpokeRegistrationRoleDefaultPolicy7A7A6954
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/IamPolicyDeploymentGate
+  DynamoDbTableDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - ConfigTable
+      - MaintenanceWindowTable
+      - ResourceRegistryC5838BF9
+      - StateTable
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/DynamoDbTableDeploymentGate
+  MainLambdaRole500DC55A:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MainLambdaRole/Resource
+  MainLambdaRoleDefaultPolicy5347C905:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+          - Action: sns:Publish
+            Effect: Allow
+            Resource:
+              Ref: InstanceSchedulerSnsTopic
+          - Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: MainLambdaRoleDefaultPolicy5347C905
+      Roles:
+        - Ref: MainLambdaRole500DC55A
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MainLambdaRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Permission to use solution CMK with dynamo/sns
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Action::kms:GenerateDataKey*
+              - Action::kms:ReEncrypt*
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  Main:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: CLI and CFN schedule manager for Instance Scheduler version v3.1.4
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          ISSUES_TOPIC_ARN:
+            Ref: InstanceSchedulerSnsTopic
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          DEFAULT_TIMEZONE:
+            Ref: DefaultTimezone
+          ENABLE_AWS_ORGANIZATIONS:
+            Fn::If:
+              - UsingAWSOrganizationsCondition
+              - "True"
+              - "False"
+          CONFIG_TABLE:
+            Ref: ConfigTable
+          METRICS_URL: https://metrics.awssolutionsbuilder.com/generic
+          SEND_METRICS:
+            Fn::If:
+              - AnonymizedMetricsEnabled
+              - "True"
+              - "False"
+          SOLUTION_ID: SO0030
+          SOLUTION_VERSION: v3.1.4
+          SCHEDULING_INTERVAL_MINUTES:
+            Ref: SchedulerFrequency
+          METRICS_UUID:
+            Fn::GetAtt:
+              - MetricsUuidProvider
+              - Uuid
+          HUB_ACCOUNT_ID:
+            Ref: AWS::AccountId
+      FunctionName:
+        Fn::Join:
+          - ""
+          - - Ref: AWS::StackName
+            - -InstanceSchedulerMain
+      Handler: instance_scheduler.main.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 512
+      Role:
+        Fn::GetAtt:
+          - MainLambdaRole500DC55A
+          - Arn
+      Runtime: python3.12
+      Timeout: 300
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - MainLambdaRoleDefaultPolicy5347C905
+      - MainLambdaRole500DC55A
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/scheduler-lambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  SchedulerConfigHelper:
+    Type: Custom::ServiceSetup
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - Main
+          - Arn
+      timeout: 120
+      remote_account_ids:
+        Ref: Principals
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/ServiceSetup/Default
+  InstanceSchedulerIceRetryDLQueue4B3D73CB:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId:
+        Fn::GetAtt:
+          - InstanceSchedulerEncryptionKey
+          - Arn
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerIceRetryDLQueue/Resource
+  InstanceSchedulerIceRetryDLQueuePolicy8953A569:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sqs:*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+            Effect: Deny
+            Principal:
+              AWS: '*'
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerIceRetryDLQueue4B3D73CB
+                - Arn
+        Version: "2012-10-17"
+      Queues:
+        - Ref: InstanceSchedulerIceRetryDLQueue4B3D73CB
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerIceRetryDLQueue/Policy/Resource
+  InstanceSchedulerIceRetryQueueE4C492AF:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId:
+        Fn::GetAtt:
+          - InstanceSchedulerEncryptionKey
+          - Arn
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - InstanceSchedulerIceRetryDLQueue4B3D73CB
+            - Arn
+        maxReceiveCount: 1
+      VisibilityTimeout: 180
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerIceRetryQueue/Resource
+  iceErrorRetryHandlerRoleBB1DEADD:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -IceErrorRetryHandler-Role
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+  iceErrorRetryHandlerRoleDefaultPolicy26094B45:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - sqs:ReceiveMessage
+              - sqs:ChangeMessageVisibility
+              - sqs:GetQueueUrl
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerIceRetryQueueE4C492AF
+                - Arn
+          - Action: kms:Decrypt
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: iceErrorRetryHandlerRoleDefaultPolicy26094B45
+      Roles:
+        - Ref: iceErrorRetryHandlerRoleBB1DEADD
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  iceErrorRetryHandlerLambda93DCA812:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Handles ICE error retry events, version v3.1.4
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          CONFIG_TABLE:
+            Ref: ConfigTable
+          REGISTRY_TABLE:
+            Ref: ResourceRegistryC5838BF9
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          STACK_NAME:
+            Ref: AWS::StackName
+          SCHEDULER_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -Scheduler-Role
+          SCHEDULE_TAG_KEY:
+            Ref: TagName
+          ASG_SCHEDULED_RULES_PREFIX:
+            Ref: AsgRulePrefix
+          ASG_METADATA_TAG_KEY:
+            Ref: AsgScheduledTagKey
+          LOCAL_EVENT_BUS_NAME:
+            Fn::Join:
+              - ""
+              - - IS-LocalEvents-
+                - Ref: Namespace
+          GLOBAL_EVENT_BUS_NAME:
+            Ref: globalEventsF68743C0
+          METRICS_URL: https://metrics.awssolutionsbuilder.com/generic
+          SEND_METRICS:
+            Fn::If:
+              - AnonymizedMetricsEnabled
+              - "True"
+              - "False"
+          SOLUTION_ID: SO0030
+          SOLUTION_VERSION: v3.1.4
+          SCHEDULING_INTERVAL_MINUTES:
+            Ref: SchedulerFrequency
+          METRICS_UUID:
+            Fn::GetAtt:
+              - MetricsUuidProvider
+              - Uuid
+          HUB_ACCOUNT_ID:
+            Ref: AWS::AccountId
+      Handler: instance_scheduler.handler.ice_retry_handler.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: SchedulingLogs24313C6E
+        SystemLogLevel: INFO
+      MemorySize: 128
+      Role:
+        Fn::GetAtt:
+          - iceErrorRetryHandlerRoleBB1DEADD
+          - Arn
+      Runtime: python3.12
+      Timeout: 180
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - iceErrorRetryHandlerRoleDefaultPolicy26094B45
+      - iceErrorRetryHandlerRoleBB1DEADD
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  iceErrorRetryHandlerLambdaSqsEventSourceinstancescheduleronawsInstanceSchedulerIceRetryQueue53C4104087CFD267:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      EventSourceArn:
+        Fn::GetAtt:
+          - InstanceSchedulerIceRetryQueueE4C492AF
+          - Arn
+      FunctionName:
+        Ref: iceErrorRetryHandlerLambda93DCA812
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerLambda/SqsEventSource:instancescheduleronawsInstanceSchedulerIceRetryQueue53C41040/Resource
+  retryIceErrorHandlerPolicy0496828B:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - sqs:ReceiveMessage
+              - sqs:ChangeMessageVisibility
+              - sqs:GetQueueUrl
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerIceRetryQueueE4C492AF
+                - Arn
+          - Action: kms:Decrypt
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - globalEventsF68743C0
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - SchedulingLogs24313C6E
+                - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - :iam::*:role/
+                  - Ref: Namespace
+                  - -Scheduler-Role
+        Version: "2012-10-17"
+      PolicyName: retryIceErrorHandlerPolicy0496828B
+      Roles:
+        - Ref: iceErrorRetryHandlerRoleBB1DEADD
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/retryIceErrorHandlerPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Permission to use solution CMK with dynamo/sns
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Action::kms:GenerateDataKey*
+              - Action::kms:ReEncrypt*
+          - reason: This handler's primary purpose is to assume role into spoke accounts for retrying scheduling and modify instance attributes purposes
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::arn:<AWS::Partition>:iam::*:role/<Namespace>-Scheduler-Role
+  schedulingRequestHandlerRoleD87803EB:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -SchedulingRequestHandler-Role
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/schedulingRequestHandlerRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+  schedulingRequestHandlerRoleDefaultPolicy938ADC4A:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: schedulingRequestHandlerRoleDefaultPolicy938ADC4A
+      Roles:
+        - Ref: schedulingRequestHandlerRoleD87803EB
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/schedulingRequestHandlerRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+          - reason: ability to call spoke-registration handler
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::<SpokeRegistrationHandler923F17AC.Arn>:*
+  schedulingRequestHandlerLambdaC395DC9E:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.1.4
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          CONFIG_TABLE:
+            Ref: ConfigTable
+          REGISTRY_TABLE:
+            Ref: ResourceRegistryC5838BF9
+          MAINT_WINDOW_TABLE:
+            Ref: MaintenanceWindowTable
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          STACK_ID:
+            Ref: AWS::StackId
+          ICE_RETRY_SQS_URL:
+            Ref: InstanceSchedulerIceRetryQueueE4C492AF
+          SCHEDULER_ROLE_NAME:
+            Fn::Join:
+              - ""
+              - - Ref: Namespace
+                - -Scheduler-Role
+          DEFAULT_TIMEZONE:
+            Ref: DefaultTimezone
+          SCHEDULE_TAG_KEY:
+            Ref: TagName
+          ENABLE_EC2_SSM_MAINTENANCE_WINDOWS:
+            Fn::If:
+              - EnableSSMMaintenanceWindowsCondition
+              - "True"
+              - "False"
+          ENABLE_RDS_SNAPSHOTS:
+            Fn::If:
+              - CreateRdsSnapshotCondition
+              - "True"
+              - "False"
+          ENABLE_OPS_MONITORING:
+            Fn::If:
+              - OpsMonitoringCondition
+              - "True"
+              - "False"
+          LOCAL_EVENT_BUS_NAME:
+            Fn::Join:
+              - ""
+              - - IS-LocalEvents-
+                - Ref: Namespace
+          GLOBAL_EVENT_BUS_NAME:
+            Ref: globalEventsF68743C0
+          HUB_STACK_NAME:
+            Ref: AWS::StackName
+          ASG_SCHEDULED_RULES_PREFIX:
+            Ref: AsgRulePrefix
+          ASG_METADATA_TAG_KEY:
+            Ref: AsgScheduledTagKey
+          METRICS_URL: https://metrics.awssolutionsbuilder.com/generic
+          SEND_METRICS:
+            Fn::If:
+              - AnonymizedMetricsEnabled
+              - "True"
+              - "False"
+          SOLUTION_ID: SO0030
+          SOLUTION_VERSION: v3.1.4
+          SCHEDULING_INTERVAL_MINUTES:
+            Ref: SchedulerFrequency
+          METRICS_UUID:
+            Fn::GetAtt:
+              - MetricsUuidProvider
+              - Uuid
+          HUB_ACCOUNT_ID:
+            Ref: AWS::AccountId
+      Handler: instance_scheduler.handler.scheduling_request.handle_scheduling_request
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: SchedulingLogs24313C6E
+        SystemLogLevel: INFO
+      MemorySize:
+        Ref: MemorySize
+      Role:
+        Fn::GetAtt:
+          - schedulingRequestHandlerRoleD87803EB
+          - Arn
+      Runtime: python3.12
+      Timeout: 300
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - schedulingRequestHandlerRoleDefaultPolicy938ADC4A
+      - schedulingRequestHandlerRoleD87803EB
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/schedulingRequestHandlerLambda/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  schedulingRequestHandlerPolicy1BE05FC4:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - StateTable
+                - Arn
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - StateTable
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - MaintenanceWindowTable
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - MaintenanceWindowTable
+                - Arn
+          - Action:
+              - sqs:SendMessage
+              - sqs:GetQueueAttributes
+              - sqs:GetQueueUrl
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerIceRetryQueueE4C492AF
+                - Arn
+          - Action:
+              - kms:Decrypt
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - globalEventsF68743C0
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - SchedulingLogs24313C6E
+                - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - :iam::*:role/
+                  - Ref: Namespace
+                  - -Scheduler-Role
+          - Action: cloudwatch:PutMetricData
+            Condition:
+              StringEquals:
+                cloudwatch:namespace:
+                  Fn::Join:
+                    - ""
+                    - - Ref: AWS::StackName
+                      - :InstanceScheduler
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: schedulingRequestHandlerPolicy1BE05FC4
+      Roles:
+        - Ref: schedulingRequestHandlerRoleD87803EB
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/schedulingRequestHandlerPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Permission to use solution CMK with dynamo/sns
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Action::kms:GenerateDataKey*
+              - Action::kms:ReEncrypt*
+          - reason: This handler's primary purpose is to assume role into spoke accounts for scheduling purposes
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::arn:<AWS::Partition>:iam::*:role/<Namespace>-Scheduler-Role
+          - reason: Ability to publish custom metrics to cloudwatch
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  SchedulingOrchestratorRoleAD0FF7B1:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestratorRole/Resource
+  SchedulingOrchestratorRoleDefaultPolicy29DE8B0D:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - schedulingRequestHandlerLambdaC395DC9E
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - schedulingRequestHandlerLambdaC395DC9E
+                        - Arn
+                    - :*
+        Version: "2012-10-17"
+      PolicyName: SchedulingOrchestratorRoleDefaultPolicy29DE8B0D
+      Roles:
+        - Ref: SchedulingOrchestratorRoleAD0FF7B1
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestratorRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+          - reason: permission to invoke request handler lambda
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::<schedulingRequestHandlerLambdaC395DC9E.Arn>:*
+  SchedulingOrchestratorBB4C4C5A:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.1.4
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          CONFIG_TABLE:
+            Ref: ConfigTable
+          REGISTRY_TABLE:
+            Ref: ResourceRegistryC5838BF9
+          SCHEDULING_REQUEST_HANDLER_NAME:
+            Ref: schedulingRequestHandlerLambdaC395DC9E
+      Handler: instance_scheduler.handler.scheduling_orchestrator.lambda_handler
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: SchedulingLogs24313C6E
+        SystemLogLevel: INFO
+      MemorySize:
+        Ref: OrchestratorMemorySize
+      Role:
+        Fn::GetAtt:
+          - SchedulingOrchestratorRoleAD0FF7B1
+          - Arn
+      Runtime: python3.12
+      Timeout: 300
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - SchedulingOrchestratorRoleDefaultPolicy29DE8B0D
+      - SchedulingOrchestratorRoleAD0FF7B1
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestrator/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  SchedulingOrchestratorPermissionsPolicyC2148A26:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - SchedulingLogs24313C6E
+                - Arn
+          - Action: ssm:DescribeParameters
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - ssm:GetParameter
+              - ssm:GetParameters
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':ssm:*:'
+                  - Ref: AWS::AccountId
+                  - :parameter/*
+        Version: "2012-10-17"
+      PolicyName: SchedulingOrchestratorPermissionsPolicyC2148A26
+      Roles:
+        - Ref: SchedulingOrchestratorRoleAD0FF7B1
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestratorPermissionsPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Permission to use solution CMK with dynamo/sns
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Action::kms:GenerateDataKey*
+              - Action::kms:ReEncrypt*
+          - reason: 'Orchestrator requires access to SSM parameters for translating {param: my-param} values to configured account ids'
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::arn:<AWS::Partition>:ssm:*:<AWS::AccountId>:parameter/*
+              - Resource::*
+  HeartbeatMetricsReporterRole9FB59405:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/HeartbeatMetricsReporterRole/Resource
+  HeartbeatMetricsReporterRoleDefaultPolicy7CE04DA3:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - xray:PutTraceSegments
+              - xray:PutTelemetryRecords
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: HeartbeatMetricsReporterRoleDefaultPolicy7CE04DA3
+      Roles:
+        - Ref: HeartbeatMetricsReporterRole9FB59405
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/HeartbeatMetricsReporterRole/DefaultPolicy/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: required for xray
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+  HeartbeatMetricsReporter812E35D0:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Sub: solutions-$${AWS::Region}
+        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+      Description: metrics gatherer for Instance Scheduler on AWS, version v3.1.4
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: instance-scheduler
+          POWERTOOLS_LOG_LEVEL: INFO
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          CONFIG_TABLE:
+            Ref: ConfigTable
+          REGISTRY_TABLE:
+            Ref: ResourceRegistryC5838BF9
+          DEFAULT_TIMEZONE:
+            Ref: DefaultTimezone
+          ENABLE_RDS_SNAPSHOTS:
+            Fn::If:
+              - CreateRdsSnapshotCondition
+              - "True"
+              - "False"
+          ENABLE_AWS_ORGANIZATIONS:
+            Fn::If:
+              - UsingAWSOrganizationsCondition
+              - "True"
+              - "False"
+          ENABLE_EC2_SSM_MAINTENANCE_WINDOWS:
+            Fn::If:
+              - EnableSSMMaintenanceWindowsCondition
+              - "True"
+              - "False"
+          OPS_DASHBOARD_ENABLED:
+            Fn::If:
+              - OpsMonitoringCondition
+              - "True"
+              - "False"
+          METRICS_URL: https://metrics.awssolutionsbuilder.com/generic
+          SEND_METRICS:
+            Fn::If:
+              - AnonymizedMetricsEnabled
+              - "True"
+              - "False"
+          SOLUTION_ID: SO0030
+          SOLUTION_VERSION: v3.1.4
+          SCHEDULING_INTERVAL_MINUTES:
+            Ref: SchedulerFrequency
+          METRICS_UUID:
+            Fn::GetAtt:
+              - MetricsUuidProvider
+              - Uuid
+          HUB_ACCOUNT_ID:
+            Ref: AWS::AccountId
+      Handler: instance_scheduler.handler.heartbeat_metrics_reporter.report_heartbeat_metric
+      LoggingConfig:
+        ApplicationLogLevel:
+          Fn::If:
+            - TraceCondition
+            - DEBUG
+            - INFO
+        LogFormat: JSON
+        LogGroup:
+          Ref: AdministrationLogsC5F47471
+        SystemLogLevel: INFO
+      MemorySize: 256
+      Role:
+        Fn::GetAtt:
+          - HeartbeatMetricsReporterRole9FB59405
+          - Arn
+      Runtime: python3.12
+      Timeout: 300
+      TracingConfig:
+        Mode: Active
+    DependsOn:
+      - HeartbeatMetricsReporterRoleDefaultPolicy7CE04DA3
+      - HeartbeatMetricsReporterRole9FB59405
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/HeartbeatMetricsReporter/Resource
+      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:is-bundled: true
+      aws:asset:property: Code
+      guard:
+        SuppressedRules:
+          - LAMBDA_INSIDE_VPC
+          - LAMBDA_CONCURRENCY_CHECK
+  MetricsGathererPermissionsPolicyAA99320A:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ConfigTable
+                - Arn
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:ConditionCheckItem
+              - dynamodb:DescribeTable
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ResourceRegistryC5838BF9
+                - Arn
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
+          - Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - InstanceSchedulerEncryptionKey
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: MetricsGathererPermissionsPolicyAA99320A
+      Roles:
+        - Ref: HeartbeatMetricsReporterRole9FB59405
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsGathererPermissionsPolicy/Resource
+  MetricsGathererEventRule82CDB21C:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Instance Scheduler - Rule to trigger heartbeat metrics function version v3.1.4
+      ScheduleExpression: rate(1 day)
+      State:
+        Fn::If:
+          - SchedulingActiveCondition
+          - ENABLED
+          - DISABLED
+      Targets:
+        - Arn:
+            Fn::GetAtt:
+              - HeartbeatMetricsReporter812E35D0
+              - Arn
+          Id: Target0
+          RetryPolicy:
+            MaximumRetryAttempts: 1
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsGathererEventRule/Resource
+  MetricsGathererEventRuleAllowEventRuleinstancescheduleronawsHeartbeatMetricsReporter28844038ABB85148:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - HeartbeatMetricsReporter812E35D0
+          - Arn
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+          - MetricsGathererEventRule82CDB21C
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/MetricsGathererEventRule/AllowEventRuleinstancescheduleronawsHeartbeatMetricsReporter28844038
+  SchedulerEventRuleDD9A6B32:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.1.4
+      ScheduleExpression:
+        Fn::FindInMap:
+          - CronExpressionsForSchedulingIntervals
+          - IntervalMinutesToCron
+          - Ref: SchedulerFrequency
+      State:
+        Fn::If:
+          - SchedulingActiveCondition
+          - ENABLED
+          - DISABLED
+      Targets:
+        - Arn:
+            Fn::GetAtt:
+              - SchedulingOrchestratorBB4C4C5A
+              - Arn
+          Id: Target0
+          Input: '{"scheduled_action":"run_orchestrator"}'
+          RetryPolicy:
+            MaximumRetryAttempts: 5
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerEventRule/Resource
+  SchedulerEventRuleAllowEventRuleinstancescheduleronawsSchedulingOrchestratorCD54E6718835D1AC:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - SchedulingOrchestratorBB4C4C5A
+          - Arn
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+          - SchedulerEventRuleDD9A6B32
+          - Arn
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerEventRule/AllowEventRuleinstancescheduleronawsSchedulingOrchestratorCD54E671
+  SchedulerRole59E73443:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - schedulingRequestHandlerRoleD87803EB
+                  - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
+                  - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - iceErrorRetryHandlerRoleBB1DEADD
+                  - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - SpokeRegistrationRole0E2E4D3E
+                  - Arn
+        Version: "2012-10-17"
+      RoleName:
+        Fn::Join:
+          - ""
+          - - Ref: Namespace
+            - -Scheduler-Role
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/Resource
+      guard:
+        SuppressedRules:
+          - CFN_NO_EXPLICIT_RESOURCE_NAMES
+  SchedulerRoleEc2SchedulingPermissionsF1A25C28:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: ec2:DescribeInstances
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - ec2:StartInstances
+              - ec2:StopInstances
+              - ec2:CreateTags
+              - ec2:DeleteTags
+              - ec2:ModifyInstanceAttribute
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:ec2:*:$${AWS::AccountId}:instance/*
+          - Action: ssm:DescribeMaintenanceWindows
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: SchedulerRoleEc2SchedulingPermissionsF1A25C28
+      Roles:
+        - Ref: SchedulerRole59E73443
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/Ec2SchedulingPermissions/Resource
+  SchedulerRoleRdsSchedulingPermissionsEBB3D20F:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - rds:DescribeDBClusters
+              - rds:DescribeDBInstances
+              - tag:GetResources
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - rds:DeleteDBSnapshot
+              - rds:DescribeDBSnapshots
+              - rds:StopDBInstance
+              - rds:CreateDBSnapshot
+              - rds:AddTagsToResource
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:rds:*:$${AWS::AccountId}:snapshot:*
+          - Action:
+              - rds:AddTagsToResource
+              - rds:RemoveTagsFromResource
+              - rds:StartDBInstance
+              - rds:StopDBInstance
+              - rds:CreateDBSnapshot
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:rds:*:$${AWS::AccountId}:db:*
+          - Action:
+              - rds:AddTagsToResource
+              - rds:RemoveTagsFromResource
+              - rds:StartDBCluster
+              - rds:StopDBCluster
+              - rds:CreateDBClusterSnapshot
+            Effect: Allow
+            Resource:
+              Fn::Sub: arn:$${AWS::Partition}:rds:*:$${AWS::AccountId}:cluster:*
+        Version: "2012-10-17"
+      PolicyName: SchedulerRoleRdsSchedulingPermissionsEBB3D20F
+      Roles:
+        - Ref: SchedulerRole59E73443
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/RdsSchedulingPermissions/Resource
+  SchedulerRoleASGSchedulingPermissions3ABCC443:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - autoscaling:BatchPutScheduledUpdateGroupAction
+              - autoscaling:BatchDeleteScheduledAction
+              - autoscaling:CreateOrUpdateTags
+              - autoscaling:DeleteTags
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':autoscaling:*:'
+                  - Ref: AWS::AccountId
+                  - :autoScalingGroup:*:autoScalingGroupName/*
+          - Action:
+              - autoscaling:DescribeAutoScalingGroups
+              - autoscaling:DescribeScheduledActions
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: SchedulerRoleASGSchedulingPermissions3ABCC443
+      Roles:
+        - Ref: SchedulerRole59E73443
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/ASGSchedulingPermissions/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Required permissions to describe AutoScaling Groups
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+          - reason: Required permissions to modify scheduled scaling actions on AutoScaling Groups
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::arn:<AWS::Partition>:autoscaling:*:<AWS::AccountId>:autoScalingGroup:*:autoScalingGroupName/*
+  SchedulerRoleResourceGroupsTaggingPermissions24BD9721:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - tag:TagResources
+              - tag:UntagResources
+            Effect: Allow
+            Resource: '*'
+        Version: "2012-10-17"
+      PolicyName: SchedulerRoleResourceGroupsTaggingPermissions24BD9721
+      Roles:
+        - Ref: SchedulerRole59E73443
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/ResourceGroupsTaggingPermissions/Resource
+  SchedulerRoleRegionalEventBusPermissionsA9062DD9:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: events:PutEvents
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - 'arn:'
+                  - Ref: AWS::Partition
+                  - ':events:*:'
+                  - Ref: AWS::AccountId
+                  - :event-bus/IS-LocalEvents-
+                  - Ref: Namespace
+        Version: "2012-10-17"
+      PolicyName: SchedulerRoleRegionalEventBusPermissionsA9062DD9
+      Roles:
+        - Ref: SchedulerRole59E73443
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/RegionalEventBusPermissions/Resource
+  SchedulerRoleKmsPermissionsBF1B9F02:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: kms:CreateGrant
+            Condition:
+              Bool:
+                kms:GrantIsForAWSResource: true
+              StringLike:
+                kms:ViaService: ec2.*.amazonaws.com
+              ForAllValues:StringEquals:
+                kms:GrantOperations:
+                  - Decrypt
+                kms:EncryptionContextKeys:
+                  - aws:ebs:id
+              "Null":
+                kms:EncryptionContextKeys: false
+                kms:GrantOperations: false
+            Effect: Allow
+            Resource:
+              Ref: KmsKeyArns
+        Version: "2012-10-17"
+      PolicyName: SchedulerRoleKmsPermissionsBF1B9F02
+      Roles:
+        - Ref: SchedulerRole59E73443
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/KmsPermissions/Resource
+      cdk_nag:
+        rules_to_suppress:
+          - reason: Specific kms keys are unknown until runtime, for security, access is instead restricted to only granting decryption permissions to the ec2 service for encrypted EBS volumes
+            id: AwsSolutions-IAM5
+            applies_to:
+              - Resource::*
+    Condition: SchedulerRolekmsAccessCondition93ED0C6C
+  SchedulerRoleLicenceManagerPermissionsC73158A3:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: ec2:StartInstances
+            Effect: Allow
+            Resource:
+              Ref: LicenseManagerArns
+        Version: "2012-10-17"
+      PolicyName: SchedulerRoleLicenceManagerPermissionsC73158A3
+      Roles:
+        - Ref: SchedulerRole59E73443
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/SchedulerRole/LicenceManagerPermissions/Resource
+    Condition: SchedulerRolelmConditionAspect9B2A2D12
+  OperationalInsightsDashboardE3C49DFC:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardBody:
+        Fn::Join:
+          - ""
+          - - '{"start":"-P7D","periodOverride":"inherit","widgets":[{"type":"text","width":24,"height":1,"x":0,"y":0,"properties":{"markdown":"# Overview"}},{"type":"metric","width":6,"height":4,"x":0,"y":1,"properties":{"view":"singleValue","title":"Controlled EC2 Instances","region":"'
+            - Ref: AWS::Region
+            - '","sparkline":true,"metrics":[[{"label":"Controlled EC2 Instances","color":"#1f77b4","expression":"SUM(SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} \"Service\"=\"ec2\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=ManagedInstances'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '))"}]],"period":'
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '}},{"type":"metric","width":6,"height":4,"x":0,"y":5,"properties":{"view":"singleValue","title":"Controlled RDS Instances","region":"'
+            - Ref: AWS::Region
+            - '","sparkline":true,"metrics":[[{"label":"Controlled RDS Instances","color":"#d62728","expression":"SUM(SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} \"Service\"=\"rds\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=ManagedInstances'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '))"}]],"period":'
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '}},{"type":"metric","width":6,"height":4,"x":0,"y":9,"properties":{"view":"singleValue","title":"Controlled ASGs","region":"'
+            - Ref: AWS::Region
+            - '","sparkline":true,"metrics":[[{"label":"Controlled ASGs","color":"#2ca02c","expression":"SUM(SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} \"Service\"=\"autoscaling\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=ManagedInstances'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '))"}]],"period":'
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '}},{"type":"metric","width":6,"height":6,"x":6,"y":1,"properties":{"view":"pie","title":"Controlled EC2 Instances by Type","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"[$${LAST}]","expression":"SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} \"Service\"=\"ec2\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=ManagedInstances'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ')"}]],"yAxis":{},"legend":{"position":"right"},"period":'
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '}},{"type":"metric","width":6,"height":6,"x":6,"y":7,"properties":{"view":"pie","title":"Controlled RDS Instances by Type","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"[$${LAST}]","expression":"SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} \"Service\"=\"rds\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"ManagedInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ')"}]],"yAxis":{},"legend":{"position":"right"},"period":'
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - '}},{"type":"metric","width":6,"height":4,"x":12,"y":1,"properties":{"view":"singleValue","title":"EC2 Hours Saved","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"Hours Saved","color":"#1f77b4","expression":"SUM(SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"ec2\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"StoppedInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ')) * '
+            - Ref: SchedulerFrequency
+            - ' / 60"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":6,"height":4,"x":12,"y":5,"properties":{"view":"singleValue","title":"RDS Hours Saved","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"Hours Saved","color":"#d62728","expression":"SUM(SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"rds\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"StoppedInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ')) * '
+            - Ref: SchedulerFrequency
+            - ' / 60"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":6,"height":4,"x":12,"y":9,"properties":{"view":"singleValue","title":"ASG Hours Saved","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"Hours Saved","color":"#2ca02c","expression":"SUM(SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"autoscaling\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"StoppedInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ')) * '
+            - Ref: SchedulerFrequency
+            - ' / 60"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":6,"height":6,"x":18,"y":1,"properties":{"view":"pie","title":"EC2 Hours Saved","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"[$${SUM}]","expression":"SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"ec2\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"StoppedInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ') * '
+            - Ref: SchedulerFrequency
+            - ' / 60"}]],"yAxis":{},"legend":{"position":"right"},"setPeriodToTimeRange":true,"stat":"Sum"}},{"type":"metric","width":6,"height":6,"x":18,"y":7,"properties":{"view":"pie","title":"RDS Hours Saved","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"[$${SUM}]","expression":"SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"rds\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"StoppedInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ') * '
+            - Ref: SchedulerFrequency
+            - ' / 60","period":2592000}]],"yAxis":{},"legend":{"position":"right"},"setPeriodToTimeRange":true,"stat":"Sum"}},{"type":"text","width":24,"height":1,"x":0,"y":13,"properties":{"markdown":"# Running Resources"}},{"type":"metric","width":24,"height":6,"x":0,"y":14,"properties":{"view":"timeSeries","title":"Running Resources","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[[{"label":"EC2","color":"#1f77b4","expression":"SUM(SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"ec2\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"RunningInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ))"}],[{"label":"RDS","color":"#d62728","expression":"SUM(SEARCH('{\"
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"rds\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"RunningInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ))"}],[{"label":"ASG","color":"#2ca02c","expression":"SUM(SEARCH('{\"
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"autoscaling\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"RunningInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - ))"}]],"yAxis":{"left":{"showUnits":false,"min":0}},"legend":{"position":"bottom"}}},{"type":"metric","width":12,"height":6,"x":0,"y":20,"properties":{"view":"timeSeries","title":"Running EC2 Instances by Type","region":"
+            - Ref: AWS::Region
+            - '","metrics":[[{"expression":"SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"ec2\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"RunningInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - )"}]],"yAxis":{"left":{"showUnits":false,"min":0}},"legend":{"position":"bottom"}}},{"type":"metric","width":12,"height":6,"x":12,"y":20,"properties":{"view":"timeSeries","title":"Running RDS Instances By Type","region":"
+            - Ref: AWS::Region
+            - '","metrics":[[{"expression":"SEARCH(''{\"'
+            - Ref: AWS::StackName
+            - :InstanceScheduler\",Service,InstanceType,SchedulingInterval} Service=\"rds\" \"SchedulingInterval\"=\"
+            - Ref: SchedulerFrequency
+            - '\" MetricName=\"RunningInstances\"'', ''Sum'', '
+            - Fn::FindInMap:
+                - MetricsSchedulingIntervalToSeconds
+                - MinutesToSeconds
+                - Ref: SchedulerFrequency
+            - )"}]],"yAxis":{"left":{"showUnits":false,"min":0}},"legend":{"position":"bottom"}}},{"type":"text","width":24,"height":1,"x":0,"y":26,"properties":{"markdown":"# Lambda"}},{"type":"metric","width":12,"height":6,"x":0,"y":27,"properties":{"view":"timeSeries","title":"Lambda Duration (P99)","region":"
+            - Ref: AWS::Region
+            - '","metrics":[["AWS/Lambda","Duration","FunctionName","'
+            - Ref: SchedulingOrchestratorBB4C4C5A
+            - '",{"color":"#e377c2","label":"Orchestrator","stat":"Maximum"}],["AWS/Lambda","Duration","FunctionName","'
+            - Ref: schedulingRequestHandlerLambdaC395DC9E
+            - '",{"color":"#1f77b4","label":"SchedulingRequestHandler(Avg)"}],["AWS/Lambda","Duration","FunctionName","'
+            - Ref: schedulingRequestHandlerLambdaC395DC9E
+            - '",{"color":"#9467bd","label":"SchedulingRequestHandler(Max)","stat":"Maximum"}]],"annotations":{"horizontal":[{"value":300000,"fill":"below","color":"#d62728","label":"Timeout Threshold (Scheduling will error above this line)","yAxis":"left"},{"value":240000,"fill":"below","color":"#ff7f0e","label":"Peak warning -- consider increasing lambda size or scheduling regions with less latency","yAxis":"left"},{"value":180000,"fill":"below","color":"#2ca02c","label":"Acceptable infrequent peaks below this line","yAxis":"left"},{"value":90000,"fill":"below","color":"#2ca02c","label":"Average runtime should stay below this line","yAxis":"left"}]},"yAxis":{"left":{"label":"duration (ms)","showUnits":false}},"legend":{"position":"bottom"},"liveData":true,"period":1800}},{"type":"metric","width":12,"height":6,"x":12,"y":27,"properties":{"view":"timeSeries","title":"Lambda Errors","region":"'
+            - Ref: AWS::Region
+            - '","metrics":[["AWS/Lambda","Errors","FunctionName","'
+            - Ref: SchedulingOrchestratorBB4C4C5A
+            - '",{"label":"Orchestrator"}],["AWS/Lambda","Errors","FunctionName","'
+            - Ref: schedulingRequestHandlerLambdaC395DC9E
+            - '",{"label":"SchedulingRequestHandler"}]],"yAxis":{"left":{"label":"Errors","showUnits":false}},"legend":{"position":"bottom"},"liveData":true,"period":1800,"stat":"Sum"}}]}'
+      DashboardName:
+        Fn::Join:
+          - ""
+          - - Ref: AWS::StackName
+            - '-'
+            - Ref: Namespace
+            - -Operational-Insights-Dashboard
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/OperationalInsightsDashboard/Resource
+    Condition: OpsMonitoringCondition
+  LogInsightsQueriesSchedulingHistory2069025A:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      LogGroupNames:
+        - Ref: SchedulingLogs24313C6E
+      Name:
+        Fn::Join:
+          - ""
+          - - InstanceScheduler-
+            - Ref: Namespace
+            - /SchedulingHistory
+      QueryString: |-
+        # Instance Scheduler Scheduling Decision Summary
+        # Remember to set the time range for this log query in the widget above
+        fields @timestamp, resource, decision, reason, action_taken, action_info
+        | filter log_type = 'scheduling_result'
+
+        # Uncomment and edit the following filters to restrict queries only to specific accounts/regions/instances/schedules/actions
+        #| filter resource like /arn-fragment/
+        #| filter instance_type = "instance_class"
+        #| filter xray_trace_id = "id"
+
+        | filter action_taken in ['Started', 'Stopped', 'Hibernated', 'Configured', 'Error', 'None']
+
+        | sort @timestamp desc
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/LogInsightsQueries/SchedulingHistory
+  LogInsightsQueriesResourceRegistrationA3E9737B:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      LogGroupNames:
+        - Ref: AdministrationLogsC5F47471
+      Name:
+        Fn::Join:
+          - ""
+          - - InstanceScheduler-
+            - Ref: Namespace
+            - /RegistrationEvents
+      QueryString: |-
+        # Instance Scheduler Scheduling Decision Summary
+        # Remember to set the time range for this log query in the widget above
+        fields @timestamp, message
+        | filter context = "registration"
+
+        # Uncomment and edit the following filters to restrict queries only to specific accounts/regions/instances/schedules/actions
+        #| filter resource like /arn-fragment/
+        #| filter region = "region_name"
+        #| filter account = "account_id"
+
+        | sort @timestamp desc
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/LogInsightsQueries/ResourceRegistration
+  LogInsightsQueriesErrors51281C95:
+    Type: AWS::Logs::QueryDefinition
+    Properties:
+      LogGroupNames:
+        - Ref: SchedulingLogs24313C6E
+        - Ref: AdministrationLogsC5F47471
+      Name:
+        Fn::Join:
+          - ""
+          - - InstanceScheduler-
+            - Ref: Namespace
+            - /Errors
+      QueryString: |-
+        # Instance Scheduler Scheduling Decision Summary
+        # Remember to set the time range for this log query in the widget above
+        fields @timestamp, message
+        | filter level in ['WARN', 'ERROR', 'CRITICAL']
+
+        | sort @timestamp desc
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/LogInsightsQueries/Errors
+Outputs:
+  AccountId:
+    Description: Hub Account ID - for use in corresponding spoke stack parameter
+    Value:
+      Ref: AWS::AccountId
+  ConfigurationTable:
+    Description: DynamoDB Configuration table ARN
+    Value:
+      Fn::GetAtt:
+        - ConfigTable
+        - Arn
+  IssueSnsTopicArn:
+    Description: Notification SNS Topic ARN
+    Value:
+      Ref: InstanceSchedulerSnsTopic
+  SchedulerRoleArn:
+    Description: Scheduler role ARN
+    Value:
+      Fn::GetAtt:
+        - SchedulerRole59E73443
+        - Arn
+  ServiceInstanceScheduleServiceToken:
+    Description: Custom resource provider ARN - use as ServiceToken property value for CloudFormation Schedules
+    Value:
+      Fn::GetAtt:
+        - Main
+        - Arn
+  RegionalEventBusName:
+    Description: Regional event bus name.
+    Value:
+      Fn::GetAtt:
+        - ResourceRegistrationCreateRegionalEventRules9BE794F3
+        - REGIONAL_BUS_NAME
+  SchedulingEventOutputBus:
+    Description: Scheduling Event Bus ARN
+    Value:
+      Fn::GetAtt:
+        - globalEventsF68743C0
+        - Arn

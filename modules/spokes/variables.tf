@@ -2,7 +2,7 @@
 variable "cloudformation_bucket_name" {
   description = "The name of the S3 bucket used to store the cloudformation templates"
   type        = string
-  default     = "lz-instance-scheduler-spoke-templates"
+  default     = "lz-instance-scheduler-templates"
 }
 
 variable "cloudformation_macro_name" {
@@ -48,7 +48,7 @@ variable "organizational_units" {
 }
 
 variable "scheduler_account_id" {
-  description = "The account id of where the orchcastrator is running"
+  description = "The account id of where the instance scheduler is running"
   type        = string
 
   # Should be a validate account id
