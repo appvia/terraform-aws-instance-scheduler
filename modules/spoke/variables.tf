@@ -34,6 +34,12 @@ variable "enable_cloudformation_macro" {
   default     = true
 }
 
+variable "enable_organizations" {
+  description = "Whether the organizations should be enabled"
+  type        = bool
+  default     = true
+}
+
 variable "kms_key_arns" {
   description = "The KMS key ARNs used to encrypt the instance scheduler data"
   type        = list(string)

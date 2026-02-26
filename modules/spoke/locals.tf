@@ -12,6 +12,6 @@ locals {
   cloudformation_spoke_stack_parameters = {
     InstanceSchedulerAccount = var.scheduler_account_id
     KmsKeyArns               = join(",", var.kms_key_arns)
-    UsingAWSOrganizations    = "No"
+    UsingAWSOrganizations    = var.enable_organizations ? "Yes" : "No"
   }
 }
