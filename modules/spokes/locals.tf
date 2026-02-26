@@ -5,13 +5,11 @@ locals {
   ## Is the current region
   region = data.aws_region.current.region
   ## The expected arn of the s3 bucket
-  bucket_arn = module.s3_bucket.s3_bucket_arn
-  ## The name of the bucket with the region appended
-  bucket_name = format("%s-%s", var.cloudformation_bucket_name, local.region)
+  bucket_arn = format("arn:aws:s3:::%s", var.cloudformation_bucket_name)
   ## Parameters for the cloudformation stack in the spoke accounts
   cloudformation_spoke_stack_parameters = {
-    InstanceSchedulerAccount = var.scheduler_account_id
-    KmsKeyArns               = join(",", var.kms_key_arns)
-    UsingAWSOrganizations    = "No"
+    InstanceSchedulerAccount : var.scheduler_account_id
+    KmsKeyArns : join(",", var.kms_key_arns)
+    UsingAWSOrganizations : "Yes"
   }
 }

@@ -7,11 +7,8 @@
 module "standalone_spoke" {
   source = "../.."
 
-  enable_organizations = true
-  enable_standalone    = true
-  enable_stackset      = false
-  region               = "eu-west-2"
-  scheduler_account_id = "970526142943"
+  cloudformation_bucket_name = "lza-instance-scheduler-spoke-templates"
+  scheduler_account_id       = "970526142943"
 
   tags = {
     "Environment" = "Development"
@@ -22,7 +19,7 @@ module "standalone_spoke" {
   }
 }
 
-## Ensure the resources are tagging correctly 
+## Ensure the resources are tagging correctly
 module "tagging" {
   source = "../../../tagging"
 

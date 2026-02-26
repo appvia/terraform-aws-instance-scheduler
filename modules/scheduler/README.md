@@ -2,48 +2,110 @@
 
 # Terraform AWS Instance Scheduler
 
-## Description
+This module is the hub control plane for Instance Scheduler on AWS. It solves the cost and governance problem of unmanaged EC2/RDS-family uptime by deploying the scheduler stack, publishing hub/spoke CloudFormation templates, and exposing core outputs needed by downstream modules.
 
-The Instance Scheduler on AWS solution is an automated solution that schedules Amazon Elastic Compute Cloud (Amazon EC2) and Amazon Relational Database Service (Amazon RDS) instances. The solution enables customers to easily configure custom start and stop schedules for their instances, helping to reduce costs and ensure instances are running only when needed. Deployed centrally within an account, the orchestrator
+Architecture flow:
+- Terraform provisions a hardened S3 bucket for scheduler templates.
+- The scheduler and remote templates are uploaded and then launched through CloudFormation in the hub account.
+- Optional CloudFormation macro support injects default tags across stack resources.
+- Downstream modules consume scheduler outputs (for example DynamoDB table name) to manage schedules and onboard spoke accounts.
 
-## Features
+## Capabilities
 
-- Cross-account instance scheduling
+- **Security by default**: Encrypted S3 objects, strict bucket transport/encryption policies, and versioning enabled.
+- **Platform flexibility**: Feature flags for EC2, RDS, RDS clusters, ASG, Neptune, DocumentDB, and maintenance windows.
+- **Operational excellence**: Exposes CloudFormation template URLs and scheduler outputs for composable multi-module workflows.
+- **Landing zone support**: Designed for centralized multi-account operation with AWS Organizations and organization-scoped principals.
+- **Compliance support**: Policy-driven scheduling and auditable infrastructure changes align with SOC 2, ISO 27001, and PCI-DSS controls.
 
-This solution includes a template that creates the AWS Identity and Access Management (IAM) roles necessary to start and stop instances in secondary accounts. For more information, refer to the Cross-account instance scheduling section.
+## Usage Gallery
 
-- Automated Tagging
-
-Instance Scheduler on AWS can automatically add tags to all instances that it starts or stops. The solution also includes macros that allow you to add variable information to the tags.
-
-- Configure schedules or periods using Scheduler CLI
-
-This solution includes a command line interface (CLI) that provides commands for configuring schedules and periods. The CLI allows customers to estimate cost savings for a given schedule. For more information, refer to the Scheduler CLI.
-
-- Manage schedules using Infrastructure as Code (IaC)
-
-This solution provides an AWS CloudFormation Custom Resource that you can use to manage schedules using Infrastructure as Code (IaC). For more information, refer to Manage Schedules Using Infrastructure as Code.
-
-- Integration with Systems Manager Maintenance Windows
-
-For Amazon EC2 instances, Instance Scheduler on AWS can integrate with AWS Systems Manager maintenance windows, defined in the same Region as those instances, to start and stop them in accordance with the maintenance window.
-
-- Integration with Service Catalog AppRegistry and Application Manager, a capability of AWS Systems Manager
-
-This solution includes a Service Catalog AppRegistry resource to register the solution's CloudFormation template and its underlying resources as an application in both Service Catalog AppRegistry and Application Manager. With this integration, you can centrally manage the solution's resources.
-
-## Usage
-
-Add example usage here
+### Golden Path (Simple)
 
 ```hcl
-module "example" {
-  source  = "appvia/<NAME>/aws"
-  version = "0.0.1"
+locals {
+  tags = {
+    Environment = "development"
+    Owner       = "platform"
+    Product     = "landing-zone"
+  }
+}
 
-  # insert variables here
+module "scheduler" {
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/scheduler?ref=main"
+
+  scheduler_tag_name          = "Schedule"
+  scheduler_regions           = ["eu-west-2"]
+  scheduler_organizations_ids = ["o-abc123xyz0"]
+  scheduler_frequency         = 15
+  tags                        = local.tags
 }
 ```
+
+### Power User (Advanced)
+
+```hcl
+locals {
+  tags = {
+    Environment = "production"
+    Owner       = "platform"
+    Compliance  = "pci"
+  }
+}
+
+module "scheduler" {
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/scheduler?ref=main"
+
+  cloudformation_bucket_name      = "org-prod-instance-scheduler-templates"
+  enable_cloudformation_macro     = true
+  cloudformation_macro_name       = "SchedulerAddDefaultTags"
+  enable_organizations            = true
+  enable_organizational_bucket    = false
+  enable_cloudwatch_dashboard     = true
+  enable_ssm_maintenance_windows  = true
+  enable_rds_snapshot             = true
+  enable_debug                    = true
+  scheduler_tag_name              = "Schedule"
+  scheduler_regions               = ["eu-west-2", "eu-central-1"]
+  scheduler_organizations_ids     = ["o-abc123xyz0"]
+  scheduler_timezone              = "UTC"
+  scheduler_log_group_retention   = "30"
+  kms_key_arns                    = ["arn:aws:kms:eu-west-2:111122223333:key/abcd-1234"]
+  tags                            = local.tags
+}
+```
+
+### Migration (Edge Case)
+
+```hcl
+locals {
+  tags = {
+    Environment = "migration"
+    Owner       = "platform"
+  }
+}
+
+module "scheduler" {
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/scheduler?ref=main"
+
+  cloudformation_hub_stack_name = "legacy-scheduler-hub"
+  scheduler_tag_name            = "InstanceSchedule"
+  scheduler_asg_tag_key         = "legacy-scheduled"
+  scheduler_asg_rule_prefix     = "legacy-"
+  scheduler_regions             = ["eu-west-2"]
+  scheduler_frequency           = 30
+  enable_hub_account_scheduler  = false
+  enable_scheduler              = true
+  tags                          = local.tags
+}
+```
+
+## Known Limitations
+
+- Scheduler lifecycle is ultimately CloudFormation-managed, so updates can take several minutes and may fail on stack-level constraints.
+- Template bucket names are globally unique; collisions must be managed in naming strategy.
+- `scheduler_frequency` only accepts discrete values (`1, 2, 5, 10, 15, 30, 60`).
+- If `enable_organizational_bucket` is used, your org setup and bucket policy expectations must be validated before rollout.
 
 ## Update Documentation
 
@@ -58,7 +120,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0.0 |
 
 ## Inputs
 

@@ -2,48 +2,123 @@
 
 # Terraform AWS Instance Scheduler
 
-## Description
+This module enforces scheduler tag hygiene for resources that are missing the schedule tag. It solves a common operations problem in large estates: scheduler policies exist, but resource teams do not always apply the required tag consistently.
 
-The Instance Scheduler on AWS solution is an automated solution that schedules Amazon Elastic Compute Cloud (Amazon EC2) and Amazon Relational Database Service (Amazon RDS) instances. The solution enables customers to easily configure custom start and stop schedules for their instances, helping to reduce costs and ensure instances are running only when needed. Deployed centrally within an account, the orchestrator
+Architecture overview:
+- For each enabled resource type, the module provisions a dedicated Lambda function with scoped permissions.
+- EventBridge schedules invoke each function on a cadence you define.
+- Each function discovers resources, skips excluded-tag matches, and applies the configured scheduler tag when absent.
 
-## Features
+It is intended for AWS multi-account landing zones where central scheduling policy and delegated application teams coexist.
 
-- Cross-account instance scheduling
+## Capabilities
 
-This solution includes a template that creates the AWS Identity and Access Management (IAM) roles necessary to start and stop instances in secondary accounts. For more information, refer to the Cross-account instance scheduling section.
+- **Security by default**: Per-resource-type IAM execution policies with no static credentials.
+- **Flexible enforcement**: Supports independent scheduling and exclusion controls per resource class.
+- **Operational excellence**: Event-driven tagging loop provides continuous correction without manual sweeps.
+- **Platform breadth**: Covers Auto Scaling, EC2, RDS, Aurora, DocumentDB, and Neptune.
+- **Compliance support**: Helps enforce consistent governance tags used in operational controls for SOC 2, ISO 27001, and PCI-DSS programs.
 
-- Automated Tagging
+## Usage Gallery
 
-Instance Scheduler on AWS can automatically add tags to all instances that it starts or stops. The solution also includes macros that allow you to add variable information to the tags.
-
-- Configure schedules or periods using Scheduler CLI
-
-This solution includes a command line interface (CLI) that provides commands for configuring schedules and periods. The CLI allows customers to estimate cost savings for a given schedule. For more information, refer to the Scheduler CLI.
-
-- Manage schedules using Infrastructure as Code (IaC)
-
-This solution provides an AWS CloudFormation Custom Resource that you can use to manage schedules using Infrastructure as Code (IaC). For more information, refer to Manage Schedules Using Infrastructure as Code.
-
-- Integration with Systems Manager Maintenance Windows
-
-For Amazon EC2 instances, Instance Scheduler on AWS can integrate with AWS Systems Manager maintenance windows, defined in the same Region as those instances, to start and stop them in accordance with the maintenance window.
-
-- Integration with Service Catalog AppRegistry and Application Manager, a capability of AWS Systems Manager
-
-This solution includes a Service Catalog AppRegistry resource to register the solution's CloudFormation template and its underlying resources as an application in both Service Catalog AppRegistry and Application Manager. With this integration, you can centrally manage the solution's resources.
-
-## Usage
-
-Add example usage here
+### Golden Path (Simple)
 
 ```hcl
-module "example" {
-  source  = "appvia/<NAME>/aws"
-  version = "0.0.1"
+locals {
+  tags = {
+    Environment = "development"
+    Owner       = "platform"
+  }
+}
 
-  # insert variables here
+module "tagging" {
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/tagging?ref=main"
+
+  scheduler_tag_name  = "Schedule"
+  scheduler_tag_value = "office_hours"
+  schedule            = "rate(15 minutes)"
+  enable_ec2          = true
+  tags                = local.tags
 }
 ```
+
+### Power User (Advanced)
+
+```hcl
+locals {
+  tags = {
+    Environment = "production"
+    Owner       = "platform"
+    Compliance  = "pci"
+  }
+}
+
+module "tagging" {
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/tagging?ref=main"
+
+  scheduler_tag_name  = "Schedule"
+  scheduler_tag_value = "office_hours"
+  schedule            = "rate(10 minutes)"
+  enable_debug        = true
+
+  enable_autoscaling = true
+  enable_ec2         = true
+  enable_rds         = true
+  enable_documentdb  = true
+
+  autoscaling = {
+    schedule            = "rate(5 minutes)"
+    excluded_tags       = ["DoNotSchedule=true"]
+    scheduler_tag_name  = "Schedule"
+    scheduler_tag_value = "asg-hours"
+  }
+
+  ec2 = {
+    excluded_tags = ["Lifecycle=persistent"]
+  }
+
+  rds = {
+    schedule = "rate(30 minutes)"
+  }
+
+  tags = local.tags
+}
+```
+
+### Migration (Edge Case)
+
+```hcl
+locals {
+  tags = {
+    Environment = "migration"
+    Owner       = "platform"
+  }
+}
+
+module "tagging" {
+  source = "github.com/appvia/terraform-aws-instance-scheduler//modules/tagging?ref=main"
+
+  scheduler_tag_name  = "InstanceSchedule"
+  scheduler_tag_value = "legacy-shift"
+  schedule            = "rate(30 minutes)"
+
+  enable_autoscaling = true
+  autoscaling = {
+    excluded_tags       = ["ManagedBy=legacy-orchestrator"]
+    scheduler_tag_name  = "legacy-schedule"
+    scheduler_tag_value = "legacy-shift"
+  }
+
+  tags = local.tags
+}
+```
+
+## Known Limitations
+
+- Tagging occurs on a schedule, not instantly; newly created resources are tagged on the next EventBridge execution.
+- Exclusion matching expects `key=value` formatted entries in `excluded_tags`.
+- This module enforces tag presence, not full schedule validity; ensure referenced schedule values exist in scheduler configuration.
+- Large inventories can require tuning invocation cadence and Lambda memory/timeout settings.
 
 ## Update Documentation
 
@@ -58,7 +133,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0.0 |
 
 ## Inputs
 
@@ -66,10 +141,10 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 |------|-------------|------|---------|:--------:|
 | <a name="input_scheduler_tag_value"></a> [scheduler\_tag\_value](#input\_scheduler\_tag\_value) | The value of the tag that will be applied to resources | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to apply to the resources | `map(string)` | n/a | yes |
-| <a name="input_aurora"></a> [aurora](#input\_aurora) | Configuration for the Aurora clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
-| <a name="input_autoscaling"></a> [autoscaling](#input\_autoscaling) | Configuration for the autoscaling groups to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>    scheduler_tag_name = optional(string, null)<br/>    # Override the default scheduler_tag_name if provided<br/>    scheduler_tag_value = optional(string, null)<br/>    # Override the default scheduler_tag_value if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
-| <a name="input_documentdb"></a> [documentdb](#input\_documentdb) | Configuration for the DocumentDB clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
-| <a name="input_ec2"></a> [ec2](#input\_ec2) | Configuration for the EC2 instances to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
+| <a name="input_aurora"></a> [aurora](#input\_aurora) | Configuration for the Aurora clusters to tag | <pre>object({<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    excluded_tags = optional(list(string), [])<br/>    # Override the default schedule if provided<br/>    schedule = optional(string, null)<br/>  })</pre> | `{}` | no |
+| <a name="input_autoscaling"></a> [autoscaling](#input\_autoscaling) | Configuration for the autoscaling groups to tag | <pre>object({<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    excluded_tags = optional(list(string), [])<br/>    # Override the default schedule if provided<br/>    schedule = optional(string, null)<br/>    # Override the default scheduler_tag_name if provided<br/>    scheduler_tag_name = optional(string, null)<br/>    # Override the default scheduler_tag_value if provided<br/>    scheduler_tag_value = optional(string, null)<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
+| <a name="input_documentdb"></a> [documentdb](#input\_documentdb) | Configuration for the DocumentDB clusters to tag | <pre>object({<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    excluded_tags = optional(list(string), [])<br/>    # Override the default schedule if provided<br/>    schedule = optional(string, null)<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
+| <a name="input_ec2"></a> [ec2](#input\_ec2) | Configuration for the EC2 instances to tag | <pre>object({<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    excluded_tags = optional(list(string), [])<br/>    # Override the default schedule if provided<br/>    schedule = optional(string, null)<br/>  })</pre> | <pre>{<br/>  "enable": false<br/>}</pre> | no |
 | <a name="input_enable_aurora"></a> [enable\_aurora](#input\_enable\_aurora) | Whether Aurora clusters should be tagged | `bool` | `false` | no |
 | <a name="input_enable_autoscaling"></a> [enable\_autoscaling](#input\_enable\_autoscaling) | Whether autoscaling groups should be tagged | `bool` | `false` | no |
 | <a name="input_enable_debug"></a> [enable\_debug](#input\_enable\_debug) | Whether debug logging should be enabled for the lambda function | `bool` | `false` | no |
@@ -83,8 +158,8 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_lambda_log_retention"></a> [lambda\_log\_retention](#input\_lambda\_log\_retention) | The number of days to retain the logs for the lambda function | `number` | `7` | no |
 | <a name="input_lambda_memory_size"></a> [lambda\_memory\_size](#input\_lambda\_memory\_size) | The amount of memory in MB allocated to the lambda function | `number` | `128` | no |
 | <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | The amount of time in seconds before the lambda function times out | `number` | `10` | no |
-| <a name="input_neptune"></a> [neptune](#input\_neptune) | Configuration for the Neptune clusters to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
-| <a name="input_rds"></a> [rds](#input\_rds) | Configuration for the RDS instances to tag | <pre>object({<br/>    excluded_tags = optional(list(string), [])<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    schedule = optional(string, null)<br/>    # Override the default schedule if provided<br/>  })</pre> | `{}` | no |
+| <a name="input_neptune"></a> [neptune](#input\_neptune) | Configuration for the Neptune clusters to tag | <pre>object({<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    excluded_tags = optional(list(string), [])<br/>    # Override the default schedule if provided<br/>    schedule = optional(string, null)<br/>  })</pre> | `{}` | no |
+| <a name="input_rds"></a> [rds](#input\_rds) | Configuration for the RDS instances to tag | <pre>object({<br/>    # List of tags on resources that should be excluded from the tagging process<br/>    excluded_tags = optional(list(string), [])<br/>    # Override the default schedule if provided<br/>    schedule = optional(string, null)<br/>  })</pre> | `{}` | no |
 | <a name="input_schedule"></a> [schedule](#input\_schedule) | The schedule expression that will trigger the lambda function | `string` | `"cron(0/15 * * * ? *)"` | no |
 | <a name="input_scheduler_tag_name"></a> [scheduler\_tag\_name](#input\_scheduler\_tag\_name) | The name of the tag that will be applied to resources | `string` | `"Schedule"` | no |
 

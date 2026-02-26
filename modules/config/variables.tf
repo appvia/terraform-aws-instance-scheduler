@@ -7,16 +7,16 @@ variable "dyanmodb_table_name" {
 variable "periods" {
   description = "A period to create with the instance scheduler"
   type = map(object({
+    # A human-readable description of the period
     description = string
-    # A human-readable description of the period 
+    # The end time of the period
     end_time = optional(string, null)
-    # The end time of the period 
+    # The months to apply to the period
     months = optional(list(string), null)
-    # The months to apply to the period 
-    start_time = optional(string, null)
     # The start time of the period
-    weekdays = optional(list(string), null)
+    start_time = optional(string, null)
     # The weekdays to apply to the period
+    weekdays = optional(list(string), null)
   }))
   default = {}
 }
@@ -24,18 +24,18 @@ variable "periods" {
 variable "schedules" {
   description = "The schedule to create within the scheduler"
   type = map(object({
+    # A human-readable description of the schedule
     description = string
-    # A human-readable description of the schedule 
+    # Whether the schedule is enforced
     enforced = optional(bool, null)
-    # Whether the schedule is enforced 
+    # The status to set when the schedule is enforced
     override_status = optional(string, null)
-    # The status to set when the schedule is enforced 
+    # The periods to apply to the schedule
     periods = list(string)
-    # The periods to apply to the schedule 
+    # Whether to stop new instances
     stop_new_instances = optional(bool, null)
-    # Whether to stop new instances 
-    timezone = optional(string, "UTC")
     # The timezone to use for the schedule
+    timezone = optional(string, "UTC")
   }))
   default = {}
 }
