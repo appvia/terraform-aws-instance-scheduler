@@ -1,8 +1,7 @@
 
-variable "cloudformation_bucket_name" {
-  description = "The name of the S3 bucket used to store the cloudformation templates"
+variable "cloudformation_bucket_url" {
+  description = "The full HTTPS URL to the remote cloudformation template (for example https://bucket.s3.region.amazonaws.com/cloudformation/instance-scheduler-on-aws-remote.template)"
   type        = string
-  default     = "lz-instance-scheduler-templates"
 }
 
 variable "cloudformation_macro_name" {

@@ -146,18 +146,6 @@ variable "scheduler_regions" {
   default     = []
 }
 
-variable "scheduler_start_tags" {
-  description = "The tags used to identify the resources that should be started"
-  type        = string
-  default     = "InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"
-}
-
-variable "scheduler_stop_tags" {
-  description = "The tags used to identify the resources that should be stopped"
-  type        = string
-  default     = "InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"
-}
-
 variable "scheduler_tag_name" {
   description = "The tag name used to identify the resources that should be scheduled"
   type        = string

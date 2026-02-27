@@ -18,6 +18,7 @@ Architecture overview:
 - **Operational consistency**: Keeps spoke onboarding declarative and repeatable from one Terraform workflow.
 - **Landing zone alignment**: Designed for hub-and-spoke AWS organization models.
 - **Compliance support**: Standardized onboarding and tagging controls support governance baselines used in SOC 2 and ISO 27001 programs.
+- **Explicit template source**: Accepts a full regional HTTPS template URL for deterministic cross-account CloudFormation resolution.
 
 ## Usage Gallery
 
@@ -54,7 +55,7 @@ module "spoke" {
   source = "github.com/appvia/terraform-aws-instance-scheduler//modules/spoke?ref=main"
 
   scheduler_account_id                = "111122223333"
-  cloudformation_bucket_name          = "org-prod-instance-scheduler-templates"
+  cloudformation_bucket_url           = "https://org-prod-instance-scheduler-templates.s3.eu-west-2.amazonaws.com/cloudformation/instance-scheduler-on-aws-remote.template"
   cloudformation_spoke_stack_name     = "org-prod-instance-scheduler-spoke"
   enable_cloudformation_macro         = true
   cloudformation_macro_name           = "AddDefaultTags"
@@ -77,9 +78,9 @@ locals {
 module "spoke" {
   source = "github.com/appvia/terraform-aws-instance-scheduler//modules/spoke?ref=main"
 
-  scheduler_account_id              = "111122223333"
+  scheduler_account_id            = "111122223333"
   cloudformation_spoke_stack_name = "legacy-instance-scheduler-spoke"
-  cloudformation_bucket_name      = "legacy-instance-scheduler-templates"
+  cloudformation_bucket_url       = "https://legacy-instance-scheduler-templates.s3.eu-west-2.amazonaws.com/cloudformation/instance-scheduler-on-aws-remote.template"
   enable_cloudformation_macro     = false
   tags                            = local.tags
 }
@@ -111,9 +112,9 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_cloudformation_bucket_url"></a> [cloudformation\_bucket\_url](#input\_cloudformation\_bucket\_url) | The full HTTPS URL to the remote cloudformation template (for example https://bucket.s3.region.amazonaws.com/cloudformation/instance-scheduler-on-aws-remote.template) | `string` | n/a | yes |
 | <a name="input_scheduler_account_id"></a> [scheduler\_account\_id](#input\_scheduler\_account\_id) | The account id of where the instance scheduler is running | `string` | n/a | yes |
 | <a name="input_artifacts_dir"></a> [artifacts\_dir](#input\_artifacts\_dir) | The output path to store lambda function code artifacts | `string` | `"builds"` | no |
-| <a name="input_cloudformation_bucket_name"></a> [cloudformation\_bucket\_name](#input\_cloudformation\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates | `string` | `"lz-instance-scheduler-templates"` | no |
 | <a name="input_cloudformation_macro_name"></a> [cloudformation\_macro\_name](#input\_cloudformation\_macro\_name) | The name of the cloudformation macro | `string` | `"AddDefaultTags"` | no |
 | <a name="input_cloudformation_spoke_stack_name"></a> [cloudformation\_spoke\_stack\_name](#input\_cloudformation\_spoke\_stack\_name) | The name of the cloudformation stack in the spoke accounts | `string` | `"lz-instance-scheduler-spoke"` | no |
 | <a name="input_cloudformation_transform_stack_name"></a> [cloudformation\_transform\_stack\_name](#input\_cloudformation\_transform\_stack\_name) | The name of the cloudformation transform stack | `string` | `"lz-instance-scheduler-spoke-add-default-tags"` | no |
@@ -126,7 +127,5 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Description |
 |------|-------------|
-| <a name="output_bucket_arn"></a> [bucket\_arn](#output\_bucket\_arn) | The ARN of the S3 bucket used to store the cloudformation templates |
-| <a name="output_bucket_name"></a> [bucket\_name](#output\_bucket\_name) | The name of the S3 bucket used to store the cloudformation templates |
 | <a name="output_cloudformation_arn"></a> [cloudformation\_arn](#output\_cloudformation\_arn) | The ARN of the cloudformation stack deployed to the spoke account |
 <!-- END_TF_DOCS -->

@@ -18,7 +18,7 @@ resource "aws_cloudformation_stack_set" "spokes" {
   parameters       = local.cloudformation_spoke_stack_parameters
   permission_model = "SERVICE_MANAGED"
   tags             = var.tags
-  template_url     = format("https://%s.s3.amazonaws.com/%s", var.cloudformation_bucket_name, "cloudformation/instance-scheduler-on-aws-remote.template")
+  template_url     = var.cloudformation_bucket_url
 
   auto_deployment {
     enabled                          = true
@@ -51,3 +51,4 @@ resource "aws_cloudformation_stack_set_instance" "spokes" {
     organizational_unit_ids = [each.value]
   }
 }
+

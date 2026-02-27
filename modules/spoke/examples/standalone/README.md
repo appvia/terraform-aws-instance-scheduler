@@ -45,7 +45,7 @@ module "standalone_spoke" {
   source = "../.."
 
   scheduler_account_id                = "111122223333"
-  cloudformation_bucket_name          = "prod-instance-scheduler-templates"
+  cloudformation_bucket_url           = "https://prod-instance-scheduler-templates.s3.eu-west-2.amazonaws.com/cloudformation/instance-scheduler-on-aws-remote.template"
   cloudformation_spoke_stack_name     = "prod-instance-scheduler-spoke"
   enable_cloudformation_macro         = true
   cloudformation_macro_name           = "AddDefaultTags"
@@ -70,13 +70,13 @@ locals {
 module "standalone_spoke" {
   source = "../.."
 
-  scheduler_account_id              = "111122223333"
-  cloudformation_spoke_stack_name   = "legacy-instance-scheduler-spoke"
-  cloudformation_bucket_name      = "legacy-instance-scheduler-templates"
-  enable_cloudformation_macro       = false
-  enable_standalone                 = true
-  enable_stackset                   = false
-  tags                              = local.tags
+  scheduler_account_id            = "111122223333"
+  cloudformation_spoke_stack_name = "legacy-instance-scheduler-spoke"
+  cloudformation_bucket_url       = "https://legacy-instance-scheduler-templates.s3.eu-west-2.amazonaws.com/cloudformation/instance-scheduler-on-aws-remote.template"
+  enable_cloudformation_macro     = false
+  enable_standalone               = true
+  enable_stackset                 = false
+  tags                            = local.tags
 }
 ```
 

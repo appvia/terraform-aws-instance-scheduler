@@ -17,7 +17,7 @@ resource "aws_cloudformation_stack" "spoke" {
   capabilities = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
   parameters   = local.cloudformation_spoke_stack_parameters
   tags         = var.tags
-  template_url = format("https://%s.s3.amazonaws.com/%s", var.cloudformation_bucket_name, "cloudformation/instance-scheduler-on-aws-remote.template")
+  template_url = var.cloudformation_bucket_url
 
   depends_on = [
     module.cloudformation_macro,

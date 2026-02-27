@@ -7,8 +7,8 @@
 module "standalone_spoke" {
   source = "../.."
 
-  cloudformation_bucket_name = "lz-instance-scheduler-templates"
-  scheduler_account_id       = "970526142943"
+  cloudformation_bucket_url = "https://shared-scheduler-templates.s3.eu-west-2.amazonaws.com/cloudformation/instance-scheduler-on-aws-remote.template"
+  scheduler_account_id      = "970526142943"
 
   tags = {
     "Environment" = "Development"

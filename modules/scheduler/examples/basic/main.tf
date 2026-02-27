@@ -7,13 +7,13 @@
 module "scheduler" {
   source = "../.."
 
-  enable_asg_scheduler        = true
   enable_cloudwatch_dashboard = false
   enable_debug                = true
   enable_organizations        = true
   enable_rds_snapshot         = false
   enable_scheduler            = true
-
+  ## The organizational id
+  organizational_id = "o-7enwqk0f2c"
   ## The regions that the scheduler will manage resources in
   scheduler_regions = ["eu-west-2"]
   ## The tag placed on the resources that the scheduler will manage

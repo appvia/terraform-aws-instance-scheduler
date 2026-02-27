@@ -151,8 +151,6 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_scheduler_orchestrator_memory_size"></a> [scheduler\_orchestrator\_memory\_size](#input\_scheduler\_orchestrator\_memory\_size) | The memory size for the instance scheduler orchestrator | `number` | `128` | no |
 | <a name="input_scheduler_organizations_ids"></a> [scheduler\_organizations\_ids](#input\_scheduler\_organizations\_ids) | A list of organizations ids that are permitted to use the scheduler | `list(string)` | `[]` | no |
 | <a name="input_scheduler_regions"></a> [scheduler\_regions](#input\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
-| <a name="input_scheduler_start_tags"></a> [scheduler\_start\_tags](#input\_scheduler\_start\_tags) | The tags used to identify the resources that should be started | `string` | `"InstanceScheduler-LastAction=Started By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
-| <a name="input_scheduler_stop_tags"></a> [scheduler\_stop\_tags](#input\_scheduler\_stop\_tags) | The tags used to identify the resources that should be stopped | `string` | `"InstanceScheduler-LastAction=Stopped By {scheduler} {year}/{month}/{day} {hour}:{minute}{timezone},>"` | no |
 | <a name="input_scheduler_timezone"></a> [scheduler\_timezone](#input\_scheduler\_timezone) | The default timezone for the instance scheduler | `string` | `"UTC"` | no |
 
 ## Outputs

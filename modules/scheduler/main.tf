@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "bucket" {
 
     condition {
       test     = "StringEquals"
-      variable = "aws:PrincipalOrgID"
+      variable = "aws:SourceOrgID"
       values   = [var.organizational_id]
     }
   }
