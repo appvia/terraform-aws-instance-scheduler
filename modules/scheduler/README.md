@@ -125,6 +125,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_organizational_id"></a> [organizational\_id](#input\_organizational\_id) | The AWS Organization ID used in conjunction with the organizational bucket | `string` | n/a | yes |
 | <a name="input_scheduler_tag_name"></a> [scheduler\_tag\_name](#input\_scheduler\_tag\_name) | The tag name used to identify the resources that should be scheduled | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to apply to the resources | `map(string)` | n/a | yes |
 | <a name="input_artifacts_dir"></a> [artifacts\_dir](#input\_artifacts\_dir) | The path to the directory where the Lambda function code artifacts are stored | `string` | `"builds"` | no |
@@ -133,7 +134,6 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_cloudformation_hub_stack_name"></a> [cloudformation\_hub\_stack\_name](#input\_cloudformation\_hub\_stack\_name) | The name of the cloudformation stack in the hub account | `string` | `"lz-instance-scheduler-hub"` | no |
 | <a name="input_cloudformation_macro_name"></a> [cloudformation\_macro\_name](#input\_cloudformation\_macro\_name) | The name of the cloudformation macro | `string` | `"SchedulerAddDefaultTags"` | no |
 | <a name="input_cloudformation_transform_stack_name"></a> [cloudformation\_transform\_stack\_name](#input\_cloudformation\_transform\_stack\_name) | The name of the cloudformation transform stack | `string` | `"lz-instance-scheduler-add-default-tags"` | no |
-| <a name="input_enable_asg_scheduler"></a> [enable\_asg\_scheduler](#input\_enable\_asg\_scheduler) | Whether AutoScaling Groups should under the remit of the scheduler | `bool` | `true` | no |
 | <a name="input_enable_cloudformation_macro"></a> [enable\_cloudformation\_macro](#input\_enable\_cloudformation\_macro) | Whether the cloudformation macro should be enabled | `bool` | `true` | no |
 | <a name="input_enable_cloudwatch_dashboard"></a> [enable\_cloudwatch\_dashboard](#input\_enable\_cloudwatch\_dashboard) | Whether a CloudWatch dashboard used to monitor the scheduler should be created | `bool` | `false` | no |
 | <a name="input_enable_debug"></a> [enable\_debug](#input\_enable\_debug) | Whether debug logging should be enabled for the instance scheduler | `bool` | `false` | no |
@@ -143,7 +143,6 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_enable_scheduler"></a> [enable\_scheduler](#input\_enable\_scheduler) | Whether the instance scheduler should be enabled | `bool` | `true` | no |
 | <a name="input_enable_ssm_maintenance_windows"></a> [enable\_ssm\_maintenance\_windows](#input\_enable\_ssm\_maintenance\_windows) | Whether EC2 instances should be managed by SSM Maintenance Windows | `bool` | `false` | no |
 | <a name="input_kms_key_arns"></a> [kms\_key\_arns](#input\_kms\_key\_arns) | The KMS key ARNs used to encrypt the instance scheduler data | `list(string)` | `[]` | no |
-| <a name="input_organizational_id"></a> [organizational\_id](#input\_organizational\_id) | The AWS Organization ID used in conjunction with the organizational bucket | `string` | `""` | no |
 | <a name="input_scheduler_asg_rule_prefix"></a> [scheduler\_asg\_rule\_prefix](#input\_scheduler\_asg\_rule\_prefix) | The prefix used to identify the AutoScaling Group scheduled actions | `string` | `"is-"` | no |
 | <a name="input_scheduler_asg_tag_key"></a> [scheduler\_asg\_tag\_key](#input\_scheduler\_asg\_tag\_key) | The tag key used to identify AutoScaling Groups that should be scheduled | `string` | `"scheduled"` | no |
 | <a name="input_scheduler_frequency"></a> [scheduler\_frequency](#input\_scheduler\_frequency) | The frequency at which the instance scheduler should run in minutes | `number` | `60` | no |

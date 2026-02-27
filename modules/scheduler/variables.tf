@@ -34,12 +34,6 @@ variable "cloudformation_transform_stack_name" {
   default     = "lz-instance-scheduler-add-default-tags"
 }
 
-variable "enable_asg_scheduler" {
-  description = "Whether AutoScaling Groups should under the remit of the scheduler"
-  type        = bool
-  default     = true
-}
-
 variable "enable_cloudformation_macro" {
   description = "Whether the cloudformation macro should be enabled"
   type        = bool
@@ -97,7 +91,6 @@ variable "kms_key_arns" {
 variable "organizational_id" {
   description = "The AWS Organization ID used in conjunction with the organizational bucket"
   type        = string
-  default     = ""
 }
 
 variable "scheduler_asg_rule_prefix" {

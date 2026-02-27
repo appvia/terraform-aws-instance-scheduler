@@ -49,6 +49,7 @@ module "s3_bucket" {
   attach_deny_incorrect_encryption_headers = true
   attach_deny_insecure_transport_policy    = true
   attach_deny_unencrypted_object_uploads   = true
+  attach_policy                            = true
   attach_require_latest_tls_policy         = true
   bucket                                   = var.cloudformation_bucket_name
   control_object_ownership                 = true
