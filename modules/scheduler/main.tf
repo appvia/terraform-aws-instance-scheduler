@@ -2,22 +2,24 @@
 ## Craft a resource iam policy for the bucket
 data "aws_iam_policy_document" "bucket" {
   statement {
+    sid       = "AllowOrgReadAccess"
     actions   = ["s3:GetObject", "s3:ListBucket"]
     resources = ["${local.bucket_arn}/*", local.bucket_arn]
 
     principals {
-      type        = "Service"
-      identifiers = ["cloudformation.amazonaws.com"]
+      type        = "AWS"
+      identifiers = ["*"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "aws:SourceOrgID"
+      variable = "aws:PrincipalOrgID"
       values   = [var.organizational_id]
     }
   }
 
   statement {
+    sid       = "AllowAccountReadAccess"
     actions   = ["s3:GetObject"]
     resources = [local.bucket_arn, "${local.bucket_arn}/*"]
 
