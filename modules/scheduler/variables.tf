@@ -25,7 +25,7 @@ variable "cloudformation_hub_stack_name" {
 variable "cloudformation_macro_name" {
   description = "The name of the cloudformation macro"
   type        = string
-  default     = "SchedulerAddDefaultTags"
+  default     = "AddDefaultTags"
 }
 
 variable "cloudformation_transform_stack_name" {
