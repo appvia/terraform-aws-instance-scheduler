@@ -6,7 +6,7 @@ AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: ${ macro_name }
 %{ endif ~}
-Description: (SO0030) instance-scheduler-on-aws v3.1.4
+Description: (SO0030) instance-scheduler-on-aws v3.2.0
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -52,7 +52,7 @@ Metadata:
         default: Orchestrator Memory size (MB)
     ParameterGroups:
       - Label:
-          default: Infrastructure (v3.1.4)
+          default: Infrastructure (v3.2.0)
         Parameters:
           - Namespace
           - UsingAWSOrganizations
@@ -743,14 +743,6 @@ Conditions:
   isPrincipalsNotEmpty:
     Fn::Not:
       - Condition: isPrincipalsEmpty
-  ResourceRegistrationisNotHubStackDeployment951A17BF:
-    Fn::Equals:
-      - REMOTE
-      - HUB
-  ResourceRegistrationisHubStackDeploymentF267769A:
-    Fn::Equals:
-      - HUB
-      - HUB
   SchedulerRolekmsAccessCondition93ED0C6C:
     Fn::Not:
       - Fn::Equals:
@@ -1033,7 +1025,8 @@ Resources:
       LogGroupName:
         Fn::Join:
           - ""
-          - - instance-scheduler-on-aws-
+          - - Ref: AWS::StackName
+            - '-'
             - Ref: Namespace
             - -administrative-logs
       RetentionInDays:
@@ -1060,13 +1053,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
       Description: Custom Resource Provider used to generate unique UUIDs for solution deployments
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           UUID_KEY: /Solutions/instance-scheduler-on-aws/UUID/
           STACK_ID:
             Ref: AWS::StackId
@@ -1095,7 +1088,7 @@ Resources:
       - MetricsGeneratorRole83735CC4
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/MetricsUuidGenerator/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1302,13 +1295,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
       Description: Forwards InstanceScheduler Error/Warning logs to SNS
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           SNS_NOTIFICATION_TOPIC:
             Ref: InstanceSchedulerSnsTopic
       Handler: instance_scheduler.handler.log_forwarding.handle_log_event
@@ -1334,7 +1327,7 @@ Resources:
       - SnsLogForwarderRole9D82E3A7
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SnsLogForwarder/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1351,7 +1344,8 @@ Resources:
       LogGroupName:
         Fn::Join:
           - ""
-          - - instance-scheduler-on-aws-
+          - - Ref: AWS::StackName
+            - '-'
             - Ref: Namespace
             - -scheduling-logs
       RetentionInDays:
@@ -1429,13 +1423,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
-      Description: spoke account registration handler, version v3.1.4
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+      Description: spoke account registration handler, version v3.2.0
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -1504,7 +1498,7 @@ Resources:
       - SpokeRegistrationRole0E2E4D3E
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationHandler/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1840,13 +1834,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
       Description: Custom Resource for creating regional event rules for tagging resources.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           TAGGING_EVENT_RULE_ROLE_ARN:
             Fn::GetAtt:
               - ResourceRegistrationHubTagEventForwardingRole81ECC265
@@ -1868,7 +1862,7 @@ Resources:
               - ""
               - - IS-Tagging-
                 - Ref: Namespace
-          VERSION: v3.1.4
+          VERSION: v3.2.0
           SCHEDULE_TAG_KEY:
             Ref: TagName
           REGIONAL_EVENT_BUS_NAME:
@@ -1897,7 +1891,7 @@ Resources:
       - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRulesLambda/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1986,7 +1980,15 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.1.4
+      version: v3.2.0
+      scheduleTagKey:
+        Ref: TagName
+      namespace:
+        Ref: Namespace
+    DependsOn:
+      - IamPolicyDeploymentGate
+      - IamRoleDeploymentGate
+      - LambdaDeploymentGate
     UpdateReplacePolicy: Retain
     DeletionPolicy: Delete
     Metadata:
@@ -2332,6 +2334,14 @@ Resources:
               - xray:PutTelemetryRecords
             Effect: Allow
             Resource: '*'
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - AdministrationLogsC5F47471
+                - Arn
         Version: "2012-10-17"
       PolicyName: ResourceRegistrationRegionRegistrationLambdaRoleDefaultPolicyD77B4753
       Roles:
@@ -2416,89 +2426,19 @@ Resources:
         - Ref: ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationWaitingLambdaRole/DefaultPolicy/Resource
-  ResourceRegistrationSpokeRegistrationUpdateSSMParamRoleCA31EFC6:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              AWS:
-                Fn::Join:
-                  - ""
-                  - - 'arn:'
-                    - Ref: AWS::Partition
-                    - ':iam::'
-                    - Ref: AWS::AccountId
-                    - :role/
-                    - Ref: Namespace
-                    - -SpokeRegistrationHandler-Role
-        Version: "2012-10-17"
-      Policies:
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - ssm:GetParametersByPath
-                  - ssm:GetParameters
-                  - ssm:GetParameter
-                Effect: Allow
-                Resource:
-                  Fn::Join:
-                    - ""
-                    - - 'arn:'
-                      - Ref: AWS::Partition
-                      - ':ssm:*:'
-                      - Ref: AWS::AccountId
-                      - :parameter/IS/
-                      - Ref: Namespace
-                      - /regions/*
-              - Action: ssm:DescribeParameters
-                Effect: Allow
-                Resource: '*'
-              - Action:
-                  - ssm:PutParameter
-                  - ssm:DeleteParameter
-                  - ssm:DeleteParameters
-                Effect: Allow
-                Resource:
-                  Fn::Join:
-                    - ""
-                    - - 'arn:'
-                      - Ref: AWS::Partition
-                      - ':ssm:*:'
-                      - Ref: AWS::AccountId
-                      - :parameter/IS/
-                      - Ref: Namespace
-                      - /regions/*
-            Version: "2012-10-17"
-          PolicyName: SpokeRegistrationUpdateSSMParamPolicy
-      RoleName:
-        Fn::Join:
-          - ""
-          - - Ref: Namespace
-            - -SpokeRegistrationUpdateSSMParamRole
-    Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/SpokeRegistrationUpdateSSMParamRole/Resource
-      guard:
-        SuppressedRules:
-          - CFN_NO_EXPLICIT_RESOURCE_NAMES
-          - IAM_NO_INLINE_POLICY_CHECK
-          - IAM_POLICYDOCUMENT_NO_WILDCARD_RESOURCE
-    Condition: ResourceRegistrationisNotHubStackDeployment951A17BF
   ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
       Description: Custom Resource Provider used for region registration
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           HUB_ACCOUNT_ID:
             Ref: AWS::AccountId
           STACK_ID:
@@ -2550,7 +2490,7 @@ Resources:
       - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationCustomResourceLambda/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -2563,13 +2503,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
       Description: Custom Resource lambda to wait and confirm region registrations.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           HUB_ACCOUNT_ID:
             Ref: AWS::AccountId
           STACK_ID:
@@ -2621,7 +2561,7 @@ Resources:
       - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationWaitLambda/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -2703,7 +2643,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - onEvent (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -2810,7 +2750,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - isComplete (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -2915,7 +2855,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - onTimeout (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -3020,38 +2960,6 @@ Resources:
       - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider/waiter-state-machine/Resource
-  ResourceRegistrationRegionRegistrationCustomResourceLambdaPolicy4210499E:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Resource:
-              Fn::Join:
-                - ""
-                - - 'arn:'
-                  - Ref: AWS::Partition
-                  - ':iam::'
-                  - Ref: AWS::AccountId
-                  - :role/
-                  - Ref: Namespace
-                  - -SpokeRegistrationInvokeFunction-Role
-          - Action:
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Effect: Allow
-            Resource:
-              Fn::GetAtt:
-                - AdministrationLogsC5F47471
-                - Arn
-        Version: "2012-10-17"
-      PolicyName: ResourceRegistrationRegionRegistrationCustomResourceLambdaPolicy4210499E
-      Roles:
-        - Ref: ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
-    Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationCustomResourceLambdaPolicy/Resource
-    Condition: ResourceRegistrationisNotHubStackDeployment951A17BF
   ResourceRegistrationhubLambdaInvokePolicy5F97F17F:
     Type: AWS::IAM::Policy
     Properties:
@@ -3076,7 +2984,6 @@ Resources:
         - Ref: ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/hubLambdaInvokePolicy/Resource
-    Condition: ResourceRegistrationisHubStackDeploymentF267769A
   ResourceRegistrationRegisterRegionsF3C0C449:
     Type: Custom::RegisterRegion
     Properties:
@@ -3086,7 +2993,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.1.4
+      version: v3.2.0
     DependsOn:
       - DynamoDbTableDeploymentGate
       - IamPolicyDeploymentGate
@@ -3101,19 +3008,97 @@ Resources:
     DeletionPolicy: Delete
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegisterRegions/Default
+  IamPolicyDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - Ec2ResizeRequestHandlerRoleDefaultPolicy18BD1509
+      - HeartbeatMetricsReporterRoleDefaultPolicy7CE04DA3
+      - MainLambdaRoleDefaultPolicy5347C905
+      - MetricsGathererPermissionsPolicyAA99320A
+      - MetricsGeneratorRoleDefaultPolicy19F5F29A
+      - MetricsUuidPermissionsPolicyD0672406
+      - resizeRequestHandlerPolicy65D6C75D
+      - ResourceRegistrationCreateRegionalEventRulesLambdaRoleDefaultPolicyAEEA7C27
+      - ResourceRegistrationCreateRegionalEventRulesPolicy1531DABC
+      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy209D7A94
+      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy2620E1E1
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy1CE45C4E
+      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleDefaultPolicy71F426D3
+      - ResourceRegistrationhubLambdaInvokePolicy5F97F17F
+      - ResourceRegistrationHubTagEventForwardingRoleDefaultPolicy04836F11
+      - ResourceRegistrationRegionRegistrationLambdaRoleDefaultPolicyD77B4753
+      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleDefaultPolicy57C65D22
+      - ResourceRegistrationResourceRegistrationLambdaRoleDefaultPolicy5CED86F8
+      - SchedulerRoleASGSchedulingPermissions3ABCC443
+      - SchedulerRoleEc2SchedulingPermissionsF1A25C28
+      - SchedulerRoleRdsSchedulingPermissionsEBB3D20F
+      - SchedulerRoleRegionalEventBusPermissionsA9062DD9
+      - SchedulerRoleResourceGroupsTaggingPermissions24BD9721
+      - SchedulingOrchestratorPermissionsPolicyC2148A26
+      - SchedulingOrchestratorRoleDefaultPolicy29DE8B0D
+      - schedulingRequestHandlerPolicy1BE05FC4
+      - schedulingRequestHandlerRoleDefaultPolicy938ADC4A
+      - SnsLogForwarderRoleDefaultPolicy428A754D
+      - SpokeRegistrationPolicy600671FC
+      - SpokeRegistrationRoleDefaultPolicy7A7A6954
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/IamPolicyDeploymentGate
+  IamRoleDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - Ec2ResizeRequestHandlerRoleC503C8DF
+      - HeartbeatMetricsReporterRole9FB59405
+      - MainLambdaRole500DC55A
+      - MetricsGeneratorRole83735CC4
+      - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
+      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRole425E0222
+      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRole10EAF63B
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRole47835E8A
+      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178
+      - ResourceRegistrationHubTagEventForwardingRole81ECC265
+      - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
+      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
+      - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
+      - SchedulerRole59E73443
+      - SchedulingOrchestratorRoleAD0FF7B1
+      - schedulingRequestHandlerRoleD87803EB
+      - SnsLogForwarderRole9D82E3A7
+      - SpokeRegistrationRole0E2E4D3E
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/IamRoleDeploymentGate
+  LambdaDeploymentGate:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    DependsOn:
+      - HeartbeatMetricsReporter812E35D0
+      - MetricsUuidGenerator172A04DB
+      - ResizeRequestHandlerLambdaBD990D86
+      - ResourceRegistrationCreateRegionalEventRulesLambdaBADBA499
+      - ResourceRegistrationCustomResourceProviderframeworkisComplete44F29B9D
+      - ResourceRegistrationCustomResourceProviderframeworkonEvent294A3755
+      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutE1C8D0D4
+      - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
+      - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
+      - ResourceRegistrationLambda40454DE0
+      - Main
+      - SchedulingOrchestratorBB4C4C5A
+      - schedulingRequestHandlerLambdaC395DC9E
+      - SnsLogForwarder1E4F3E8B
+      - SpokeRegistrationHandler923F17AC
+    Metadata:
+      aws:cdk:path: instance-scheduler-on-aws/LambdaDeploymentGate
   ResourceRegistrationLambda40454DE0:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
       Description: Handles tag events for registration updates of managed resources
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -3166,90 +3151,13 @@ Resources:
       - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistrationLambda/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
         SuppressedRules:
           - LAMBDA_INSIDE_VPC
           - LAMBDA_CONCURRENCY_CHECK
-  LambdaDeploymentGate:
-    Type: AWS::CloudFormation::WaitConditionHandle
-    DependsOn:
-      - HeartbeatMetricsReporter812E35D0
-      - iceErrorRetryHandlerLambda93DCA812
-      - MetricsUuidGenerator172A04DB
-      - ResourceRegistrationCreateRegionalEventRulesLambdaBADBA499
-      - ResourceRegistrationCustomResourceProviderframeworkisComplete44F29B9D
-      - ResourceRegistrationCustomResourceProviderframeworkonEvent294A3755
-      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutE1C8D0D4
-      - ResourceRegistrationRegionRegistrationCustomResourceLambdaCC1DB513
-      - ResourceRegistrationRegionRegistrationWaitLambda88C6C302
-      - ResourceRegistrationLambda40454DE0
-      - Main
-      - SchedulingOrchestratorBB4C4C5A
-      - schedulingRequestHandlerLambdaC395DC9E
-      - SnsLogForwarder1E4F3E8B
-      - SpokeRegistrationHandler923F17AC
-    Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/LambdaDeploymentGate
-  IamRoleDeploymentGate:
-    Type: AWS::CloudFormation::WaitConditionHandle
-    DependsOn:
-      - HeartbeatMetricsReporterRole9FB59405
-      - iceErrorRetryHandlerRoleBB1DEADD
-      - MainLambdaRole500DC55A
-      - MetricsGeneratorRole83735CC4
-      - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
-      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRole425E0222
-      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRole10EAF63B
-      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRole47835E8A
-      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleA2FF3178
-      - ResourceRegistrationHubTagEventForwardingRole81ECC265
-      - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
-      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
-      - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
-      - SchedulerRole59E73443
-      - SchedulingOrchestratorRoleAD0FF7B1
-      - schedulingRequestHandlerRoleD87803EB
-      - SnsLogForwarderRole9D82E3A7
-      - SpokeRegistrationRole0E2E4D3E
-    Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/IamRoleDeploymentGate
-  IamPolicyDeploymentGate:
-    Type: AWS::CloudFormation::WaitConditionHandle
-    DependsOn:
-      - HeartbeatMetricsReporterRoleDefaultPolicy7CE04DA3
-      - iceErrorRetryHandlerRoleDefaultPolicy26094B45
-      - MainLambdaRoleDefaultPolicy5347C905
-      - MetricsGathererPermissionsPolicyAA99320A
-      - MetricsGeneratorRoleDefaultPolicy19F5F29A
-      - MetricsUuidPermissionsPolicyD0672406
-      - ResourceRegistrationCreateRegionalEventRulesLambdaRoleDefaultPolicyAEEA7C27
-      - ResourceRegistrationCreateRegionalEventRulesPolicy1531DABC
-      - ResourceRegistrationCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy209D7A94
-      - ResourceRegistrationCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy2620E1E1
-      - ResourceRegistrationCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy1CE45C4E
-      - ResourceRegistrationCustomResourceProviderwaiterstatemachineRoleDefaultPolicy71F426D3
-      - ResourceRegistrationHubTagEventForwardingRoleDefaultPolicy04836F11
-      - ResourceRegistrationRegionRegistrationLambdaRoleDefaultPolicyD77B4753
-      - ResourceRegistrationRegionRegistrationWaitingLambdaRoleDefaultPolicy57C65D22
-      - ResourceRegistrationResourceRegistrationLambdaRoleDefaultPolicy5CED86F8
-      - retryIceErrorHandlerPolicy0496828B
-      - SchedulerRoleASGSchedulingPermissions3ABCC443
-      - SchedulerRoleEc2SchedulingPermissionsF1A25C28
-      - SchedulerRoleRdsSchedulingPermissionsEBB3D20F
-      - SchedulerRoleRegionalEventBusPermissionsA9062DD9
-      - SchedulerRoleResourceGroupsTaggingPermissions24BD9721
-      - SchedulingOrchestratorPermissionsPolicyC2148A26
-      - SchedulingOrchestratorRoleDefaultPolicy29DE8B0D
-      - schedulingRequestHandlerPolicy1BE05FC4
-      - schedulingRequestHandlerRoleDefaultPolicy938ADC4A
-      - SnsLogForwarderRoleDefaultPolicy428A754D
-      - SpokeRegistrationPolicy600671FC
-      - SpokeRegistrationRoleDefaultPolicy7A7A6954
-    Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/IamPolicyDeploymentGate
   DynamoDbTableDeploymentGate:
     Type: AWS::CloudFormation::WaitConditionHandle
     DependsOn:
@@ -3359,15 +3267,15 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
-      Description: CLI and CFN schedule manager for Instance Scheduler version v3.1.4
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+      Description: CLI and CFN schedule manager for Instance Scheduler version v3.2.0
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
           ISSUES_TOPIC_ARN:
             Ref: InstanceSchedulerSnsTopic
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           DEFAULT_TIMEZONE:
             Ref: DefaultTimezone
           ENABLE_AWS_ORGANIZATIONS:
@@ -3384,7 +3292,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.1.4
+          SOLUTION_VERSION: v3.2.0
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3423,7 +3331,7 @@ Resources:
       - MainLambdaRole500DC55A
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/scheduler-lambda/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3444,7 +3352,7 @@ Resources:
     DeletionPolicy: Delete
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ServiceSetup/Default
-  InstanceSchedulerIceRetryDLQueue4B3D73CB:
+  InstanceSchedulerEc2ResizeDLQueue2836CBB6:
     Type: AWS::SQS::Queue
     Properties:
       KmsMasterKeyId:
@@ -3454,8 +3362,8 @@ Resources:
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerIceRetryDLQueue/Resource
-  InstanceSchedulerIceRetryDLQueuePolicy8953A569:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerEc2ResizeDLQueue/Resource
+  InstanceSchedulerEc2ResizeDLQueuePolicy69671A56:
     Type: AWS::SQS::QueuePolicy
     Properties:
       PolicyDocument:
@@ -3469,14 +3377,14 @@ Resources:
               AWS: '*'
             Resource:
               Fn::GetAtt:
-                - InstanceSchedulerIceRetryDLQueue4B3D73CB
+                - InstanceSchedulerEc2ResizeDLQueue2836CBB6
                 - Arn
         Version: "2012-10-17"
       Queues:
-        - Ref: InstanceSchedulerIceRetryDLQueue4B3D73CB
+        - Ref: InstanceSchedulerEc2ResizeDLQueue2836CBB6
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerIceRetryDLQueue/Policy/Resource
-  InstanceSchedulerIceRetryQueueE4C492AF:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerEc2ResizeDLQueue/Policy/Resource
+  InstanceSchedulerEc2ResizeRequestQueueCF79B931:
     Type: AWS::SQS::Queue
     Properties:
       KmsMasterKeyId:
@@ -3486,15 +3394,15 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn:
           Fn::GetAtt:
-            - InstanceSchedulerIceRetryDLQueue4B3D73CB
+            - InstanceSchedulerEc2ResizeDLQueue2836CBB6
             - Arn
         maxReceiveCount: 1
       VisibilityTimeout: 180
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerIceRetryQueue/Resource
-  iceErrorRetryHandlerRoleBB1DEADD:
+      aws:cdk:path: instance-scheduler-on-aws/InstanceSchedulerEc2ResizeRequestQueue/Resource
+  Ec2ResizeRequestHandlerRoleC503C8DF:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -3508,13 +3416,13 @@ Resources:
         Fn::Join:
           - ""
           - - Ref: Namespace
-            - -IceErrorRetryHandler-Role
+            - -Ec2ResizeRequestHandler-Role
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerRole/Resource
+      aws:cdk:path: instance-scheduler-on-aws/Ec2ResizeRequestHandlerRole/Resource
       guard:
         SuppressedRules:
           - CFN_NO_EXPLICIT_RESOURCE_NAMES
-  iceErrorRetryHandlerRoleDefaultPolicy26094B45:
+  Ec2ResizeRequestHandlerRoleDefaultPolicy18BD1509:
     Type: AWS::IAM::Policy
     Properties:
       PolicyDocument:
@@ -3533,7 +3441,7 @@ Resources:
             Effect: Allow
             Resource:
               Fn::GetAtt:
-                - InstanceSchedulerIceRetryQueueE4C492AF
+                - InstanceSchedulerEc2ResizeRequestQueueCF79B931
                 - Arn
           - Action: kms:Decrypt
             Effect: Allow
@@ -3542,25 +3450,25 @@ Resources:
                 - InstanceSchedulerEncryptionKey
                 - Arn
         Version: "2012-10-17"
-      PolicyName: iceErrorRetryHandlerRoleDefaultPolicy26094B45
+      PolicyName: Ec2ResizeRequestHandlerRoleDefaultPolicy18BD1509
       Roles:
-        - Ref: iceErrorRetryHandlerRoleBB1DEADD
+        - Ref: Ec2ResizeRequestHandlerRoleC503C8DF
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerRole/DefaultPolicy/Resource
+      aws:cdk:path: instance-scheduler-on-aws/Ec2ResizeRequestHandlerRole/DefaultPolicy/Resource
       cdk_nag:
         rules_to_suppress:
           - reason: required for xray
             id: AwsSolutions-IAM5
             applies_to:
               - Resource::*
-  iceErrorRetryHandlerLambda93DCA812:
+  ResizeRequestHandlerLambdaBD990D86:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
-      Description: Handles ICE error retry events, version v3.1.4
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+      Description: Handles EC2 resizing requests, version v3.2.0
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
@@ -3569,7 +3477,7 @@ Resources:
             Ref: ConfigTable
           REGISTRY_TABLE:
             Ref: ResourceRegistryC5838BF9
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           STACK_NAME:
             Ref: AWS::StackName
           SCHEDULER_ROLE_NAME:
@@ -3597,7 +3505,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.1.4
+          SOLUTION_VERSION: v3.2.0
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3606,7 +3514,7 @@ Resources:
               - Uuid
           HUB_ACCOUNT_ID:
             Ref: AWS::AccountId
-      Handler: instance_scheduler.handler.ice_retry_handler.lambda_handler
+      Handler: instance_scheduler.handler.resize_handler.lambda_handler
       LoggingConfig:
         ApplicationLogLevel:
           Fn::If:
@@ -3617,40 +3525,40 @@ Resources:
         LogGroup:
           Ref: SchedulingLogs24313C6E
         SystemLogLevel: INFO
-      MemorySize: 128
+      MemorySize: 512
       Role:
         Fn::GetAtt:
-          - iceErrorRetryHandlerRoleBB1DEADD
+          - Ec2ResizeRequestHandlerRoleC503C8DF
           - Arn
       Runtime: python3.12
       Timeout: 180
       TracingConfig:
         Mode: Active
     DependsOn:
-      - iceErrorRetryHandlerRoleDefaultPolicy26094B45
-      - iceErrorRetryHandlerRoleBB1DEADD
+      - Ec2ResizeRequestHandlerRoleDefaultPolicy18BD1509
+      - Ec2ResizeRequestHandlerRoleC503C8DF
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerLambda/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:cdk:path: instance-scheduler-on-aws/ResizeRequestHandlerLambda/Resource
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
         SuppressedRules:
           - LAMBDA_INSIDE_VPC
           - LAMBDA_CONCURRENCY_CHECK
-  iceErrorRetryHandlerLambdaSqsEventSourceinstancescheduleronawsInstanceSchedulerIceRetryQueue53C4104087CFD267:
+  ResizeRequestHandlerLambdaSqsEventSourceinstancescheduleronawsInstanceSchedulerEc2ResizeRequestQueueC64975D03152D49A:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 1
       EventSourceArn:
         Fn::GetAtt:
-          - InstanceSchedulerIceRetryQueueE4C492AF
+          - InstanceSchedulerEc2ResizeRequestQueueCF79B931
           - Arn
       FunctionName:
-        Ref: iceErrorRetryHandlerLambda93DCA812
+        Ref: ResizeRequestHandlerLambdaBD990D86
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/iceErrorRetryHandlerLambda/SqsEventSource:instancescheduleronawsInstanceSchedulerIceRetryQueue53C41040/Resource
-  retryIceErrorHandlerPolicy0496828B:
+      aws:cdk:path: instance-scheduler-on-aws/ResizeRequestHandlerLambda/SqsEventSource:instancescheduleronawsInstanceSchedulerEc2ResizeRequestQueueC64975D0/Resource
+  resizeRequestHandlerPolicy65D6C75D:
     Type: AWS::IAM::Policy
     Properties:
       PolicyDocument:
@@ -3699,7 +3607,7 @@ Resources:
             Effect: Allow
             Resource:
               Fn::GetAtt:
-                - InstanceSchedulerIceRetryQueueE4C492AF
+                - InstanceSchedulerEc2ResizeRequestQueueCF79B931
                 - Arn
           - Action: kms:Decrypt
             Effect: Allow
@@ -3732,11 +3640,11 @@ Resources:
                   - Ref: Namespace
                   - -Scheduler-Role
         Version: "2012-10-17"
-      PolicyName: retryIceErrorHandlerPolicy0496828B
+      PolicyName: resizeRequestHandlerPolicy65D6C75D
       Roles:
-        - Ref: iceErrorRetryHandlerRoleBB1DEADD
+        - Ref: Ec2ResizeRequestHandlerRoleC503C8DF
     Metadata:
-      aws:cdk:path: instance-scheduler-on-aws/retryIceErrorHandlerPolicy/Resource
+      aws:cdk:path: instance-scheduler-on-aws/resizeRequestHandlerPolicy/Resource
       cdk_nag:
         rules_to_suppress:
           - reason: Permission to use solution CMK with dynamo/sns
@@ -3800,8 +3708,8 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
-      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.1.4
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.2.0
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
@@ -3812,11 +3720,11 @@ Resources:
             Ref: ResourceRegistryC5838BF9
           MAINT_WINDOW_TABLE:
             Ref: MaintenanceWindowTable
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           STACK_ID:
             Ref: AWS::StackId
-          ICE_RETRY_SQS_URL:
-            Ref: InstanceSchedulerIceRetryQueueE4C492AF
+          RESIZE_REQUEST_SQS_URL:
+            Ref: InstanceSchedulerEc2ResizeRequestQueueCF79B931
           SCHEDULER_ROLE_NAME:
             Fn::Join:
               - ""
@@ -3861,7 +3769,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.1.4
+          SOLUTION_VERSION: v3.2.0
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3896,7 +3804,7 @@ Resources:
       - schedulingRequestHandlerRoleD87803EB
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/schedulingRequestHandlerLambda/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4026,7 +3934,7 @@ Resources:
             Effect: Allow
             Resource:
               Fn::GetAtt:
-                - InstanceSchedulerIceRetryQueueE4C492AF
+                - InstanceSchedulerEc2ResizeRequestQueueCF79B931
                 - Arn
           - Action:
               - kms:Decrypt
@@ -4149,13 +4057,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
-      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.1.4
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.2.0
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -4188,7 +4096,7 @@ Resources:
       - SchedulingOrchestratorRoleAD0FF7B1
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestrator/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4329,13 +4237,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.1.4/7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c.zip
-      Description: metrics gatherer for Instance Scheduler on AWS, version v3.1.4
+        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+      Description: metrics gatherer for Instance Scheduler on AWS, version v3.2.0
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.1.4
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -4369,7 +4277,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.1.4
+          SOLUTION_VERSION: v3.2.0
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -4403,7 +4311,7 @@ Resources:
       - HeartbeatMetricsReporterRole9FB59405
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/HeartbeatMetricsReporter/Resource
-      aws:asset:path: asset.7df60a33e6e1e79628f6d9e418c15dea76ef7220dcf12ecafddbba1bad494f1c
+      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4488,7 +4396,7 @@ Resources:
   MetricsGathererEventRule82CDB21C:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger heartbeat metrics function version v3.1.4
+      Description: Instance Scheduler - Rule to trigger heartbeat metrics function version v3.2.0
       ScheduleExpression: rate(1 day)
       State:
         Fn::If:
@@ -4523,7 +4431,7 @@ Resources:
   SchedulerEventRuleDD9A6B32:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.1.4
+      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.2.0
       ScheduleExpression:
         Fn::FindInMap:
           - CronExpressionsForSchedulingIntervals
@@ -4584,7 +4492,7 @@ Resources:
             Principal:
               AWS:
                 Fn::GetAtt:
-                  - iceErrorRetryHandlerRoleBB1DEADD
+                  - Ec2ResizeRequestHandlerRoleC503C8DF
                   - Arn
           - Action: sts:AssumeRole
             Effect: Allow
