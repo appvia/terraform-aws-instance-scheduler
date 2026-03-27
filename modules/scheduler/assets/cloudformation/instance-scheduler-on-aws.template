@@ -6,7 +6,7 @@ AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: ${ macro_name }
 %{ endif ~}
-Description: (SO0030) instance-scheduler-on-aws v3.2.0
+Description: (SO0030) instance-scheduler-on-aws v3.2.1
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -26,6 +26,8 @@ Metadata:
         default: Default time zone
       SchedulerFrequency:
         default: Scheduling interval (minutes)
+      EnableInformationalTagging:
+        default: Enable informational tagging
       EnableSSMMaintenanceWindows:
         default: Enable EC2 SSM Maintenance Windows
       CreateRdsSnapshot:
@@ -52,7 +54,7 @@ Metadata:
         default: Orchestrator Memory size (MB)
     ParameterGroups:
       - Label:
-          default: Infrastructure (v3.2.0)
+          default: Infrastructure (v3.2.1)
         Parameters:
           - Namespace
           - UsingAWSOrganizations
@@ -65,6 +67,7 @@ Metadata:
           - SchedulingActive
           - DefaultTimezone
           - SchedulerFrequency
+          - EnableInformationalTagging
           - EnableSSMMaintenanceWindows
           - CreateRdsSnapshot
           - AsgRulePrefix
@@ -574,6 +577,13 @@ Parameters:
       - "30"
       - "60"
     Description: Interval in minutes between scheduler executions. For EC2 and RDS
+  EnableInformationalTagging:
+    Type: String
+    Default: "Yes"
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Description: When enabled, Instance Scheduler will write informational tags to managed resources indicating the last action taken and any errors encountered.
   EnableSSMMaintenanceWindows:
     Type: String
     Default: "No"
@@ -734,6 +744,10 @@ Conditions:
     Fn::Equals:
       - Ref: OpsMonitoring
       - Enabled
+  EnableInformationalTaggingCondition:
+    Fn::Equals:
+      - Ref: EnableInformationalTagging
+      - "Yes"
   isPrincipalsEmpty:
     Fn::Equals:
       - Fn::Select:
@@ -1053,13 +1067,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
       Description: Custom Resource Provider used to generate unique UUIDs for solution deployments
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           UUID_KEY: /Solutions/instance-scheduler-on-aws/UUID/
           STACK_ID:
             Ref: AWS::StackId
@@ -1088,7 +1102,7 @@ Resources:
       - MetricsGeneratorRole83735CC4
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/MetricsUuidGenerator/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1295,13 +1309,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
       Description: Forwards InstanceScheduler Error/Warning logs to SNS
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           SNS_NOTIFICATION_TOPIC:
             Ref: InstanceSchedulerSnsTopic
       Handler: instance_scheduler.handler.log_forwarding.handle_log_event
@@ -1327,7 +1341,7 @@ Resources:
       - SnsLogForwarderRole9D82E3A7
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SnsLogForwarder/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1423,13 +1437,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
-      Description: spoke account registration handler, version v3.2.0
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
+      Description: spoke account registration handler, version v3.2.1
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -1443,6 +1457,8 @@ Resources:
             Ref: TagName
           HUB_STACK_NAME:
             Ref: AWS::StackName
+          HUB_STACK_ARN:
+            Ref: AWS::StackId
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           ASG_SCHEDULED_RULES_PREFIX:
@@ -1467,6 +1483,11 @@ Resources:
               - ""
               - - Ref: Namespace
                 - -SpokeRegistrationUpdateSSMParamRole
+          ENABLE_INFORMATIONAL_TAGGING:
+            Fn::If:
+              - EnableInformationalTaggingCondition
+              - "True"
+              - "False"
       FunctionName:
         Fn::Join:
           - ""
@@ -1498,7 +1519,7 @@ Resources:
       - SpokeRegistrationRole0E2E4D3E
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationHandler/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1559,17 +1580,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:BatchGetItem
               - dynamodb:Query
@@ -1583,9 +1604,9 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - kms:Decrypt
               - kms:DescribeKey
@@ -1602,9 +1623,9 @@ Resources:
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action: events:PutEvents
             Effect: Allow
             Resource:
@@ -1834,13 +1855,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
       Description: Custom Resource for creating regional event rules for tagging resources.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           TAGGING_EVENT_RULE_ROLE_ARN:
             Fn::GetAtt:
               - ResourceRegistrationHubTagEventForwardingRole81ECC265
@@ -1862,7 +1883,7 @@ Resources:
               - ""
               - - IS-Tagging-
                 - Ref: Namespace
-          VERSION: v3.2.0
+          VERSION: v3.2.1
           SCHEDULE_TAG_KEY:
             Ref: TagName
           REGIONAL_EVENT_BUS_NAME:
@@ -1891,7 +1912,7 @@ Resources:
       - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRulesLambda/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1980,7 +2001,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.2.0
+      version: v3.2.1
       scheduleTagKey:
         Ref: TagName
       namespace:
@@ -2060,9 +2081,9 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - kms:Decrypt
               - kms:DescribeKey
@@ -2079,9 +2100,9 @@ Resources:
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - dynamodb:BatchGetItem
               - dynamodb:Query
@@ -2095,17 +2116,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action: events:PutEvents
             Effect: Allow
             Resource:
@@ -2432,13 +2453,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
       Description: Custom Resource Provider used for region registration
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           HUB_ACCOUNT_ID:
             Ref: AWS::AccountId
           STACK_ID:
@@ -2490,7 +2511,7 @@ Resources:
       - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationCustomResourceLambda/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -2503,13 +2524,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
       Description: Custom Resource lambda to wait and confirm region registrations.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           HUB_ACCOUNT_ID:
             Ref: AWS::AccountId
           STACK_ID:
@@ -2561,7 +2582,7 @@ Resources:
       - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationWaitLambda/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -2643,7 +2664,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - onEvent (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -2750,7 +2771,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - isComplete (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -2855,7 +2876,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
       Description: AWS CDK resource provider framework - onTimeout (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -2993,7 +3014,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.2.0
+      version: v3.2.1
     DependsOn:
       - DynamoDbTableDeploymentGate
       - IamPolicyDeploymentGate
@@ -3092,19 +3113,21 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
       Description: Handles tag events for registration updates of managed resources
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
             Ref: ResourceRegistryC5838BF9
           HUB_STACK_NAME:
             Ref: AWS::StackName
+          HUB_STACK_ARN:
+            Ref: AWS::StackId
           SCHEDULER_ROLE_NAME:
             Fn::Join:
               - ""
@@ -3125,6 +3148,11 @@ Resources:
                 - Ref: Namespace
           GLOBAL_EVENT_BUS_NAME:
             Ref: globalEventsF68743C0
+          ENABLE_INFORMATIONAL_TAGGING:
+            Fn::If:
+              - EnableInformationalTaggingCondition
+              - "True"
+              - "False"
       Handler: instance_scheduler.handler.resource_registration_handler.lambda_handler
       LoggingConfig:
         ApplicationLogLevel:
@@ -3151,7 +3179,7 @@ Resources:
       - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistrationLambda/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3202,9 +3230,9 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - kms:Decrypt
               - kms:DescribeKey
@@ -3221,9 +3249,9 @@ Resources:
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - logs:CreateLogStream
               - logs:PutLogEvents
@@ -3267,15 +3295,15 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
-      Description: CLI and CFN schedule manager for Instance Scheduler version v3.2.0
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
+      Description: CLI and CFN schedule manager for Instance Scheduler version v3.2.1
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
           ISSUES_TOPIC_ARN:
             Ref: InstanceSchedulerSnsTopic
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           DEFAULT_TIMEZONE:
             Ref: DefaultTimezone
           ENABLE_AWS_ORGANIZATIONS:
@@ -3292,7 +3320,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.0
+          SOLUTION_VERSION: v3.2.1
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3331,7 +3359,7 @@ Resources:
       - MainLambdaRole500DC55A
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/scheduler-lambda/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3467,8 +3495,8 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
-      Description: Handles EC2 resizing requests, version v3.2.0
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
+      Description: Handles EC2 resizing requests, version v3.2.1
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
@@ -3477,9 +3505,11 @@ Resources:
             Ref: ConfigTable
           REGISTRY_TABLE:
             Ref: ResourceRegistryC5838BF9
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           STACK_NAME:
             Ref: AWS::StackName
+          STACK_ID:
+            Ref: AWS::StackId
           SCHEDULER_ROLE_NAME:
             Fn::Join:
               - ""
@@ -3498,6 +3528,11 @@ Resources:
                 - Ref: Namespace
           GLOBAL_EVENT_BUS_NAME:
             Ref: globalEventsF68743C0
+          ENABLE_INFORMATIONAL_TAGGING:
+            Fn::If:
+              - EnableInformationalTaggingCondition
+              - "True"
+              - "False"
           METRICS_URL: https://metrics.awssolutionsbuilder.com/generic
           SEND_METRICS:
             Fn::If:
@@ -3505,7 +3540,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.0
+          SOLUTION_VERSION: v3.2.1
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3539,7 +3574,7 @@ Resources:
       - Ec2ResizeRequestHandlerRoleC503C8DF
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResizeRequestHandlerLambda/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3576,9 +3611,9 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - kms:Decrypt
               - kms:DescribeKey
@@ -3595,9 +3630,9 @@ Resources:
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - sqs:ReceiveMessage
               - sqs:ChangeMessageVisibility
@@ -3708,8 +3743,8 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
-      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.2.0
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
+      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.2.1
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
@@ -3720,7 +3755,7 @@ Resources:
             Ref: ResourceRegistryC5838BF9
           MAINT_WINDOW_TABLE:
             Ref: MaintenanceWindowTable
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           STACK_ID:
             Ref: AWS::StackId
           RESIZE_REQUEST_SQS_URL:
@@ -3758,10 +3793,17 @@ Resources:
             Ref: globalEventsF68743C0
           HUB_STACK_NAME:
             Ref: AWS::StackName
+          HUB_STACK_ARN:
+            Ref: AWS::StackId
           ASG_SCHEDULED_RULES_PREFIX:
             Ref: AsgRulePrefix
           ASG_METADATA_TAG_KEY:
             Ref: AsgScheduledTagKey
+          ENABLE_INFORMATIONAL_TAGGING:
+            Fn::If:
+              - EnableInformationalTaggingCondition
+              - "True"
+              - "False"
           METRICS_URL: https://metrics.awssolutionsbuilder.com/generic
           SEND_METRICS:
             Fn::If:
@@ -3769,7 +3811,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.0
+          SOLUTION_VERSION: v3.2.1
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3804,7 +3846,7 @@ Resources:
       - schedulingRequestHandlerRoleD87803EB
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/schedulingRequestHandlerLambda/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3833,17 +3875,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:BatchGetItem
               - dynamodb:Query
@@ -3857,9 +3899,9 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - StateTable
-                - Arn
+              - Fn::GetAtt:
+                  - StateTable
+                  - Arn
           - Action:
               - kms:Decrypt
               - kms:DescribeKey
@@ -3876,9 +3918,9 @@ Resources:
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - StateTable
-                - Arn
+              - Fn::GetAtt:
+                  - StateTable
+                  - Arn
           - Action:
               - dynamodb:BatchGetItem
               - dynamodb:Query
@@ -3892,17 +3934,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - dynamodb:BatchGetItem
               - dynamodb:Query
@@ -3916,17 +3958,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - MaintenanceWindowTable
-                - Arn
+              - Fn::GetAtt:
+                  - MaintenanceWindowTable
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - MaintenanceWindowTable
-                - Arn
+              - Fn::GetAtt:
+                  - MaintenanceWindowTable
+                  - Arn
           - Action:
               - sqs:SendMessage
               - sqs:GetQueueAttributes
@@ -4057,13 +4099,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
-      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.2.0
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
+      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.2.1
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -4096,7 +4138,7 @@ Resources:
       - SchedulingOrchestratorRoleAD0FF7B1
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestrator/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4125,17 +4167,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:BatchGetItem
               - dynamodb:Query
@@ -4145,17 +4187,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - logs:CreateLogStream
               - logs:PutLogEvents
@@ -4237,13 +4279,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.0/b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99.zip
-      Description: metrics gatherer for Instance Scheduler on AWS, version v3.2.0
+        S3Key: instance-scheduler-on-aws/v3.2.1/346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c.zip
+      Description: metrics gatherer for Instance Scheduler on AWS, version v3.2.1
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.0
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.1
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -4277,7 +4319,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.0
+          SOLUTION_VERSION: v3.2.1
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -4311,7 +4353,7 @@ Resources:
       - HeartbeatMetricsReporterRole9FB59405
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/HeartbeatMetricsReporter/Resource
-      aws:asset:path: asset.b3b2306dfe6776854675d1d678c884694afc880ff82e18587506f8a514541a99
+      aws:asset:path: asset.346b161702bdfb4f9f90047a642580f33525bab29b22b83c9f3149099b84252c
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4340,17 +4382,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ConfigTable
-                - Arn
+              - Fn::GetAtt:
+                  - ConfigTable
+                  - Arn
           - Action:
               - dynamodb:BatchGetItem
               - dynamodb:Query
@@ -4360,17 +4402,17 @@ Resources:
               - dynamodb:DescribeTable
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - dynamodb:GetRecords
               - dynamodb:GetShardIterator
             Effect: Allow
             Resource:
-              Fn::GetAtt:
-                - ResourceRegistryC5838BF9
-                - Arn
+              - Fn::GetAtt:
+                  - ResourceRegistryC5838BF9
+                  - Arn
           - Action:
               - logs:CreateLogStream
               - logs:PutLogEvents
@@ -4396,7 +4438,7 @@ Resources:
   MetricsGathererEventRule82CDB21C:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger heartbeat metrics function version v3.2.0
+      Description: Instance Scheduler - Rule to trigger heartbeat metrics function version v3.2.1
       ScheduleExpression: rate(1 day)
       State:
         Fn::If:
@@ -4431,7 +4473,7 @@ Resources:
   SchedulerEventRuleDD9A6B32:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.2.0
+      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.2.1
       ScheduleExpression:
         Fn::FindInMap:
           - CronExpressionsForSchedulingIntervals
