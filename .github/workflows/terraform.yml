@@ -14,31 +14,31 @@ permissions:
 
 jobs:
   config-validation:
-    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@da2bf7ed16cc9778fedff463249466ca88069df5 # main
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@9f815b35dd18819f0854c52ee8cafd249b28681c # main
     name: Config Module
     with:
       working-directory: modules/config
 
   tagging-validation:
-    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@da2bf7ed16cc9778fedff463249466ca88069df5 # main
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@9f815b35dd18819f0854c52ee8cafd249b28681c # main
     name: Tagging Module
     with:
       working-directory: modules/tagging
 
   scheduler-validation:
-    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@da2bf7ed16cc9778fedff463249466ca88069df5 # main
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@9f815b35dd18819f0854c52ee8cafd249b28681c # main
     name: Scheduler Module
     with:
       working-directory: modules/scheduler
 
   spoke-validation:
-    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@da2bf7ed16cc9778fedff463249466ca88069df5 # main
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@9f815b35dd18819f0854c52ee8cafd249b28681c # main
     name: Spoke Module
     with:
       working-directory: modules/spoke
 
   macro-validation:
-    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@da2bf7ed16cc9778fedff463249466ca88069df5 # main
+    uses: appvia/appvia-cicd-workflows/.github/workflows/terraform-module-validation.yml@9f815b35dd18819f0854c52ee8cafd249b28681c # main
     name: Macro Module
     with:
       working-directory: modules/macro
