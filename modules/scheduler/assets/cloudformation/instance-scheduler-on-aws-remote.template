@@ -6,7 +6,7 @@ AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: ${ macro_name }
 %{ endif ~}
-Description: (SO0030S) instance-scheduler-on-aws remote v3.2.5
+Description: (SO0030S) instance-scheduler-on-aws remote v3.2.6
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -435,13 +435,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.5/675a5bf8b308b0ac88e0d2938cf90aefef5fe9e277cb8cfc7639717849e44faf.zip
+        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
       Description: Custom Resource for creating regional event rules for tagging resources.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.5
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
           TAGGING_EVENT_RULE_ROLE_ARN:
             Fn::GetAtt:
               - HubTagEventForwardingRole5BEE3911
@@ -463,7 +463,7 @@ Resources:
               - ""
               - - IS-Tagging-
                 - Ref: Namespace
-          VERSION: v3.2.5
+          VERSION: v3.2.6
           SCHEDULE_TAG_KEY:
             Ref: ScheduleTagKey
           REGIONAL_EVENT_BUS_NAME:
@@ -492,7 +492,7 @@ Resources:
       - CreateRegionalEventRulesLambdaRole1BE94A3C
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CreateRegionalEventRulesLambda/Resource
-      aws:asset:path: asset.675a5bf8b308b0ac88e0d2938cf90aefef5fe9e277cb8cfc7639717849e44faf
+      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -581,7 +581,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.2.5
+      version: v3.2.6
       scheduleTagKey:
         Ref: ScheduleTagKey
       namespace:
@@ -808,13 +808,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.5/675a5bf8b308b0ac88e0d2938cf90aefef5fe9e277cb8cfc7639717849e44faf.zip
+        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
       Description: Custom Resource Provider used for region registration
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.5
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
           HUB_ACCOUNT_ID:
             Ref: InstanceSchedulerAccount
           STACK_ID:
@@ -863,7 +863,7 @@ Resources:
       - RegionRegistrationLambdaRoleED66DE1B
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationCustomResourceLambda/Resource
-      aws:asset:path: asset.675a5bf8b308b0ac88e0d2938cf90aefef5fe9e277cb8cfc7639717849e44faf
+      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -876,13 +876,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.5/675a5bf8b308b0ac88e0d2938cf90aefef5fe9e277cb8cfc7639717849e44faf.zip
+        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
       Description: Custom Resource lambda to wait and confirm region registrations.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.5
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
           HUB_ACCOUNT_ID:
             Ref: InstanceSchedulerAccount
           STACK_ID:
@@ -931,7 +931,7 @@ Resources:
       - RegionRegistrationWaitingLambdaRole96F8D082
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/RegionRegistrationWaitLambda/Resource
-      aws:asset:path: asset.675a5bf8b308b0ac88e0d2938cf90aefef5fe9e277cb8cfc7639717849e44faf
+      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1013,7 +1013,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.5/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.6/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
       Description: AWS CDK resource provider framework - onEvent (instance-scheduler-on-aws-remote/CustomResourceProvider)
       Environment:
         Variables:
@@ -1035,14 +1035,14 @@ Resources:
         Fn::GetAtt:
           - CustomResourceProviderframeworkonEventServiceRole7EBC5835
           - Arn
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Timeout: 900
     DependsOn:
       - CustomResourceProviderframeworkonEventServiceRoleDefaultPolicy93CD1647
       - CustomResourceProviderframeworkonEventServiceRole7EBC5835
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onEvent/Resource
-      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:path: asset.e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63
       aws:asset:is-bundled: false
       aws:asset:property: Code
       guard:
@@ -1120,7 +1120,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.5/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.6/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
       Description: AWS CDK resource provider framework - isComplete (instance-scheduler-on-aws-remote/CustomResourceProvider)
       Environment:
         Variables:
@@ -1140,14 +1140,14 @@ Resources:
         Fn::GetAtt:
           - CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
           - Arn
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Timeout: 900
     DependsOn:
       - CustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicy289A380C
       - CustomResourceProviderframeworkisCompleteServiceRole88C5CC94
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-isComplete/Resource
-      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:path: asset.e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63
       aws:asset:is-bundled: false
       aws:asset:property: Code
       guard:
@@ -1225,7 +1225,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.5/07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57.zip
+        S3Key: instance-scheduler-on-aws/v3.2.6/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
       Description: AWS CDK resource provider framework - onTimeout (instance-scheduler-on-aws-remote/CustomResourceProvider)
       Environment:
         Variables:
@@ -1245,14 +1245,14 @@ Resources:
         Fn::GetAtt:
           - CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
           - Arn
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Timeout: 900
     DependsOn:
       - CustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicy0C25C854
       - CustomResourceProviderframeworkonTimeoutServiceRole50C6F805
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws-remote/CustomResourceProvider/framework-onTimeout/Resource
-      aws:asset:path: asset.07a90cc3efdfc34da22208dcd9d211f06f5b0e01b21e778edc7c3966b1f61d57
+      aws:asset:path: asset.e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63
       aws:asset:is-bundled: false
       aws:asset:property: Code
       guard:
@@ -1431,7 +1431,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.2.5
+      version: v3.2.6
     DependsOn:
       - IamPolicyDeploymentGate
       - IamRoleDeploymentGate
