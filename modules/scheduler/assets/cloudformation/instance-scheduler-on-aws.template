@@ -6,7 +6,7 @@ AWSTemplateFormatVersion: 2010-09-09
 %{ if enable_macro ~}
 Transform: ${ macro_name }
 %{ endif ~}
-Description: (SO0030) instance-scheduler-on-aws v3.2.6
+Description: (SO0030) instance-scheduler-on-aws v3.2.8
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -54,7 +54,7 @@ Metadata:
         default: Orchestrator Memory size (MB)
     ParameterGroups:
       - Label:
-          default: Infrastructure (v3.2.6)
+          default: Infrastructure (v3.2.8)
         Parameters:
           - Namespace
           - UsingAWSOrganizations
@@ -1069,13 +1069,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
       Description: Custom Resource Provider used to generate unique UUIDs for solution deployments
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           UUID_KEY: /Solutions/instance-scheduler-on-aws/UUID/
           STACK_ID:
             Ref: AWS::StackId
@@ -1104,7 +1104,7 @@ Resources:
       - MetricsGeneratorRole83735CC4
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/MetricsUuidGenerator/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1311,13 +1311,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
       Description: Forwards InstanceScheduler Error/Warning logs to SNS
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           SNS_NOTIFICATION_TOPIC:
             Ref: InstanceSchedulerSnsTopic
       Handler: instance_scheduler.handler.log_forwarding.handle_log_event
@@ -1343,7 +1343,7 @@ Resources:
       - SnsLogForwarderRole9D82E3A7
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SnsLogForwarder/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1439,13 +1439,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
-      Description: spoke account registration handler, version v3.2.6
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
+      Description: spoke account registration handler, version v3.2.8
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -1521,7 +1521,7 @@ Resources:
       - SpokeRegistrationRole0E2E4D3E
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SpokeRegistrationHandler/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -1857,13 +1857,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
       Description: Custom Resource for creating regional event rules for tagging resources.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           TAGGING_EVENT_RULE_ROLE_ARN:
             Fn::GetAtt:
               - ResourceRegistrationHubTagEventForwardingRole81ECC265
@@ -1885,7 +1885,7 @@ Resources:
               - ""
               - - IS-Tagging-
                 - Ref: Namespace
-          VERSION: v3.2.6
+          VERSION: v3.2.8
           SCHEDULE_TAG_KEY:
             Ref: TagName
           REGIONAL_EVENT_BUS_NAME:
@@ -1914,7 +1914,7 @@ Resources:
       - ResourceRegistrationCreateRegionalEventRulesLambdaRole7F7A057A
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/CreateRegionalEventRulesLambda/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -2003,7 +2003,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.2.6
+      version: v3.2.8
       scheduleTagKey:
         Ref: TagName
       namespace:
@@ -2455,13 +2455,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
       Description: Custom Resource Provider used for region registration
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           HUB_ACCOUNT_ID:
             Ref: AWS::AccountId
           STACK_ID:
@@ -2513,7 +2513,7 @@ Resources:
       - ResourceRegistrationRegionRegistrationLambdaRoleB05DE28F
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationCustomResourceLambda/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -2526,13 +2526,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
       Description: Custom Resource lambda to wait and confirm region registrations.
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           HUB_ACCOUNT_ID:
             Ref: AWS::AccountId
           STACK_ID:
@@ -2584,7 +2584,7 @@ Resources:
       - ResourceRegistrationRegionRegistrationWaitingLambdaRoleD5212527
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistration/RegionRegistrationWaitLambda/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -2666,7 +2666,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
       Description: AWS CDK resource provider framework - onEvent (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -2773,7 +2773,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
       Description: AWS CDK resource provider framework - isComplete (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -2878,7 +2878,7 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/e16ffb3b34af185b8b30c88fdb19faa13b6c42bb38580485c4e84b384ee48b63.zip
       Description: AWS CDK resource provider framework - onTimeout (instance-scheduler-on-aws/ResourceRegistration/CustomResourceProvider)
       Environment:
         Variables:
@@ -3016,7 +3016,7 @@ Resources:
           - Arn
       regions:
         Ref: Regions
-      version: v3.2.6
+      version: v3.2.8
     DependsOn:
       - DynamoDbTableDeploymentGate
       - IamPolicyDeploymentGate
@@ -3115,13 +3115,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
       Description: Handles tag events for registration updates of managed resources
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -3181,7 +3181,7 @@ Resources:
       - ResourceRegistrationResourceRegistrationLambdaRole536BBF3F
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResourceRegistrationLambda/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3297,15 +3297,15 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
-      Description: CLI and CFN schedule manager for Instance Scheduler version v3.2.6
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
+      Description: CLI and CFN schedule manager for Instance Scheduler version v3.2.8
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
           ISSUES_TOPIC_ARN:
             Ref: InstanceSchedulerSnsTopic
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           DEFAULT_TIMEZONE:
             Ref: DefaultTimezone
           ENABLE_AWS_ORGANIZATIONS:
@@ -3322,7 +3322,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.6
+          SOLUTION_VERSION: v3.2.8
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3361,7 +3361,7 @@ Resources:
       - MainLambdaRole500DC55A
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/scheduler-lambda/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3497,8 +3497,8 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
-      Description: Handles EC2 resizing requests, version v3.2.6
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
+      Description: Handles EC2 resizing requests, version v3.2.8
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
@@ -3507,7 +3507,7 @@ Resources:
             Ref: ConfigTable
           REGISTRY_TABLE:
             Ref: ResourceRegistryC5838BF9
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           STACK_NAME:
             Ref: AWS::StackName
           STACK_ID:
@@ -3542,7 +3542,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.6
+          SOLUTION_VERSION: v3.2.8
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3576,7 +3576,7 @@ Resources:
       - Ec2ResizeRequestHandlerRoleC503C8DF
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/ResizeRequestHandlerLambda/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -3745,8 +3745,8 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
-      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.2.6
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
+      Description: Handles scheduling requests for Instance Scheduler on AWS, version v3.2.8
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
@@ -3757,7 +3757,7 @@ Resources:
             Ref: ResourceRegistryC5838BF9
           MAINT_WINDOW_TABLE:
             Ref: MaintenanceWindowTable
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           STACK_ID:
             Ref: AWS::StackId
           RESIZE_REQUEST_SQS_URL:
@@ -3813,7 +3813,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.6
+          SOLUTION_VERSION: v3.2.8
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -3848,7 +3848,7 @@ Resources:
       - schedulingRequestHandlerRoleD87803EB
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/schedulingRequestHandlerLambda/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4101,13 +4101,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
-      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.2.6
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
+      Description: scheduling orchestrator for Instance Scheduler on AWS, version v3.2.8
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -4140,7 +4140,7 @@ Resources:
       - SchedulingOrchestratorRoleAD0FF7B1
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/SchedulingOrchestrator/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4281,13 +4281,13 @@ Resources:
       Code:
         S3Bucket:
           Fn::Sub: solutions-$${AWS::Region}
-        S3Key: instance-scheduler-on-aws/v3.2.6/d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954.zip
-      Description: metrics gatherer for Instance Scheduler on AWS, version v3.2.6
+        S3Key: instance-scheduler-on-aws/v3.2.8/fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b.zip
+      Description: metrics gatherer for Instance Scheduler on AWS, version v3.2.8
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: instance-scheduler
           POWERTOOLS_LOG_LEVEL: INFO
-          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.6
+          USER_AGENT_EXTRA: AwsSolution/SO0030/v3.2.8
           CONFIG_TABLE:
             Ref: ConfigTable
           REGISTRY_TABLE:
@@ -4321,7 +4321,7 @@ Resources:
               - "True"
               - "False"
           SOLUTION_ID: SO0030
-          SOLUTION_VERSION: v3.2.6
+          SOLUTION_VERSION: v3.2.8
           SCHEDULING_INTERVAL_MINUTES:
             Ref: SchedulerFrequency
           METRICS_UUID:
@@ -4355,7 +4355,7 @@ Resources:
       - HeartbeatMetricsReporterRole9FB59405
     Metadata:
       aws:cdk:path: instance-scheduler-on-aws/HeartbeatMetricsReporter/Resource
-      aws:asset:path: asset.d606a42c228b4b539f11875b91b6ea0767c9012f350742e13bda10e2e10b8954
+      aws:asset:path: asset.fcf2305fd9755ad6f8747344e7e611ca23f788ea1853147b7fa17dfd34d56e8b
       aws:asset:is-bundled: true
       aws:asset:property: Code
       guard:
@@ -4440,7 +4440,7 @@ Resources:
   MetricsGathererEventRule82CDB21C:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger heartbeat metrics function version v3.2.6
+      Description: Instance Scheduler - Rule to trigger heartbeat metrics function version v3.2.8
       ScheduleExpression: rate(1 day)
       State:
         Fn::If:
@@ -4475,7 +4475,7 @@ Resources:
   SchedulerEventRuleDD9A6B32:
     Type: AWS::Events::Rule
     Properties:
-      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.2.6
+      Description: Instance Scheduler - Rule to trigger instance for scheduler function version v3.2.8
       ScheduleExpression:
         Fn::FindInMap:
           - CronExpressionsForSchedulingIntervals
