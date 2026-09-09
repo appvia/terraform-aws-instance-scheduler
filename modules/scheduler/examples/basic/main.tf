@@ -24,7 +24,7 @@ module "scheduler" {
   ## Is the interval in minutes that the scheduler will check for resources
   ## that need to be started or stopped
   scheduler_frequency = 5
-  
+
   tags = {
     "Environment" = "Development"
     "Owner"       = "Solutions"
