@@ -24,10 +24,7 @@ module "scheduler" {
   ## Is the interval in minutes that the scheduler will check for resources
   ## that need to be started or stopped
   scheduler_frequency = 5
-  ## The organizations id that are permitted to use the scheduler - you can
-  ## this detail in the AWS Organizations console
-  scheduler_organizations_ids = ["o-7enwqk0f2c"]
-
+  
   tags = {
     "Environment" = "Development"
     "Owner"       = "Solutions"
