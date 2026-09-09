@@ -11,7 +11,7 @@ locals {
   cloudformation_hub_stack_parameters = {
     # Infrastructure
     Namespace             = "default"
-    Principals            = join(",", var.scheduler_organizations_ids)
+    Principals            = join(",", concat([var.organizational_id], var.scheduler_principal_ids))
     RetainDataAndLogs     = var.enable_retain_logs ? "Enabled" : "Disabled"
     TagName               = var.scheduler_tag_name
     UsingAWSOrganizations = var.enable_organizations ? "Yes" : "No"

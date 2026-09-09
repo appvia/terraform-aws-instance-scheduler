@@ -134,8 +134,8 @@ variable "scheduler_orchestrator_memory_size" {
   default     = 128
 }
 
-variable "scheduler_organizations_ids" {
-  description = "A list of organizations ids that are permitted to use the scheduler"
+variable "scheduler_principal_ids" {
+  description = "A list of organizations id that are permitted accounts to use the scheduler"
   type        = list(string)
   default     = []
 }

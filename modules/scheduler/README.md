@@ -149,7 +149,7 @@ The `terraform-docs` utility is used to generate this README. Follow the below s
 | <a name="input_scheduler_log_group_retention"></a> [scheduler\_log\_group\_retention](#input\_scheduler\_log\_group\_retention) | The retention period for the instance scheduler log group | `string` | `"7"` | no |
 | <a name="input_scheduler_memory_size"></a> [scheduler\_memory\_size](#input\_scheduler\_memory\_size) | The memory size for the instance scheduler | `number` | `128` | no |
 | <a name="input_scheduler_orchestrator_memory_size"></a> [scheduler\_orchestrator\_memory\_size](#input\_scheduler\_orchestrator\_memory\_size) | The memory size for the instance scheduler orchestrator | `number` | `128` | no |
-| <a name="input_scheduler_organizations_ids"></a> [scheduler\_organizations\_ids](#input\_scheduler\_organizations\_ids) | A list of organizations ids that are permitted to use the scheduler | `list(string)` | `[]` | no |
+| <a name="input_scheduler_principal_ids"></a> [scheduler\_principal\_ids](#input\_scheduler\_principal\_ids) | A list of organizations id that are permitted accounts to use the scheduler | `list(string)` | `[]` | no |
 | <a name="input_scheduler_regions"></a> [scheduler\_regions](#input\_scheduler\_regions) | The regions in which the instance scheduler should operate | `list(string)` | `[]` | no |
 | <a name="input_scheduler_timezone"></a> [scheduler\_timezone](#input\_scheduler\_timezone) | The default timezone for the instance scheduler | `string` | `"UTC"` | no |
 
