@@ -101,12 +101,32 @@ module "scheduler" {
 }
 ```
 
+## Observability
+
+Setting `enable_observability = true` creates CloudWatch alarms for the hub scheduler: an
+application-errors alarm and an invocation-failures alarm for each of the two scheduler log groups,
+plus a scheduler heartbeat alarm (only when `enable_scheduler = true`). All five alarms notify
+`observability_sns_topic_arn` on both ALARM and OK.
+
+**Expected page on creation:** the heartbeat alarm goes ALARM and then OK within the first scheduler
+period after it is created, because the metric has no data until the next scheduler run. This happens
+on first enable, and again whenever `enable_scheduler` changes from `false` to `true`.
+
+**Topic prerequisites:** the SNS topic's access policy must allow `cloudwatch.amazonaws.com` to
+`sns:Publish`. If the topic is KMS-encrypted, the key policy must also allow
+`cloudwatch.amazonaws.com` to use the key (`kms:Decrypt`, `kms:GenerateDataKey*`). Otherwise
+notifications fail silently, visible only in alarm history.
+
+**Coverage limits:** the upstream SNS log-forwarder and the CDK provider-framework Lambdas log
+elsewhere and are not covered. There are no throttle, DLQ-depth or DynamoDB alarms.
+
 ## Known Limitations
 
 - Scheduler lifecycle is ultimately CloudFormation-managed, so updates can take several minutes and may fail on stack-level constraints.
 - Template bucket names are globally unique; collisions must be managed in naming strategy.
 - `scheduler_frequency` only accepts discrete values (`1, 2, 5, 10, 15, 30, 60`).
 - If `enable_organizational_bucket` is used, your org setup and bucket policy expectations must be validated before rollout.
+- The module requires Terraform `>= 1.9.0` (cross-variable input validation).
 
 ## Update Documentation
 
