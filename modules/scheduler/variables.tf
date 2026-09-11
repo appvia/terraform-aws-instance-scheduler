@@ -103,6 +103,11 @@ variable "observability_sns_topic_arn" {
     condition     = !var.enable_observability || var.observability_sns_topic_arn != null
     error_message = "observability_sns_topic_arn must be set when enable_observability is true"
   }
+
+  validation {
+    condition     = var.observability_sns_topic_arn == null || can(regex("^arn:aws[a-zA-Z-]*:sns:[a-z0-9-]+:[0-9]{12}:[A-Za-z0-9_.-]+$", var.observability_sns_topic_arn))
+    error_message = "observability_sns_topic_arn must be a valid SNS topic ARN"
+  }
 }
 
 variable "organizational_id" {
