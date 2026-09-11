@@ -98,12 +98,27 @@ resource "aws_cloudwatch_metric_alarm" "scheduler_heartbeat" {
   comparison_operator = "LessThanThreshold"
   datapoints_to_alarm = 2
   evaluation_periods  = 2
-  metric_name         = aws_cloudwatch_log_metric_filter.scheduling_invocations[0].metric_transformation[0].name
-  namespace           = local.observability_metric_namespace
   ok_actions          = [var.observability_sns_topic_arn]
-  period              = local.observability_heartbeat_period
-  statistic           = "Sum"
   tags                = var.tags
   threshold           = 1
   treat_missing_data  = "breaching"
+
+  metric_query {
+    id          = "invocations"
+    return_data = false
+
+    metric {
+      metric_name = aws_cloudwatch_log_metric_filter.scheduling_invocations[0].metric_transformation[0].name
+      namespace   = local.observability_metric_namespace
+      period      = local.observability_heartbeat_period
+      stat        = "Sum"
+    }
+  }
+
+  metric_query {
+    id          = "invocations_filled"
+    expression  = "FILL(invocations, 0)"
+    label       = "Scheduling invocations, missing periods filled with zero"
+    return_data = true
+  }
 }
