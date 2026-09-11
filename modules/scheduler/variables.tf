@@ -52,6 +52,12 @@ variable "enable_debug" {
   default     = false
 }
 
+variable "enable_observability" {
+  description = "Whether CloudWatch alarms should be created to monitor the instance scheduler"
+  type        = bool
+  default     = false
+}
+
 variable "enable_organizations" {
   description = "Whether the instance scheduler should integrate with AWS Organizations"
   type        = bool
@@ -86,6 +92,17 @@ variable "kms_key_arns" {
   description = "The KMS key ARNs used to encrypt the instance scheduler data"
   type        = list(string)
   default     = []
+}
+
+variable "observability_sns_topic_arn" {
+  description = "The ARN of the SNS topic that CloudWatch alarms notify; required when enable_observability is true"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = !var.enable_observability || var.observability_sns_topic_arn != null
+    error_message = "observability_sns_topic_arn must be set when enable_observability is true"
+  }
 }
 
 variable "organizational_id" {
